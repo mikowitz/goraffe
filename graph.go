@@ -3,10 +3,15 @@ package goraffe
 type Graph struct {
 	name             string
 	directed, strict bool
+	nodeOrder        []*Node
+	nodes            map[string]int
 }
 
 func NewGraph() *Graph {
-	return &Graph{}
+	return &Graph{
+		nodeOrder: make([]*Node, 0),
+		nodes:     make(map[string]int),
+	}
 }
 
 func (g *Graph) IsDirected() bool {
@@ -19,4 +24,29 @@ func (g *Graph) IsStrict() bool {
 
 func (g *Graph) Name() string {
 	return g.name
+}
+
+// AddNode adds a node to the graph. If a node with the same ID already exists,
+// it will be replaced in place, preserving its original position in the node order.
+// This ensures that the insertion order of nodes is maintained for DOT output.
+func (g *Graph) AddNode(n *Node) {
+	if idx, exists := g.nodes[n.ID()]; exists {
+		// Replace at existing position
+		g.nodeOrder[idx] = n
+	} else {
+		// Add new node
+		g.nodes[n.ID()] = len(g.nodeOrder)
+		g.nodeOrder = append(g.nodeOrder, n)
+	}
+}
+
+func (g *Graph) GetNode(id string) *Node {
+	if idx, exists := g.nodes[id]; exists {
+		return g.nodeOrder[idx]
+	}
+	return nil
+}
+
+func (g *Graph) Nodes() []*Node {
+	return g.nodeOrder
 }
