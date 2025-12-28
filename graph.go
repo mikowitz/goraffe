@@ -5,6 +5,7 @@ type Graph struct {
 	directed, strict bool
 	nodeOrder        []*Node
 	nodes            map[string]int
+	edges            []*Edge
 }
 
 func NewGraph() *Graph {
@@ -49,4 +50,23 @@ func (g *Graph) GetNode(id string) *Node {
 
 func (g *Graph) Nodes() []*Node {
 	return g.nodeOrder
+}
+
+func (g *Graph) AddEdge(from, to *Node) *Edge {
+	edge := &Edge{from: from, to: to}
+
+	if _, exists := g.nodes[from.ID()]; !exists {
+		g.AddNode(from)
+	}
+	if _, exists := g.nodes[to.ID()]; !exists {
+		g.AddNode(to)
+	}
+
+	g.edges = append(g.edges, edge)
+
+	return edge
+}
+
+func (g *Graph) Edges() []*Edge {
+	return g.edges
 }

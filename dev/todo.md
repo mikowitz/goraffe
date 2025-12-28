@@ -75,15 +75,18 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 - ⬜ Implement `AddEdge(from, to *Node)` method
   - ⬜ Create new Edge
   - ⬜ Implicit node addition
-  - ⬜ Append to edges slice
+  - ⬜ Append to edges slice (allows parallel edges)
   - ⬜ Return created edge
 - ⬜ Implement `Edges()` method
-- ⬜ Create `edge_test.go`
-  - ⬜ `TestEdge_FromTo_ReturnsCorrectNodes`
-  - ⬜ `TestGraph_AddEdge_BothNodesExist`
-  - ⬜ `TestGraph_AddEdge_ImplicitNodeAdd`
-  - ⬜ `TestGraph_AddEdge_PartialImplicitAdd`
-  - ⬜ `TestGraph_Edges_ReturnsAllEdges`
+- ✅ Create `edge_test.go`
+  - ✅ `TestEdge_FromTo_ReturnsCorrectNodes`
+  - ✅ `TestGraph_AddEdge_BothNodesExist`
+  - ✅ `TestGraph_AddEdge_ImplicitNodeAdd`
+  - ✅ `TestGraph_AddEdge_PartialImplicitAdd`
+  - ✅ `TestGraph_AddEdge_AllowsParallelEdges`
+  - ✅ `TestGraph_AddEdge_AllowsSelfLoops`
+  - ✅ `TestGraph_Edges_ReturnsAllEdges`
+  - ✅ `TestGraph_Edges_ReturnsInInsertionOrder`
 
 ### Step 5: Directed/Undirected/Strict Graph Options
 
@@ -1076,14 +1079,14 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 
 | Phase | Steps | Completed | Percentage |
 |-------|-------|-----------|------------|
-| Foundation | 1-5 | 0/5 | 0% |
+| Foundation | 1-5 | 3/5 | 60% |
 | Attributes | 6-14 | 0/9 | 0% |
 | DOT Generation | 15-19 | 0/5 | 0% |
 | Labels | 20-26 | 0/7 | 0% |
 | Subgraphs | 27-32 | 0/6 | 0% |
 | Parsing | 33-37 | 0/5 | 0% |
 | Rendering | 38-43 | 0/6 | 0% |
-| **Total** | **1-43** | **0/43** | **0%** |
+| **Total** | **1-43** | **3/43** | **7%** |
 
 ---
 
