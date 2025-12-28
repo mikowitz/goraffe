@@ -8,11 +8,18 @@ type Graph struct {
 	edges            []*Edge
 }
 
-func NewGraph() *Graph {
-	return &Graph{
+func NewGraph(options ...GraphOption) *Graph {
+	g := &Graph{
 		nodeOrder: make([]*Node, 0),
 		nodes:     make(map[string]int),
+		edges:     make([]*Edge, 0),
 	}
+
+	for _, option := range options {
+		option.applyGraph(g)
+	}
+
+	return g
 }
 
 func (g *Graph) IsDirected() bool {

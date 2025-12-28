@@ -66,18 +66,18 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 
 ### Step 4: Edge Struct and Graph.AddEdge
 
-- ⬜ Create `edge.go`
-- ⬜ Define Edge struct with `from` and `to` fields
-- ⬜ Implement `From()` method
-- ⬜ Implement `To()` method
-- ⬜ Add `edges` field to Graph ([]*Edge)
-- ⬜ Initialize edges slice in `NewGraph()`
-- ⬜ Implement `AddEdge(from, to *Node)` method
-  - ⬜ Create new Edge
-  - ⬜ Implicit node addition
-  - ⬜ Append to edges slice (allows parallel edges)
-  - ⬜ Return created edge
-- ⬜ Implement `Edges()` method
+- ✅ Create `edge.go`
+- ✅ Define Edge struct with `from` and `to` fields
+- ✅ Implement `From()` method
+- ✅ Implement `To()` method
+- ✅ Add `edges` field to Graph ([]*Edge)
+- ✅ Initialize edges slice in `NewGraph()`
+- ✅ Implement `AddEdge(from, to *Node)` method
+  - ✅ Create new Edge
+  - ✅ Implicit node addition
+  - ✅ Append to edges slice (allows parallel edges)
+  - ✅ Return created edge
+- ✅ Implement `Edges()` method
 - ✅ Create `edge_test.go`
   - ✅ `TestEdge_FromTo_ReturnsCorrectNodes`
   - ✅ `TestGraph_AddEdge_BothNodesExist`
@@ -90,20 +90,22 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 
 ### Step 5: Directed/Undirected/Strict Graph Options
 
-- ⬜ Create `options.go`
-- ⬜ Define `GraphOption` interface
-- ⬜ Define `graphOptionFunc` type
-- ⬜ Implement `Directed` option
-- ⬜ Implement `Undirected` option
-- ⬜ Implement `Strict` option
-- ⬜ Update `NewGraph` to accept variadic `GraphOption`
-- ⬜ Update `graph_test.go`
-  - ⬜ `TestNewGraph_Directed`
-  - ⬜ `TestNewGraph_Undirected`
-  - ⬜ `TestNewGraph_Strict`
-  - ⬜ `TestNewGraph_DirectedAndStrict`
-  - ⬜ `TestNewGraph_MultipleOptions_LastWins`
-- ⬜ Update existing tests for new signature
+- ✅ Create `options.go`
+- ✅ Define `GraphOption` interface
+- ✅ Define `graphOptionFunc` type
+- ✅ Implement `Directed` option
+- ✅ Implement `Undirected` option
+- ✅ Implement `Strict` option
+- ✅ Update `NewGraph` to accept variadic `GraphOption`
+- ✅ Create `options_test.go`
+  - ✅ `TestNewGraph_Directed`
+  - ✅ `TestNewGraph_Undirected`
+  - ✅ `TestNewGraph_Strict`
+  - ✅ `TestNewGraph_DirectedAndStrict`
+  - ✅ `TestNewGraph_MultipleOptions_LastWins`
+  - ✅ `TestNewGraph_NoOptions`
+  - ✅ `TestGraphOption_Interface`
+- ✅ Update existing tests for new signature
 
 ---
 
@@ -1079,14 +1081,14 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 
 | Phase | Steps | Completed | Percentage |
 |-------|-------|-----------|------------|
-| Foundation | 1-5 | 3/5 | 60% |
+| Foundation | 1-5 | 5/5 | 100% |
 | Attributes | 6-14 | 0/9 | 0% |
 | DOT Generation | 15-19 | 0/5 | 0% |
 | Labels | 20-26 | 0/7 | 0% |
 | Subgraphs | 27-32 | 0/6 | 0% |
 | Parsing | 33-37 | 0/5 | 0% |
 | Rendering | 38-43 | 0/6 | 0% |
-| **Total** | **1-43** | **3/43** | **7%** |
+| **Total** | **1-43** | **5/43** | **12%** |
 
 ---
 
