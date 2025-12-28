@@ -44,18 +44,25 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 
 ### Step 3: Graph.AddNode Method
 
-- ⬜ Add `nodes` field to Graph (map[string]*Node)
-- ⬜ Initialize map in `NewGraph()`
-- ⬜ Implement `AddNode(n *Node)` method
-- ⬜ Implement `GetNode(id string)` method
-- ⬜ Implement `Nodes()` method
-- ⬜ Update `graph_test.go`
-  - ⬜ `TestGraph_AddNode_SingleNode`
-  - ⬜ `TestGraph_AddNode_MultipleNodes`
-  - ⬜ `TestGraph_AddNode_DuplicateID`
-  - ⬜ `TestGraph_GetNode_Exists`
-  - ⬜ `TestGraph_GetNode_NotFound`
-  - ⬜ `TestGraph_Nodes_ReturnsAllNodes`
+- ✅ Add `nodeOrder` field to Graph ([]*Node)
+- ✅ Add `nodes` field to Graph (map[string]int)
+- ✅ Initialize both in `NewGraph()`
+- ✅ Implement `AddNode(n *Node)` method
+  - ✅ Replace-in-place for duplicate IDs
+  - ✅ Append to nodeOrder and store index for new nodes
+- ✅ Implement `GetNode(id string)` method
+  - ✅ Lookup index in nodes map
+  - ✅ Return nodeOrder[idx] or nil
+- ✅ Implement `Nodes()` method (returns nodeOrder)
+- ✅ Update `graph_test.go`
+  - ✅ `TestGraph_AddNode_SingleNode`
+  - ✅ `TestGraph_AddNode_MultipleNodes`
+  - ✅ `TestGraph_AddNode_DuplicateID`
+  - ✅ `TestGraph_AddNode_PreservesOrder`
+  - ✅ `TestGraph_GetNode_Exists`
+  - ✅ `TestGraph_GetNode_NotFound`
+  - ✅ `TestGraph_Nodes_ReturnsAllNodes`
+  - ✅ `TestGraph_Nodes_ReturnsInInsertionOrder`
 
 ### Step 4: Edge Struct and Graph.AddEdge
 

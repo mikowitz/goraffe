@@ -198,23 +198,32 @@ Keep it minimal - attributes and options will be added in later steps.
 Building on the existing goraffe project, implement adding nodes to a graph.
 
 1. Update graph.go:
-   - Add a nodes field to Graph: nodes map[string]*Node
-   - Initialize the map in NewGraph()
+   - Add fields to Graph:
+     - nodeOrder []*Node (preserves insertion order for DOT output)
+     - nodes map[string]int (maps node ID to index in nodeOrder for O(1) lookup)
+   - Initialize both in NewGraph()
    - Add method AddNode(n *Node) that:
-     - Adds the node to the map keyed by its ID
-     - If a node with the same ID exists, it should be replaced (or ignored - pick one and document)
-   - Add method GetNode(id string) *Node that returns nil if not found
-   - Add method Nodes() []*Node that returns all nodes (order not guaranteed)
+     - If node ID exists: replaces node at that index in nodeOrder
+     - If new: appends to nodeOrder and stores index in nodes map
+     - This preserves insertion order while allowing fast lookups
+   - Add method GetNode(id string) *Node that:
+     - Looks up index in nodes map
+     - Returns nodeOrder[idx] if found, nil otherwise
+   - Add method Nodes() []*Node that returns nodeOrder (guaranteed insertion order)
 
 2. Update graph_test.go with tests:
    - TestGraph_AddNode_SingleNode
    - TestGraph_AddNode_MultipleNodes
-   - TestGraph_AddNode_DuplicateID (verify chosen behavior)
+   - TestGraph_AddNode_DuplicateID (verify replace-in-place behavior)
+   - TestGraph_AddNode_PreservesOrder (verify nodes returned in insertion order)
    - TestGraph_GetNode_Exists
    - TestGraph_GetNode_NotFound
    - TestGraph_Nodes_ReturnsAllNodes
+   - TestGraph_Nodes_ReturnsInInsertionOrder
 
 Make sure the Graph properly owns the nodes after AddNode is called.
+Note: This design prioritizes insertion order preservation (critical for DOT output)
+and fast lookups, at the expense of expensive node deletion (not needed in this API).
 ```
 
 ---
