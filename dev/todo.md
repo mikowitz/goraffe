@@ -17,19 +17,19 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 
 ### Step 1: Project Setup and Basic Graph Struct
 
-- ⬜ Initialize Go module `github.com/example/goraffe`
-- ⬜ Create `doc.go` with package documentation
-- ⬜ Create `graph.go` with Graph struct
-  - ⬜ Add `name` field (string)
-  - ⬜ Add `directed` field (bool)
-  - ⬜ Add `strict` field (bool)
-- ⬜ Implement `NewGraph()` constructor
-- ⬜ Implement `IsDirected()` method
-- ⬜ Implement `IsStrict()` method
-- ⬜ Implement `Name()` method
-- ⬜ Create `graph_test.go`
-  - ⬜ `TestNewGraph_DefaultValues`
-  - ⬜ Test getter methods
+- ✅ Initialize Go module `github.com/example/goraffe`
+- ✅ Create `doc.go` with package documentation
+- ✅ Create `graph.go` with Graph struct
+  - ✅ Add `name` field (string)
+  - ✅ Add `directed` field (bool)
+  - ✅ Add `strict` field (bool)
+- ✅ Implement `NewGraph()` constructor
+- ✅ Implement `IsDirected()` method
+- ✅ Implement `IsStrict()` method
+- ✅ Implement `Name()` method
+- ✅ Create `graph_test.go`
+  - ✅ `TestNewGraph_DefaultValues`
+  - ✅ Test getter methods
 
 ### Step 2: Node Struct and NewNode
 
