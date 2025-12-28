@@ -33,14 +33,14 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 
 ### Step 2: Node Struct and NewNode
 
-- ⬜ Create `node.go`
-- ⬜ Define Node struct with `id` field
-- ⬜ Implement `NewNode(id string)` constructor
-- ⬜ Implement `ID()` method
-- ⬜ Create `node_test.go`
-  - ⬜ `TestNewNode_SetsID`
-  - ⬜ `TestNewNode_EmptyID`
-  - ⬜ `TestNode_ID_ReturnsCorrectValue`
+- ✅ Create `node.go`
+- ✅ Define Node struct with `id` field
+- ✅ Implement `NewNode(id string)` constructor
+- ✅ Implement `ID()` method
+- ✅ Create `node_test.go`
+  - ✅ `TestNewNode_SetsID`
+  - ✅ `TestNewNode_EmptyID`
+  - ✅ `TestNode_ID_ReturnsCorrectValue`
 
 ### Step 3: Graph.AddNode Method
 
