@@ -141,22 +141,22 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 
 ### Step 7: NodeOption Interface and Basic Functional Options
 
-- ⬜ Define `NodeOption` interface
-- ⬜ Define `nodeOptionFunc` type
-- ⬜ Implement `newNodeOption` helper
-- ⬜ Implement `WithShape(s Shape)` option
-- ⬜ Implement `WithLabel(l string)` option
-- ⬜ Implement `WithColor(c string)` option
-- ⬜ Implement `WithFillColor(c string)` option
-- ⬜ Implement `WithFontName(f string)` option
-- ⬜ Implement `WithFontSize(s float64)` option
-- ⬜ Create `node_options_test.go`
-  - ⬜ `TestWithShape_SetsShape`
-  - ⬜ `TestWithLabel_SetsLabel`
-  - ⬜ `TestWithColor_SetsColor`
-  - ⬜ `TestWithFillColor_SetsFillColor`
-  - ⬜ `TestWithFontName_SetsFontName`
-  - ⬜ `TestWithFontSize_SetsFontSize`
+- ✅ Define `NodeOption` interface
+- ✅ Define `nodeOptionFunc` type
+- ✅ Implement `newNodeOption` helper
+- ✅ Implement `WithShape(s Shape)` option
+- ✅ Implement `WithLabel(l string)` option
+- ✅ Implement `WithColor(c string)` option
+- ✅ Implement `WithFillColor(c string)` option
+- ✅ Implement `WithFontName(f string)` option
+- ✅ Implement `WithFontSize(s float64)` option
+- ✅ Create `node_options_test.go`
+  - ✅ `TestWithShape_SetsShape`
+  - ✅ `TestWithLabel_SetsLabel`
+  - ✅ `TestWithColor_SetsColor`
+  - ✅ `TestWithFillColor_SetsFillColor`
+  - ✅ `TestWithFontName_SetsFontName`
+  - ✅ `TestWithFontSize_SetsFontSize`
 
 ### Step 8: Wire NodeOptions into NewNode
 
@@ -1048,6 +1048,7 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 - ⬜ `subgraph.go`
 - ✅ `attributes.go`
 - ✅ `options.go`
+- ✅ `node_options.go` (created for organization instead of adding to options.go)
 - ⬜ `labels.go`
 - ⬜ `port.go`
 - ⬜ `dot.go`
@@ -1059,7 +1060,7 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 - ✅ `edge_test.go`
 - ⬜ `subgraph_test.go`
 - ✅ `attributes_test.go`
-- ⬜ `node_options_test.go`
+- ✅ `node_options_test.go`
 - ⬜ `edge_options_test.go`
 - ⬜ `labels_test.go`
 - ⬜ `record_labels_test.go`
@@ -1081,13 +1082,13 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 | Phase | Steps | Completed | Percentage |
 |-------|-------|-----------|------------|
 | Foundation | 1-5 | 5/5 | 100% |
-| Attributes | 6-14 | 1/9 | 11% |
+| Attributes | 6-14 | 2/9 | 22% |
 | DOT Generation | 15-19 | 0/5 | 0% |
 | Labels | 20-26 | 0/7 | 0% |
 | Subgraphs | 27-32 | 0/6 | 0% |
 | Parsing | 33-37 | 0/5 | 0% |
 | Rendering | 38-43 | 0/6 | 0% |
-| **Total** | **1-43** | **6/43** | **14%** |
+| **Total** | **1-43** | **7/43** | **16%** |
 
 ---
 
