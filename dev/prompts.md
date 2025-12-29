@@ -387,6 +387,13 @@ Building on the existing goraffe project, wire NodeOptions into node creation.
 
 4. Update any existing tests that call NewNode to ensure they still pass
 
+5. Revisit node_options_test.go from Prompt 7:
+   - Consider whether these tests are still needed now that we have public API tests
+   - The tests in node_options_test.go test the private applyNode method directly
+   - Now that NewNode accepts options, the tests in node_test.go will exercise the same code paths
+   - Decision: Keep them for now if they provide value in isolating failures, or delete if they're redundant
+   - These tests made sense for TDD (Red phase), but may not be needed long-term
+
 Example usage after this step:
   n := NewNode("A", WithShape(ShapeBox), WithLabel("Node A"))
   
