@@ -31,3 +31,22 @@ func (a NodeAttributes) Custom() map[string]string {
 	}
 	return ret
 }
+
+func (a NodeAttributes) applyNode(dst *NodeAttributes) {
+	if a.Label != "" {
+		dst.Label = a.Label
+	}
+	dst.Shape = a.Shape
+	if a.Color != "" {
+		dst.Color = a.Color
+	}
+	if a.FillColor != "" {
+		dst.FillColor = a.FillColor
+	}
+	if a.FontName != "" {
+		dst.FontName = a.FontName
+	}
+	if a.FontSize != 0.0 {
+		dst.FontSize = a.FontSize
+	}
+}

@@ -160,17 +160,18 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 
 ### Step 8: Wire NodeOptions into NewNode
 
-- ⬜ Update `NewNode` signature to accept `...NodeOption`
-- ⬜ Apply options to node attributes in constructor
-- ⬜ Make `NodeAttributes` implement `NodeOption`
-  - ⬜ Add `applyNode` method
-  - ⬜ Implement non-zero field merging
-- ⬜ Update `node_test.go`
-  - ⬜ `TestNewNode_WithOptions`
-  - ⬜ `TestNewNode_WithMultipleOptions`
-  - ⬜ `TestNewNode_WithNodeAttributesStruct`
-  - ⬜ `TestNewNode_OptionsAppliedInOrder`
-- ⬜ Update existing tests for new signature
+- ✅ Update `NewNode` signature to accept `...NodeOption`
+- ✅ Apply options to node attributes in constructor
+- ✅ Make `NodeAttributes` implement `NodeOption`
+  - ✅ Add `applyNode` method
+  - ✅ Implement non-zero field merging
+- ✅ Update `node_test.go`
+  - ✅ `TestNewNode_WithOptions`
+  - ✅ `TestNewNode_WithMultipleOptions`
+  - ✅ `TestNewNode_WithNodeAttributesStruct`
+  - ✅ `TestNewNode_OptionsAppliedInOrder`
+- ✅ Update existing tests for new signature (no changes needed - variadic options)
+- ✅ Delete `node_options_test.go` (tests private API, redundant with public API tests)
 
 ### Step 9: EdgeStyle Enum and EdgeAttributes Struct
 
@@ -1082,13 +1083,13 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 | Phase | Steps | Completed | Percentage |
 |-------|-------|-----------|------------|
 | Foundation | 1-5 | 5/5 | 100% |
-| Attributes | 6-14 | 2/9 | 22% |
+| Attributes | 6-14 | 3/9 | 33% |
 | DOT Generation | 15-19 | 0/5 | 0% |
 | Labels | 20-26 | 0/7 | 0% |
 | Subgraphs | 27-32 | 0/6 | 0% |
 | Parsing | 33-37 | 0/5 | 0% |
 | Rendering | 38-43 | 0/6 | 0% |
-| **Total** | **1-43** | **7/43** | **16%** |
+| **Total** | **1-43** | **8/43** | **19%** |
 
 ---
 
