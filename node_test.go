@@ -64,3 +64,39 @@ func TestNode_ID_ReturnsCorrectValue(t *testing.T) {
 		asrt.Empty(n.ID(), "expected ID() to return empty string")
 	})
 }
+
+func TestNode_Attrs_ReturnsAttributes(t *testing.T) {
+	t.Run("returns non-nil attributes", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		n := NewNode("test")
+
+		attrs := n.Attrs()
+		asrt.NotNil(attrs, "expected Attrs() to return non-nil NodeAttributes")
+	})
+
+	t.Run("returns same instance on multiple calls", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		n := NewNode("test")
+
+		attrs1 := n.Attrs()
+		attrs2 := n.Attrs()
+
+		asrt.Same(attrs1, attrs2, "expected Attrs() to return the same NodeAttributes instance")
+	})
+
+	t.Run("returns attributes with zero values for new node", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		n := NewNode("test")
+
+		attrs := n.Attrs()
+		asrt.Empty(attrs.Label, "expected Label to be empty for new node")
+		asrt.Empty(attrs.Shape, "expected Shape to be empty for new node")
+		asrt.Empty(attrs.Color, "expected Color to be empty for new node")
+		asrt.Empty(attrs.FillColor, "expected FillColor to be empty for new node")
+		asrt.Empty(attrs.FontName, "expected FontName to be empty for new node")
+		asrt.Equal(0.0, attrs.FontSize, "expected FontSize to be zero for new node")
+	})
+}

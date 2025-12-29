@@ -113,32 +113,31 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 
 ### Step 6: Shape Enum and NodeAttributes Struct
 
-- ⬜ Create `attributes.go`
-- ⬜ Define `Shape` type
-- ⬜ Add Shape constants
-  - ⬜ `ShapeBox`
-  - ⬜ `ShapeCircle`
-  - ⬜ `ShapeEllipse`
-  - ⬜ `ShapeDiamond`
-  - ⬜ `ShapeRecord`
-  - ⬜ `ShapePlaintext`
-- ⬜ Define `NodeAttributes` struct
-  - ⬜ `Label` field
-  - ⬜ `Shape` field
-  - ⬜ `Color` field
-  - ⬜ `FillColor` field
-  - ⬜ `FontName` field
-  - ⬜ `FontSize` field
-  - ⬜ `custom` field (unexported map)
-- ⬜ Implement `Custom()` method on NodeAttributes
-- ⬜ Update `node.go` to add `attrs` field
-- ⬜ Implement `Attrs()` method on Node
-- ⬜ Create `attributes_test.go`
-  - ⬜ `TestShapeConstants_Values`
-  - ⬜ `TestNodeAttributes_ZeroValue`
-  - ⬜ `TestNodeAttributes_Custom_ReturnsCopy`
-- ⬜ Update `node_test.go`
-  - ⬜ `TestNode_Attrs_ReturnsAttributes`
+- ✅ Create `attributes.go`
+- ✅ Define `Shape` type
+- ✅ Add Shape constants
+  - ✅ `ShapeBox`
+  - ✅ `ShapeCircle`
+  - ✅ `ShapeEllipse`
+  - ✅ `ShapeDiamond`
+  - ✅ `ShapeRecord`
+  - ✅ `ShapePlaintext`
+- ✅ Define `NodeAttributes` struct
+  - ✅ `Label` field
+  - ✅ `Shape` field
+  - ✅ `Color` field
+  - ✅ `FillColor` field
+  - ✅ `FontName` field
+  - ✅ `FontSize` field
+  - ✅ `custom` field (unexported map)
+- ✅ Implement `Custom()` method on NodeAttributes
+- ✅ Update `node.go` to add `attrs` field
+- ✅ Implement `Attrs()` method on Node
+- ✅ Create `attributes_test.go`
+  - ✅ `TestNodeAttributes_ZeroValue`
+  - ✅ `TestNodeAttributes_Custom_ReturnsCopy`
+- ✅ Update `node_test.go`
+  - ✅ `TestNode_Attrs_ReturnsAttributes`
 
 ### Step 7: NodeOption Interface and Basic Functional Options
 
@@ -1041,25 +1040,25 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 
 ### Files Created
 
-- ⬜ `go.mod`
-- ⬜ `doc.go`
-- ⬜ `graph.go`
-- ⬜ `node.go`
-- ⬜ `edge.go`
+- ✅ `go.mod`
+- ✅ `doc.go`
+- ✅ `graph.go`
+- ✅ `node.go`
+- ✅ `edge.go`
 - ⬜ `subgraph.go`
-- ⬜ `attributes.go`
-- ⬜ `options.go`
+- ✅ `attributes.go`
+- ✅ `options.go`
 - ⬜ `labels.go`
 - ⬜ `port.go`
 - ⬜ `dot.go`
 - ⬜ `parse.go`
 - ⬜ `render.go`
 - ⬜ `errors.go`
-- ⬜ `graph_test.go`
-- ⬜ `node_test.go`
-- ⬜ `edge_test.go`
+- ✅ `graph_test.go`
+- ✅ `node_test.go`
+- ✅ `edge_test.go`
 - ⬜ `subgraph_test.go`
-- ⬜ `attributes_test.go`
+- ✅ `attributes_test.go`
 - ⬜ `node_options_test.go`
 - ⬜ `edge_options_test.go`
 - ⬜ `labels_test.go`
@@ -1082,13 +1081,13 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 | Phase | Steps | Completed | Percentage |
 |-------|-------|-----------|------------|
 | Foundation | 1-5 | 5/5 | 100% |
-| Attributes | 6-14 | 0/9 | 0% |
+| Attributes | 6-14 | 1/9 | 11% |
 | DOT Generation | 15-19 | 0/5 | 0% |
 | Labels | 20-26 | 0/7 | 0% |
 | Subgraphs | 27-32 | 0/6 | 0% |
 | Parsing | 33-37 | 0/5 | 0% |
 | Rendering | 38-43 | 0/6 | 0% |
-| **Total** | **1-43** | **5/43** | **12%** |
+| **Total** | **1-43** | **6/43** | **14%** |
 
 ---
 
