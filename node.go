@@ -5,10 +5,16 @@ type Node struct {
 	attrs *NodeAttributes
 }
 
-func NewNode(id string) *Node {
+func NewNode(id string, options ...NodeOption) *Node {
+	attrs := &NodeAttributes{}
+
+	for _, option := range options {
+		option.applyNode(attrs)
+	}
+
 	return &Node{
 		id:    id,
-		attrs: &NodeAttributes{},
+		attrs: attrs,
 	}
 }
 
