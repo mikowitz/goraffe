@@ -148,3 +148,48 @@ func TestGraph_Edges(t *testing.T) {
 		asrt.Same(e3, edges[2], "expected third edge to be e3")
 	})
 }
+
+func TestEdge_Attrs_ReturnsAttributes(t *testing.T) {
+	t.Run("returns non-nil attributes", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		e := g.AddEdge(n1, n2)
+
+		attrs := e.Attrs()
+		asrt.NotNil(attrs, "expected Attrs() to return non-nil EdgeAttributes")
+	})
+
+	t.Run("returns same instance on multiple calls", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		e := g.AddEdge(n1, n2)
+
+		attrs1 := e.Attrs()
+		attrs2 := e.Attrs()
+
+		asrt.Same(attrs1, attrs2, "expected Attrs() to return the same EdgeAttributes instance")
+	})
+
+	t.Run("returns attributes with zero values for new edge", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		e := g.AddEdge(n1, n2)
+
+		attrs := e.Attrs()
+		asrt.Empty(attrs.Label, "expected Label to be empty for new edge")
+		asrt.Empty(attrs.Color, "expected Color to be empty for new edge")
+		asrt.Empty(attrs.Style, "expected Style to be empty for new edge")
+		asrt.Empty(attrs.ArrowHead, "expected ArrowHead to be empty for new edge")
+		asrt.Empty(attrs.ArrowTail, "expected ArrowTail to be empty for new edge")
+		asrt.Equal(0.0, attrs.Weight, "expected Weight to be zero for new edge")
+	})
+}
