@@ -32,6 +32,12 @@ func (a NodeAttributes) Custom() map[string]string {
 	return ret
 }
 
+// applyNode implements the NodeOption interface, allowing NodeAttributes
+// to be used as a reusable template. Only non-zero exported fields are copied.
+//
+// NOTE: The unexported custom field is intentionally NOT copied. Custom fields
+// are treated as per-instance customizations, not template values to be shared.
+// Use Custom() to read and SetCustom() to write custom fields on individual nodes.
 func (a NodeAttributes) applyNode(dst *NodeAttributes) {
 	if a.Label != "" {
 		dst.Label = a.Label

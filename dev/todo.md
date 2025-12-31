@@ -175,29 +175,29 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 
 ### Step 9: EdgeStyle Enum and EdgeAttributes Struct
 
-- ⬜ Define `EdgeStyle` type
-- ⬜ Add EdgeStyle constants
-  - ⬜ `EdgeStyleSolid`
-  - ⬜ `EdgeStyleDashed`
-  - ⬜ `EdgeStyleDotted`
-  - ⬜ `EdgeStyleBold`
-- ⬜ Define `ArrowType` type
-- ⬜ Add ArrowType constants
-  - ⬜ `ArrowNormal`
-  - ⬜ `ArrowDot`
-  - ⬜ `ArrowNone`
-  - ⬜ `ArrowVee`
-- ⬜ Define `EdgeAttributes` struct
-  - ⬜ `Label` field
-  - ⬜ `Color` field
-  - ⬜ `Style` field
-  - ⬜ `ArrowHead` field
-  - ⬜ `ArrowTail` field
-  - ⬜ `Weight` field
-  - ⬜ `custom` field (unexported map)
-- ⬜ Implement `Custom()` method on EdgeAttributes
-- ⬜ Update `edge.go` to add `attrs` field
-- ⬜ Implement `Attrs()` method on Edge
+- ✅ Define `EdgeStyle` type
+- ✅ Add EdgeStyle constants
+  - ✅ `EdgeStyleSolid`
+  - ✅ `EdgeStyleDashed`
+  - ✅ `EdgeStyleDotted`
+  - ✅ `EdgeStyleBold`
+- ✅ Define `ArrowType` type
+- ✅ Add ArrowType constants
+  - ✅ `ArrowNormal`
+  - ✅ `ArrowDot`
+  - ✅ `ArrowNone`
+  - ✅ `ArrowVee`
+- ✅ Define `EdgeAttributes` struct
+  - ✅ `Label` field
+  - ✅ `Color` field
+  - ✅ `Style` field
+  - ✅ `ArrowHead` field
+  - ✅ `ArrowTail` field
+  - ✅ `Weight` field
+  - ✅ `custom` field (unexported map)
+- ✅ Implement `Custom()` method on EdgeAttributes
+- ✅ Update `edge.go` to add `attrs` field
+- ✅ Implement `Attrs()` method on Edge
 - ✅ Update `attributes_test.go`
   - ✅ `TestEdgeAttributes_ZeroValue`
   - ✅ `TestEdgeAttributes_Custom_ReturnsCopy`
@@ -206,19 +206,28 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 
 ### Step 10: EdgeOption Interface and Basic Options
 
-- ⬜ Define `EdgeOption` interface
-- ⬜ Define `edgeOptionFunc` type
-- ⬜ Implement `newEdgeOption` helper
-- ⬜ Implement `WithEdgeLabel(l string)` option
-- ⬜ Implement `WithEdgeColor(c string)` option
-- ⬜ Implement `WithEdgeStyle(s EdgeStyle)` option
-- ⬜ Implement `WithArrowHead(a ArrowType)` option
-- ⬜ Implement `WithArrowTail(a ArrowType)` option
-- ⬜ Implement `WithWeight(w float64)` option
-- ⬜ Make `EdgeAttributes` implement `EdgeOption`
-- ⬜ Create `edge_options_test.go`
-  - ⬜ Test each option independently
-  - ⬜ `TestEdgeAttributes_AsOption`
+- ✅ Define `EdgeOption` interface
+- ✅ Define `edgeOptionFunc` type
+- ✅ Implement `newEdgeOption` helper
+- ✅ Implement `WithEdgeLabel(l string)` option
+- ✅ Implement `WithEdgeColor(c string)` option
+- ✅ Implement `WithEdgeStyle(s EdgeStyle)` option
+- ✅ Implement `WithArrowHead(a ArrowType)` option
+- ✅ Implement `WithArrowTail(a ArrowType)` option
+- ✅ Implement `WithWeight(w float64)` option
+- ✅ Make `EdgeAttributes` implement `EdgeOption`
+  - ✅ Implement `applyEdge` method with non-zero field merging
+  - ✅ Document that custom fields are NOT copied (per-instance)
+- ✅ Create `edge_options_test.go`
+  - ✅ `TestWithEdgeLabel_SetsLabel`
+  - ✅ `TestWithEdgeColor_SetsColor`
+  - ✅ `TestWithEdgeStyle_SetsStyle`
+  - ✅ `TestWithArrowHead_SetsArrowHead`
+  - ✅ `TestWithArrowTail_SetsArrowTail`
+  - ✅ `TestWithWeight_SetsWeight`
+  - ✅ `TestEdgeOption_MultipleOptionsCanBeApplied`
+  - ✅ `TestEdgeAttributes_AsOption`
+  - Note: Revisit whether these private API tests are needed after Step 11
 
 ### Step 11: Wire EdgeOptions into AddEdge
 
@@ -1082,13 +1091,13 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 | Phase | Steps | Completed | Percentage |
 |-------|-------|-----------|------------|
 | Foundation | 1-5 | 5/5 | 100% |
-| Attributes | 6-14 | 3/9 | 33% |
+| Attributes | 6-14 | 5/9 | 56% |
 | DOT Generation | 15-19 | 0/5 | 0% |
 | Labels | 20-26 | 0/7 | 0% |
 | Subgraphs | 27-32 | 0/6 | 0% |
 | Parsing | 33-37 | 0/5 | 0% |
 | Rendering | 38-43 | 0/6 | 0% |
-| **Total** | **1-43** | **8/43** | **19%** |
+| **Total** | **1-43** | **10/43** | **23%** |
 
 ---
 
