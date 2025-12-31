@@ -242,46 +242,59 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 
 ### Step 12: GraphAttributes and GraphOption
 
-- ⬜ Define `RankDir` type
-- ⬜ Add RankDir constants
-  - ⬜ `RankDirTB`
-  - ⬜ `RankDirBT`
-  - ⬜ `RankDirLR`
-  - ⬜ `RankDirRL`
-- ⬜ Define `SplineType` type
-- ⬜ Add SplineType constants
-  - ⬜ `SplineTrue`
-  - ⬜ `SplineFalse`
-  - ⬜ `SplineOrtho`
-  - ⬜ `SplinePolyline`
-  - ⬜ `SplineCurved`
-- ⬜ Define `GraphAttributes` struct
-  - ⬜ `Label` field
-  - ⬜ `RankDir` field
-  - ⬜ `BgColor` field
-  - ⬜ `FontName` field
-  - ⬜ `FontSize` field
-  - ⬜ `Splines` field
-  - ⬜ `NodeSep` field
-  - ⬜ `RankSep` field
-  - ⬜ `Compound` field
-  - ⬜ `custom` field (unexported map)
-- ⬜ Add `attrs` field to Graph
-- ⬜ Implement `Attrs()` method on Graph
-- ⬜ Implement GraphOption functions
-  - ⬜ `WithGraphLabel`
-  - ⬜ `WithRankDir`
-  - ⬜ `WithBgColor`
-  - ⬜ `WithGraphFontName`
-  - ⬜ `WithGraphFontSize`
-  - ⬜ `WithSplines`
-  - ⬜ `WithNodeSep`
-  - ⬜ `WithRankSep`
-  - ⬜ `WithCompound`
-- ⬜ Update tests
-  - ⬜ Test all new enums
-  - ⬜ Test each GraphOption
-  - ⬜ `TestNewGraph_WithGraphOptions`
+- ✅ Define `RankDir` type
+- ✅ Add RankDir constants
+  - ✅ `RankDirTB`
+  - ✅ `RankDirBT`
+  - ✅ `RankDirLR`
+  - ✅ `RankDirRL`
+- ✅ Define `SplineType` type
+- ✅ Add SplineType constants
+  - ✅ `SplineTrue`
+  - ✅ `SplineFalse`
+  - ✅ `SplineOrtho`
+  - ✅ `SplinePolyline`
+  - ✅ `SplineCurved`
+  - ✅ Additional: `SplineSpline`, `SplineLine`, `SplineNone`
+- ✅ Define `GraphAttributes` struct (using pointer fields)
+  - ✅ `label` field (*string)
+  - ✅ `rankDir` field (*RankDir)
+  - ✅ `bgColor` field (*string)
+  - ✅ `fontName` field (*string)
+  - ✅ `fontSize` field (*float64)
+  - ✅ `splines` field (*SplineType)
+  - ✅ `nodeSep` field (*float64)
+  - ✅ `rankSep` field (*float64)
+  - ✅ `compound` field (*bool)
+  - ✅ `custom` field (unexported map)
+  - ✅ Getter methods for all fields with zero-value documentation
+- ✅ Add `attrs` field to Graph
+- ✅ Implement `Attrs()` method on Graph
+- ✅ Implement GraphOption functions
+  - ✅ `WithGraphLabel`
+  - ✅ `WithRankDir`
+  - ✅ `WithBgColor`
+  - ✅ `WithGraphFontName`
+  - ✅ `WithGraphFontSize`
+  - ✅ `WithSplines`
+  - ✅ `WithNodeSep`
+  - ✅ `WithRankSep`
+  - ✅ `WithCompound`
+- ✅ Create tests
+  - ✅ `TestGraphAttributes_ZeroValue`
+  - ✅ `TestGraphAttributes_Custom_ReturnsCopy`
+  - ✅ `TestGraph_Attrs_ReturnsGraphAttributes`
+  - ✅ `TestWithGraphLabel_SetsLabel`
+  - ✅ `TestWithRankDir_SetsRankDir`
+  - ✅ `TestWithBgColor_SetsBgColor`
+  - ✅ `TestWithGraphFontName_SetsFontName`
+  - ✅ `TestWithGraphFontSize_SetsFontSize`
+  - ✅ `TestWithSplines_SetsSplines`
+  - ✅ `TestWithNodeSep_SetsNodeSep`
+  - ✅ `TestWithRankSep_SetsRankSep`
+  - ✅ `TestWithCompound_SetsCompound`
+  - ✅ `TestNewGraph_WithMultipleGraphOptions`
+  - ✅ `TestNewGraph_GraphAttributesDoNotAffectNodeEdgeOperations`
 
 ### Step 13: Default Node/Edge Attributes on Graph
 
@@ -1057,7 +1070,8 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 - ⬜ `subgraph.go`
 - ✅ `node_attributes.go` (split from original attributes.go)
 - ✅ `edge_attributes.go` (split from original attributes.go)
-- ✅ `options.go`
+- ✅ `graph_attributes.go`
+- ✅ `graph_options.go`
 - ✅ `node_options.go`
 - ✅ `edge_options.go`
 - ⬜ `labels.go`
@@ -1071,6 +1085,8 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 - ✅ `edge_test.go`
 - ⬜ `subgraph_test.go`
 - ✅ `node_attributes_test.go` (split from original attributes_test.go)
+- ✅ `graph_attributes_test.go`
+- ✅ `graph_options_test.go`
 - ✅ `node_options_test.go`
 - ✅ `edge_options_test.go`
 - ⬜ `labels_test.go`
@@ -1093,13 +1109,13 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 | Phase | Steps | Completed | Percentage |
 |-------|-------|-----------|------------|
 | Foundation | 1-5 | 5/5 | 100% |
-| Attributes | 6-14 | 6/9 | 67% |
+| Attributes | 6-14 | 7/9 | 78% |
 | DOT Generation | 15-19 | 0/5 | 0% |
 | Labels | 20-26 | 0/7 | 0% |
 | Subgraphs | 27-32 | 0/6 | 0% |
 | Parsing | 33-37 | 0/5 | 0% |
 | Rendering | 38-43 | 0/6 | 0% |
-| **Total** | **1-43** | **11/43** | **26%** |
+| **Total** | **1-43** | **12/43** | **28%** |
 
 ---
 
@@ -1113,7 +1129,7 @@ _Use this section to track blockers, decisions, or deviations from the plan._
 
 ### Decisions Made
 
-- None yet
+- **Step 12 - Pointer Fields for Attributes**: Decided to use pointer fields (*string,*float64, etc.) in GraphAttributes (and will refactor NodeAttributes/EdgeAttributes to match) to distinguish between "not set" vs "explicitly set to zero value". Public API uses getter methods that return zero values, with documentation noting the ambiguity. Internal DOT generation code can access pointer fields directly to check for nil.
 
 ### Deviations from Plan
 
