@@ -193,3 +193,293 @@ func TestEdge_Attrs_ReturnsAttributes(t *testing.T) {
 		asrt.Equal(0.0, attrs.Weight, "expected Weight to be zero for new edge")
 	})
 }
+
+func TestGraph_AddEdge_WithOptions(t *testing.T) {
+	t.Run("applies single EdgeLabel option", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+
+		e := g.AddEdge(n1, n2, WithEdgeLabel("connection"))
+
+		asrt.Equal("connection", e.Attrs().Label, "expected Label to be set")
+	})
+
+	t.Run("applies single EdgeColor option", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+
+		e := g.AddEdge(n1, n2, WithEdgeColor("red"))
+
+		asrt.Equal("red", e.Attrs().Color, "expected Color to be set")
+	})
+
+	t.Run("applies single EdgeStyle option", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+
+		e := g.AddEdge(n1, n2, WithEdgeStyle(EdgeStyleDashed))
+
+		asrt.Equal(EdgeStyleDashed, e.Attrs().Style, "expected Style to be set")
+	})
+
+	t.Run("applies single ArrowHead option", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+
+		e := g.AddEdge(n1, n2, WithArrowHead(ArrowNormal))
+
+		asrt.Equal(ArrowNormal, e.Attrs().ArrowHead, "expected ArrowHead to be set")
+	})
+
+	t.Run("applies single ArrowTail option", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+
+		e := g.AddEdge(n1, n2, WithArrowTail(ArrowDot))
+
+		asrt.Equal(ArrowDot, e.Attrs().ArrowTail, "expected ArrowTail to be set")
+	})
+
+	t.Run("applies single Weight option", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+
+		e := g.AddEdge(n1, n2, WithWeight(2.5))
+
+		asrt.Equal(2.5, e.Attrs().Weight, "expected Weight to be set")
+	})
+}
+
+func TestGraph_AddEdge_WithMultipleOptions(t *testing.T) {
+	t.Run("applies multiple options to same edge", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+
+		e := g.AddEdge(n1, n2,
+			WithEdgeLabel("important"),
+			WithEdgeColor("blue"),
+			WithEdgeStyle(EdgeStyleBold),
+			WithArrowHead(ArrowVee),
+			WithArrowTail(ArrowNone),
+			WithWeight(3.0),
+		)
+
+		attrs := e.Attrs()
+		asrt.Equal("important", attrs.Label, "expected Label to be set")
+		asrt.Equal("blue", attrs.Color, "expected Color to be set")
+		asrt.Equal(EdgeStyleBold, attrs.Style, "expected Style to be set")
+		asrt.Equal(ArrowVee, attrs.ArrowHead, "expected ArrowHead to be set")
+		asrt.Equal(ArrowNone, attrs.ArrowTail, "expected ArrowTail to be set")
+		asrt.Equal(3.0, attrs.Weight, "expected Weight to be set")
+	})
+
+	t.Run("does not affect other edges", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		n3 := NewNode("C")
+
+		e1 := g.AddEdge(n1, n2, WithEdgeLabel("first"), WithEdgeColor("red"))
+		e2 := g.AddEdge(n2, n3, WithEdgeLabel("second"), WithEdgeColor("green"))
+
+		asrt.Equal("first", e1.Attrs().Label, "expected e1 to have its own label")
+		asrt.Equal("red", e1.Attrs().Color, "expected e1 to have its own color")
+		asrt.Equal("second", e2.Attrs().Label, "expected e2 to have its own label")
+		asrt.Equal("green", e2.Attrs().Color, "expected e2 to have its own color")
+	})
+}
+
+func TestGraph_AddEdge_WithEdgeAttributesStruct(t *testing.T) {
+	t.Run("uses EdgeAttributes as reusable template", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+
+		template := EdgeAttributes{
+			Style:     EdgeStyleDashed,
+			Color:     "gray",
+			ArrowHead: ArrowNormal,
+			Weight:    1.5,
+		}
+
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+
+		e := g.AddEdge(n1, n2, template)
+
+		attrs := e.Attrs()
+		asrt.Equal(EdgeStyleDashed, attrs.Style, "expected Style from template")
+		asrt.Equal("gray", attrs.Color, "expected Color from template")
+		asrt.Equal(ArrowNormal, attrs.ArrowHead, "expected ArrowHead from template")
+		asrt.Equal(1.5, attrs.Weight, "expected Weight from template")
+	})
+
+	t.Run("can combine EdgeAttributes template with additional options", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+
+		template := EdgeAttributes{
+			Style: EdgeStyleDashed,
+			Color: "gray",
+		}
+
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+
+		e := g.AddEdge(n1, n2, template, WithEdgeLabel("Custom"), WithWeight(2.0))
+
+		attrs := e.Attrs()
+		asrt.Equal(EdgeStyleDashed, attrs.Style, "expected Style from template")
+		asrt.Equal("gray", attrs.Color, "expected Color from template")
+		asrt.Equal("Custom", attrs.Label, "expected Label from option")
+		asrt.Equal(2.0, attrs.Weight, "expected Weight from option")
+	})
+
+	t.Run("only copies non-zero fields from template", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+
+		// Template with only some fields set
+		template := EdgeAttributes{
+			Style: EdgeStyleBold,
+			Color: "blue",
+			// Label, ArrowHead, ArrowTail, Weight are zero values
+		}
+
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+
+		// First set some attributes directly
+		_ = g.AddEdge(n1, n2, WithEdgeLabel("Important"), WithWeight(3.0))
+
+		// Now apply template - should NOT overwrite existing non-zero values
+		// (This test simulates the behavior, but in practice the template is applied during AddEdge)
+		// Let me correct this to match the actual API usage
+
+		// Actually, we need to create a new edge to test this properly
+		n3 := NewNode("C")
+		e2 := g.AddEdge(n2, n3, WithEdgeLabel("PreSet"), WithWeight(5.0), template)
+
+		attrs := e2.Attrs()
+		asrt.Equal(EdgeStyleBold, attrs.Style, "expected Style to be set from template")
+		asrt.Equal("blue", attrs.Color, "expected Color to be set from template")
+		// Since template is applied first, then options, the options will override
+		asrt.Equal("PreSet", attrs.Label, "expected Label from option to override template's zero value")
+		asrt.Equal(5.0, attrs.Weight, "expected Weight from option to override template's zero value")
+	})
+}
+
+func TestGraph_AddEdge_OptionsAppliedInOrder(t *testing.T) {
+	t.Run("later options override earlier ones for same field", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+
+		e := g.AddEdge(n1, n2,
+			WithEdgeLabel("first"),
+			WithEdgeLabel("second"),
+			WithEdgeLabel("third"),
+		)
+
+		asrt.Equal("third", e.Attrs().Label, "expected last Label option to win")
+	})
+
+	t.Run("later options override earlier ones for different fields independently", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+
+		e := g.AddEdge(n1, n2,
+			WithEdgeColor("red"),
+			WithEdgeStyle(EdgeStyleSolid),
+			WithEdgeColor("blue"),          // Override color
+			WithWeight(1.0),                // New field
+			WithEdgeStyle(EdgeStyleDashed), // Override style
+		)
+
+		attrs := e.Attrs()
+		asrt.Equal("blue", attrs.Color, "expected last Color option to win")
+		asrt.Equal(EdgeStyleDashed, attrs.Style, "expected last Style option to win")
+		asrt.Equal(1.0, attrs.Weight, "expected Weight to be set")
+	})
+
+	t.Run("options override template when template is first", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+
+		template := EdgeAttributes{
+			Style: EdgeStyleDashed,
+			Label: "Template Label",
+			Color: "gray",
+		}
+
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+
+		e := g.AddEdge(n1, n2,
+			template,
+			WithEdgeLabel("Override"),
+			WithEdgeColor("red"),
+		)
+
+		attrs := e.Attrs()
+		asrt.Equal(EdgeStyleDashed, attrs.Style, "expected Style from template (not overridden)")
+		asrt.Equal("Override", attrs.Label, "expected Label to be overridden by option")
+		asrt.Equal("red", attrs.Color, "expected Color to be overridden by option")
+	})
+
+	t.Run("template overrides options when template is last", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+
+		template := EdgeAttributes{
+			Style: EdgeStyleBold,
+			Label: "Template Label",
+		}
+
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+
+		e := g.AddEdge(n1, n2,
+			WithEdgeLabel("First"),
+			WithEdgeColor("blue"),
+			template, // Applied last, will override Label but not Color
+		)
+
+		attrs := e.Attrs()
+		asrt.Equal("Template Label", attrs.Label, "expected Label from template (applied last)")
+		asrt.Equal(EdgeStyleBold, attrs.Style, "expected Style from template")
+		asrt.Equal("blue", attrs.Color, "expected Color from earlier option (template has zero value)")
+	})
+}
