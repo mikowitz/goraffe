@@ -1,6 +1,8 @@
 package goraffe
 
-import "maps"
+import (
+	"maps"
+)
 
 type Shape string
 
@@ -32,12 +34,19 @@ func (a NodeAttributes) Custom() map[string]string {
 	return ret
 }
 
+func (a *NodeAttributes) setCustom(key, value string) {
+	if a.custom == nil {
+		a.custom = make(map[string]string)
+	}
+	a.custom[key] = value
+}
+
 // applyNode implements the NodeOption interface, allowing NodeAttributes
 // to be used as a reusable template. Only non-zero exported fields are copied.
 //
 // NOTE: The unexported custom field is intentionally NOT copied. Custom fields
 // are treated as per-instance customizations, not template values to be shared.
-// Use Custom() to read and SetCustom() to write custom fields on individual nodes.
+// Use Custom() to read custom fields and WithNodeAttribute() to set them.
 func (a NodeAttributes) applyNode(dst *NodeAttributes) {
 	if a.Label != "" {
 		dst.Label = a.Label

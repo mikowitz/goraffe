@@ -49,3 +49,19 @@ func WithFontSize(s float64) NodeOption {
 		a.FontSize = s
 	})
 }
+
+// WithNodeAttribute sets a custom attribute on a node.
+// This is an escape hatch for Graphviz attributes that don't have typed options.
+//
+// Example:
+//
+//	n := NewNode("A",
+//	    WithShape(ShapeBox),
+//	    WithNodeAttribute("peripheries", "2"),
+//	    WithNodeAttribute("tooltip", "Hover text"),
+//	)
+func WithNodeAttribute(k, v string) NodeOption {
+	return newNodeOption(func(a *NodeAttributes) {
+		a.setCustom(k, v)
+	})
+}

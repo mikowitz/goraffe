@@ -103,3 +103,19 @@ func WithDefaultEdgeAttrs(options ...EdgeOption) GraphOption {
 		g.defaultEdgeAttrs = nodeAttrs
 	})
 }
+
+// WithGraphAttribute sets a custom attribute on a graph.
+// This is an escape hatch for Graphviz attributes that don't have typed options.
+//
+// Example:
+//
+//	g := NewGraph(
+//	    WithGraphLabel("My Graph"),
+//	    WithGraphAttribute("ratio", "fill"),
+//	    WithGraphAttribute("concentrate", "true"),
+//	)
+func WithGraphAttribute(k, v string) GraphOption {
+	return newGraphOption(func(a *Graph) {
+		a.attrs.setCustom(k, v)
+	})
+}
