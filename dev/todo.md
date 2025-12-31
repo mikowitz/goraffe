@@ -198,12 +198,11 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 - ⬜ Implement `Custom()` method on EdgeAttributes
 - ⬜ Update `edge.go` to add `attrs` field
 - ⬜ Implement `Attrs()` method on Edge
-- ⬜ Update `attributes_test.go`
-  - ⬜ `TestEdgeStyleConstants_Values`
-  - ⬜ `TestArrowTypeConstants_Values`
-  - ⬜ `TestEdgeAttributes_ZeroValue`
-- ⬜ Update `edge_test.go`
-  - ⬜ `TestEdge_Attrs_ReturnsAttributes`
+- ✅ Update `attributes_test.go`
+  - ✅ `TestEdgeAttributes_ZeroValue`
+  - ✅ `TestEdgeAttributes_Custom_ReturnsCopy`
+- ✅ Update `edge_test.go`
+  - ✅ `TestEdge_Attrs_ReturnsAttributes`
 
 ### Step 10: EdgeOption Interface and Basic Options
 

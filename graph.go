@@ -60,7 +60,11 @@ func (g *Graph) Nodes() []*Node {
 }
 
 func (g *Graph) AddEdge(from, to *Node) *Edge {
-	edge := &Edge{from: from, to: to}
+	edge := &Edge{
+		from:  from,
+		to:    to,
+		attrs: &EdgeAttributes{},
+	}
 
 	if _, exists := g.nodes[from.ID()]; !exists {
 		g.AddNode(from)
