@@ -298,17 +298,22 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 
 ### Step 13: Default Node/Edge Attributes on Graph
 
-- ⬜ Add `defaultNodeAttrs` field to Graph
-- ⬜ Add `defaultEdgeAttrs` field to Graph
-- ⬜ Initialize both in `NewGraph()`
-- ⬜ Implement `DefaultNodeAttrs()` method
-- ⬜ Implement `DefaultEdgeAttrs()` method
-- ⬜ Implement `WithDefaultNodeAttrs(opts ...NodeOption)` option
-- ⬜ Implement `WithDefaultEdgeAttrs(opts ...EdgeOption)` option
-- ⬜ Update tests
-  - ⬜ `TestGraph_WithDefaultNodeAttrs`
-  - ⬜ `TestGraph_WithDefaultEdgeAttrs`
-  - ⬜ `TestGraph_DefaultAttrs_AppliesMultipleOptions`
+- ✅ Add `defaultNodeAttrs` field to Graph
+- ✅ Add `defaultEdgeAttrs` field to Graph
+- ✅ Initialize both in `NewGraph()`
+- ✅ Implement `DefaultNodeAttrs()` method
+- ✅ Implement `DefaultEdgeAttrs()` method
+- ✅ Implement `WithDefaultNodeAttrs(opts ...NodeOption)` option
+- ✅ Implement `WithDefaultEdgeAttrs(opts ...EdgeOption)` option
+- ✅ Create `graph_default_attrs_test.go` with comprehensive tests
+  - ✅ `TestGraph_DefaultNodeAttrs` (returns non-nil, empty when not set, configured when set)
+  - ✅ `TestGraph_DefaultEdgeAttrs` (returns non-nil, empty when not set, configured when set)
+  - ✅ `TestWithDefaultNodeAttrs` (single option, multiple options, option ordering, combined with other graph options, no options)
+  - ✅ `TestWithDefaultEdgeAttrs` (single option, multiple options, option ordering, combined with other graph options, no options)
+  - ✅ `TestGraph_DefaultAttrs_BothNodeAndEdge` (both defaults, independence, multiple calls override)
+  - ✅ `TestGraph_DefaultAttrs_IndependentFromInstanceAttrs` (defaults don't affect instances)
+  - ✅ `TestWithDefaultNodeAttrs_UsingNodeAttributesStruct` (accepts struct, combines with options, override behavior, non-zero fields only, reusable templates)
+  - ✅ `TestWithDefaultEdgeAttrs_UsingEdgeAttributesStruct` (accepts struct, combines with options, override behavior, non-zero fields only, reusable templates)
 
 ### Step 14: WithAttribute Escape Hatch
 
@@ -1089,6 +1094,7 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 - ✅ `graph_options_test.go`
 - ✅ `node_options_test.go`
 - ✅ `edge_options_test.go`
+- ✅ `graph_default_attrs_test.go` (comprehensive tests for Step 13)
 - ⬜ `labels_test.go`
 - ⬜ `record_labels_test.go`
 - ⬜ `port_test.go`
@@ -1109,13 +1115,13 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 | Phase | Steps | Completed | Percentage |
 |-------|-------|-----------|------------|
 | Foundation | 1-5 | 5/5 | 100% |
-| Attributes | 6-14 | 7/9 | 78% |
+| Attributes | 6-14 | 8/9 | 89% |
 | DOT Generation | 15-19 | 0/5 | 0% |
 | Labels | 20-26 | 0/7 | 0% |
 | Subgraphs | 27-32 | 0/6 | 0% |
 | Parsing | 33-37 | 0/5 | 0% |
 | Rendering | 38-43 | 0/6 | 0% |
-| **Total** | **1-43** | **12/43** | **28%** |
+| **Total** | **1-43** | **13/43** | **30%** |
 
 ---
 

@@ -79,3 +79,27 @@ func WithCompound(c bool) GraphOption {
 		g.attrs.compound = &c
 	})
 }
+
+func WithDefaultNodeAttrs(options ...NodeOption) GraphOption {
+	return newGraphOption(func(g *Graph) {
+		nodeAttrs := &NodeAttributes{}
+
+		for _, option := range options {
+			option.applyNode(nodeAttrs)
+		}
+
+		g.defaultNodeAttrs = nodeAttrs
+	})
+}
+
+func WithDefaultEdgeAttrs(options ...EdgeOption) GraphOption {
+	return newGraphOption(func(g *Graph) {
+		nodeAttrs := &EdgeAttributes{}
+
+		for _, option := range options {
+			option.applyEdge(nodeAttrs)
+		}
+
+		g.defaultEdgeAttrs = nodeAttrs
+	})
+}
