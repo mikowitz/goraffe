@@ -231,14 +231,14 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 
 ### Step 11: Wire EdgeOptions into AddEdge
 
-- ⬜ Update `AddEdge` signature to accept `...EdgeOption`
-- ⬜ Apply options to edge attributes
-- ⬜ Update `edge_test.go` and `graph_test.go`
-  - ⬜ `TestGraph_AddEdge_WithOptions`
-  - ⬜ `TestGraph_AddEdge_WithMultipleOptions`
-  - ⬜ `TestGraph_AddEdge_WithEdgeAttributesStruct`
-  - ⬜ `TestGraph_AddEdge_OptionsAppliedInOrder`
-- ⬜ Update existing AddEdge calls in tests
+- ✅ Update `AddEdge` signature to accept `...EdgeOption`
+- ✅ Apply options to edge attributes
+- ✅ Update `edge_test.go` and `graph_test.go`
+  - ✅ `TestGraph_AddEdge_WithOptions`
+  - ✅ `TestGraph_AddEdge_WithMultipleOptions`
+  - ✅ `TestGraph_AddEdge_WithEdgeAttributesStruct`
+  - ✅ `TestGraph_AddEdge_OptionsAppliedInOrder`
+- ✅ Update existing AddEdge calls in tests (no changes needed - variadic parameter)
 
 ### Step 12: GraphAttributes and GraphOption
 
@@ -1055,9 +1055,11 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 - ✅ `node.go`
 - ✅ `edge.go`
 - ⬜ `subgraph.go`
-- ✅ `attributes.go`
+- ✅ `node_attributes.go` (split from original attributes.go)
+- ✅ `edge_attributes.go` (split from original attributes.go)
 - ✅ `options.go`
-- ✅ `node_options.go` (created for organization instead of adding to options.go)
+- ✅ `node_options.go`
+- ✅ `edge_options.go`
 - ⬜ `labels.go`
 - ⬜ `port.go`
 - ⬜ `dot.go`
@@ -1068,9 +1070,9 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 - ✅ `node_test.go`
 - ✅ `edge_test.go`
 - ⬜ `subgraph_test.go`
-- ✅ `attributes_test.go`
+- ✅ `node_attributes_test.go` (split from original attributes_test.go)
 - ✅ `node_options_test.go`
-- ⬜ `edge_options_test.go`
+- ✅ `edge_options_test.go`
 - ⬜ `labels_test.go`
 - ⬜ `record_labels_test.go`
 - ⬜ `port_test.go`
@@ -1091,13 +1093,13 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 | Phase | Steps | Completed | Percentage |
 |-------|-------|-----------|------------|
 | Foundation | 1-5 | 5/5 | 100% |
-| Attributes | 6-14 | 5/9 | 56% |
+| Attributes | 6-14 | 6/9 | 67% |
 | DOT Generation | 15-19 | 0/5 | 0% |
 | Labels | 20-26 | 0/7 | 0% |
 | Subgraphs | 27-32 | 0/6 | 0% |
 | Parsing | 33-37 | 0/5 | 0% |
 | Rendering | 38-43 | 0/6 | 0% |
-| **Total** | **1-43** | **10/43** | **23%** |
+| **Total** | **1-43** | **11/43** | **26%** |
 
 ---
 

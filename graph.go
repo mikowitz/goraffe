@@ -59,11 +59,16 @@ func (g *Graph) Nodes() []*Node {
 	return g.nodeOrder
 }
 
-func (g *Graph) AddEdge(from, to *Node) *Edge {
+func (g *Graph) AddEdge(from, to *Node, options ...EdgeOption) *Edge {
+	attrs := &EdgeAttributes{}
+
+	for _, option := range options {
+		option.applyEdge(attrs)
+	}
 	edge := &Edge{
 		from:  from,
 		to:    to,
-		attrs: &EdgeAttributes{},
+		attrs: attrs,
 	}
 
 	if _, exists := g.nodes[from.ID()]; !exists {
