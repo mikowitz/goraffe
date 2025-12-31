@@ -6,6 +6,7 @@ type Graph struct {
 	nodeOrder        []*Node
 	nodes            map[string]int
 	edges            []*Edge
+	attrs            *GraphAttributes
 }
 
 func NewGraph(options ...GraphOption) *Graph {
@@ -13,6 +14,7 @@ func NewGraph(options ...GraphOption) *Graph {
 		nodeOrder: make([]*Node, 0),
 		nodes:     make(map[string]int),
 		edges:     make([]*Edge, 0),
+		attrs:     &GraphAttributes{},
 	}
 
 	for _, option := range options {
@@ -85,4 +87,8 @@ func (g *Graph) AddEdge(from, to *Node, options ...EdgeOption) *Edge {
 
 func (g *Graph) Edges() []*Edge {
 	return g.edges
+}
+
+func (g *Graph) Attrs() *GraphAttributes {
+	return g.attrs
 }
