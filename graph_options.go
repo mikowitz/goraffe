@@ -26,6 +26,12 @@ func newGraphOption(fn func(*Graph)) GraphOption {
 	return graphOptionFunc(fn)
 }
 
+func WithName(n string) GraphOption {
+	return newGraphOption(func(g *Graph) {
+		g.name = n
+	})
+}
+
 func WithGraphLabel(l string) GraphOption {
 	return newGraphOption(func(g *Graph) {
 		g.attrs.label = &l

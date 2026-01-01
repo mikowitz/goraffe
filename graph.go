@@ -1,5 +1,7 @@
 package goraffe
 
+import "io"
+
 type Graph struct {
 	name             string
 	directed, strict bool
@@ -103,4 +105,25 @@ func (g *Graph) DefaultNodeAttrs() *NodeAttributes {
 
 func (g *Graph) DefaultEdgeAttrs() *EdgeAttributes {
 	return g.defaultEdgeAttrs
+}
+
+func (g *Graph) String() string {
+	var opening string
+	if g.directed {
+		opening = "digraph"
+	} else {
+		opening = "graph"
+	}
+	if g.strict {
+		opening = "strict " + opening
+	}
+	if g.name != "" {
+		opening += " " + g.name
+	}
+	return opening + " {\n}"
+}
+
+func (g *Graph) WriteDOT(w io.Writer) error {
+	_, err := w.Write([]byte(g.String()))
+	return err
 }
