@@ -45,6 +45,13 @@ func (a GraphAttributes) Custom() map[string]string {
 	return ret
 }
 
+func (a *GraphAttributes) setCustom(key, value string) {
+	if a.custom == nil {
+		a.custom = make(map[string]string)
+	}
+	a.custom[key] = value
+}
+
 // Label returns the graph label. Returns empty string if unset.
 // Note: An empty string return value may indicate either an unset label or a label
 // explicitly set to empty string.

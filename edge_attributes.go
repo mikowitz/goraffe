@@ -39,12 +39,19 @@ func (a EdgeAttributes) Custom() map[string]string {
 	return ret
 }
 
+func (a *EdgeAttributes) setCustom(key, value string) {
+	if a.custom == nil {
+		a.custom = make(map[string]string)
+	}
+	a.custom[key] = value
+}
+
 // applyEdge implements the EdgeOption interface, allowing EdgeAttributes
 // to be used as a reusable template. Only non-zero exported fields are copied.
 //
 // NOTE: The unexported custom field is intentionally NOT copied. Custom fields
 // are treated as per-instance customizations, not template values to be shared.
-// Use Custom() to read and SetCustom() to write custom fields on individual edges.
+// Use Custom() to read custom fields and WithEdgeAttribute() to set them.
 func (a EdgeAttributes) applyEdge(dst *EdgeAttributes) {
 	if a.Label != "" {
 		dst.Label = a.Label

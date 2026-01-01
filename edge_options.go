@@ -49,3 +49,19 @@ func WithWeight(w float64) EdgeOption {
 		a.Weight = w
 	})
 }
+
+// WithEdgeAttribute sets a custom attribute on an edge.
+// This is an escape hatch for Graphviz attributes that don't have typed options.
+//
+// Example:
+//
+//	e := g.AddEdge(n1, n2,
+//	    WithEdgeLabel("connects"),
+//	    WithEdgeAttribute("penwidth", "2.0"),
+//	    WithEdgeAttribute("constraint", "false"),
+//	)
+func WithEdgeAttribute(k, v string) EdgeOption {
+	return newEdgeOption(func(a *EdgeAttributes) {
+		a.setCustom(k, v)
+	})
+}
