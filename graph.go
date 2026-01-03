@@ -1,6 +1,10 @@
 package goraffe
 
-import "io"
+import (
+	"fmt"
+	"io"
+	"strings"
+)
 
 type Graph struct {
 	name             string
@@ -108,19 +112,27 @@ func (g *Graph) DefaultEdgeAttrs() *EdgeAttributes {
 }
 
 func (g *Graph) String() string {
-	var opening string
-	if g.directed {
-		opening = "digraph"
-	} else {
-		opening = "graph"
-	}
+	builder := strings.Builder{}
+
 	if g.strict {
-		opening = "strict " + opening
+		builder.WriteString("strict ")
+	}
+	if g.directed {
+		builder.WriteString("digraph")
+	} else {
+		builder.WriteString("graph")
 	}
 	if g.name != "" {
-		opening += " " + g.name
+		builder.WriteString(fmt.Sprintf(" %s", g.name))
 	}
-	return opening + " {\n}"
+	builder.WriteString(" {\n")
+
+	for _, node := range g.nodeOrder {
+		builder.WriteString(fmt.Sprintf("\t%s;\n", node))
+	}
+
+	builder.WriteString("}")
+	return builder.String()
 }
 
 func (g *Graph) WriteDOT(w io.Writer) error {

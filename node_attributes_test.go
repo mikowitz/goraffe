@@ -11,12 +11,12 @@ func TestNodeAttributes_ZeroValue(t *testing.T) {
 		asrt := assert.New(t)
 		var attrs NodeAttributes
 
-		asrt.Empty(attrs.Label, "expected Label to be empty")
-		asrt.Empty(attrs.Shape, "expected Shape to be empty")
-		asrt.Empty(attrs.Color, "expected Color to be empty")
-		asrt.Empty(attrs.FillColor, "expected FillColor to be empty")
-		asrt.Empty(attrs.FontName, "expected FontName to be empty")
-		asrt.Equal(0.0, attrs.FontSize, "expected FontSize to be zero")
+		asrt.Empty(attrs.Label(), "expected Label to be empty")
+		asrt.Empty(attrs.Shape(), "expected Shape to be empty")
+		asrt.Empty(attrs.Color(), "expected Color to be empty")
+		asrt.Empty(attrs.FillColor(), "expected FillColor to be empty")
+		asrt.Empty(attrs.FontName(), "expected FontName to be empty")
+		asrt.Equal(0.0, attrs.FontSize(), "expected FontSize to be zero")
 	})
 }
 

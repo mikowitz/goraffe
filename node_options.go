@@ -14,39 +14,63 @@ func newNodeOption(fn func(*NodeAttributes)) NodeOption {
 	return nodeOptionFunc(fn)
 }
 
-func WithShape(s Shape) NodeOption {
+func withShape(s Shape) NodeOption {
 	return newNodeOption(func(a *NodeAttributes) {
-		a.Shape = s
+		a.shape = &s
 	})
+}
+
+func WithBoxShape() NodeOption {
+	return withShape(ShapeBox)
+}
+
+func WithCircleShape() NodeOption {
+	return withShape(ShapeCircle)
+}
+
+func WithEllipseShape() NodeOption {
+	return withShape(ShapeEllipse)
+}
+
+func WithDiamondShape() NodeOption {
+	return withShape(ShapeDiamond)
+}
+
+func WithRecordShape() NodeOption {
+	return withShape(ShapeRecord)
+}
+
+func WithPlaintextShape() NodeOption {
+	return withShape(ShapePlaintext)
 }
 
 func WithLabel(l string) NodeOption {
 	return newNodeOption(func(a *NodeAttributes) {
-		a.Label = l
+		a.label = &l
 	})
 }
 
 func WithColor(c string) NodeOption {
 	return newNodeOption(func(a *NodeAttributes) {
-		a.Color = c
+		a.color = &c
 	})
 }
 
 func WithFillColor(c string) NodeOption {
 	return newNodeOption(func(a *NodeAttributes) {
-		a.FillColor = c
+		a.fillColor = &c
 	})
 }
 
 func WithFontName(n string) NodeOption {
 	return newNodeOption(func(a *NodeAttributes) {
-		a.FontName = n
+		a.fontName = &n
 	})
 }
 
 func WithFontSize(s float64) NodeOption {
 	return newNodeOption(func(a *NodeAttributes) {
-		a.FontSize = s
+		a.fontSize = &s
 	})
 }
 
