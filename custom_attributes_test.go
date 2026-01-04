@@ -38,13 +38,13 @@ func TestWithNodeAttribute_SetsCustom(t *testing.T) {
 		asrt := assert.New(t)
 
 		n := NewNode("test",
-			WithShape(ShapeBox),
+			WithBoxShape(),
 			WithLabel("My Node"),
 			WithNodeAttribute("peripheries", "2"),
 		)
 
-		asrt.Equal(ShapeBox, n.Attrs().Shape, "expected Shape to be set")
-		asrt.Equal("My Node", n.Attrs().Label, "expected Label to be set")
+		asrt.Equal(ShapeBox, n.Attrs().Shape(), "expected Shape to be set")
+		asrt.Equal("My Node", n.Attrs().Label(), "expected Label to be set")
 		custom := n.Attrs().Custom()
 		asrt.Equal("2", custom["peripheries"], "expected custom attribute to be set")
 	})
@@ -125,8 +125,8 @@ func TestWithEdgeAttribute_SetsCustom(t *testing.T) {
 			WithEdgeAttribute("penwidth", "2.0"),
 		)
 
-		asrt.Equal("connects", e.Attrs().Label, "expected Label to be set")
-		asrt.Equal("red", e.Attrs().Color, "expected Color to be set")
+		asrt.Equal("connects", e.Attrs().Label(), "expected Label to be set")
+		asrt.Equal("red", e.Attrs().Color(), "expected Color to be set")
 		custom := e.Attrs().Custom()
 		asrt.Equal("2.0", custom["penwidth"], "expected custom attribute to be set")
 	})
@@ -261,12 +261,12 @@ func TestCustomAttributes_DoNotOverrideTyped(t *testing.T) {
 		asrt := assert.New(t)
 
 		n := NewNode("test",
-			WithShape(ShapeBox),
+			WithBoxShape(),
 			WithNodeAttribute("shape", "circle"),
 		)
 
 		// The typed Shape should be preserved
-		asrt.Equal(ShapeBox, n.Attrs().Shape, "expected typed Shape to be preserved")
+		asrt.Equal(ShapeBox, n.Attrs().Shape(), "expected typed Shape to be preserved")
 
 		// The custom attribute should also be present (for DOT output purposes)
 		custom := n.Attrs().Custom()
@@ -281,7 +281,7 @@ func TestCustomAttributes_DoNotOverrideTyped(t *testing.T) {
 			WithNodeAttribute("label", "Custom Label"),
 		)
 
-		asrt.Equal("Typed Label", n.Attrs().Label, "expected typed Label to be preserved")
+		asrt.Equal("Typed Label", n.Attrs().Label(), "expected typed Label to be preserved")
 		custom := n.Attrs().Custom()
 		asrt.Equal("Custom Label", custom["label"], "expected custom label attribute to be stored")
 	})
@@ -294,7 +294,7 @@ func TestCustomAttributes_DoNotOverrideTyped(t *testing.T) {
 			WithNodeAttribute("color", "blue"),
 		)
 
-		asrt.Equal("red", n.Attrs().Color, "expected typed Color to be preserved")
+		asrt.Equal("red", n.Attrs().Color(), "expected typed Color to be preserved")
 		custom := n.Attrs().Custom()
 		asrt.Equal("blue", custom["color"], "expected custom color attribute to be stored")
 	})
@@ -310,7 +310,7 @@ func TestCustomAttributes_DoNotOverrideTyped(t *testing.T) {
 			WithEdgeAttribute("label", "Custom Label"),
 		)
 
-		asrt.Equal("Typed Label", e.Attrs().Label, "expected typed Label to be preserved")
+		asrt.Equal("Typed Label", e.Attrs().Label(), "expected typed Label to be preserved")
 		custom := e.Attrs().Custom()
 		asrt.Equal("Custom Label", custom["label"], "expected custom label attribute to be stored")
 	})
@@ -326,7 +326,7 @@ func TestCustomAttributes_DoNotOverrideTyped(t *testing.T) {
 			WithEdgeAttribute("style", "dotted"),
 		)
 
-		asrt.Equal(EdgeStyleDashed, e.Attrs().Style, "expected typed Style to be preserved")
+		asrt.Equal(EdgeStyleDashed, e.Attrs().Style(), "expected typed Style to be preserved")
 		custom := e.Attrs().Custom()
 		asrt.Equal("dotted", custom["style"], "expected custom style attribute to be stored")
 	})
@@ -367,7 +367,7 @@ func TestCustomAttributes_MultipleCalls_Accumulate(t *testing.T) {
 			WithNodeAttribute("peripheries", "2"),
 			WithLabel("Node"),
 			WithNodeAttribute("tooltip", "Hover text"),
-			WithShape(ShapeBox),
+			WithBoxShape(),
 			WithNodeAttribute("URL", "http://example.com"),
 		)
 
@@ -378,8 +378,8 @@ func TestCustomAttributes_MultipleCalls_Accumulate(t *testing.T) {
 		asrt.Equal("http://example.com", custom["URL"], "expected URL to be set")
 
 		// Verify typed attributes are also set
-		asrt.Equal("Node", n.Attrs().Label, "expected typed Label to be set")
-		asrt.Equal(ShapeBox, n.Attrs().Shape, "expected typed Shape to be set")
+		asrt.Equal("Node", n.Attrs().Label(), "expected typed Label to be set")
+		asrt.Equal(ShapeBox, n.Attrs().Shape(), "expected typed Shape to be set")
 	})
 
 	t.Run("multiple WithEdgeAttribute calls accumulate", func(t *testing.T) {
@@ -403,8 +403,8 @@ func TestCustomAttributes_MultipleCalls_Accumulate(t *testing.T) {
 		asrt.Equal("false", custom["constraint"], "expected constraint to be set")
 
 		// Verify typed attributes are also set
-		asrt.Equal("connects", e.Attrs().Label, "expected typed Label to be set")
-		asrt.Equal("red", e.Attrs().Color, "expected typed Color to be set")
+		asrt.Equal("connects", e.Attrs().Label(), "expected typed Label to be set")
+		asrt.Equal("red", e.Attrs().Color(), "expected typed Color to be set")
 	})
 
 	t.Run("multiple WithGraphAttribute calls accumulate", func(t *testing.T) {
@@ -434,7 +434,7 @@ func TestCustomAttributes_MultipleCalls_Accumulate(t *testing.T) {
 
 		n := NewNode("test",
 			WithNodeAttribute("attr1", "value1"),
-			WithShape(ShapeBox),
+			WithBoxShape(),
 			WithNodeAttribute("attr2", "value2"),
 			WithLabel("Label"),
 			WithNodeAttribute("attr3", "value3"),
@@ -448,8 +448,8 @@ func TestCustomAttributes_MultipleCalls_Accumulate(t *testing.T) {
 		asrt.Equal("value3", custom["attr3"], "expected attr3 to be set")
 
 		// All typed attributes should also be set
-		asrt.Equal(ShapeBox, n.Attrs().Shape, "expected typed Shape to be set")
-		asrt.Equal("Label", n.Attrs().Label, "expected typed Label to be set")
-		asrt.Equal("red", n.Attrs().Color, "expected typed Color to be set")
+		asrt.Equal(ShapeBox, n.Attrs().Shape(), "expected typed Shape to be set")
+		asrt.Equal("Label", n.Attrs().Label(), "expected typed Label to be set")
+		asrt.Equal("red", n.Attrs().Color(), "expected typed Color to be set")
 	})
 }

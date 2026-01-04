@@ -92,12 +92,12 @@ func TestNode_Attrs_ReturnsAttributes(t *testing.T) {
 		n := NewNode("test")
 
 		attrs := n.Attrs()
-		asrt.Empty(attrs.Label, "expected Label to be empty for new node")
-		asrt.Empty(attrs.Shape, "expected Shape to be empty for new node")
-		asrt.Empty(attrs.Color, "expected Color to be empty for new node")
-		asrt.Empty(attrs.FillColor, "expected FillColor to be empty for new node")
-		asrt.Empty(attrs.FontName, "expected FontName to be empty for new node")
-		asrt.Equal(0.0, attrs.FontSize, "expected FontSize to be zero for new node")
+		asrt.Empty(attrs.Label(), "expected Label to be empty for new node")
+		asrt.Empty(attrs.Shape(), "expected Shape to be empty for new node")
+		asrt.Empty(attrs.Color(), "expected Color to be empty for new node")
+		asrt.Empty(attrs.FillColor(), "expected FillColor to be empty for new node")
+		asrt.Empty(attrs.FontName(), "expected FontName to be empty for new node")
+		asrt.Equal(0.0, attrs.FontSize(), "expected FontSize to be zero for new node")
 	})
 }
 
@@ -105,9 +105,9 @@ func TestNewNode_WithOptions(t *testing.T) {
 	t.Run("applies single option", func(t *testing.T) {
 		asrt := assert.New(t)
 
-		n := NewNode("test", WithShape(ShapeBox))
+		n := NewNode("test", WithBoxShape())
 
-		asrt.Equal(ShapeBox, n.Attrs().Shape, "expected Shape to be set to ShapeBox")
+		asrt.Equal(ShapeBox, n.Attrs().Shape(), "expected Shape to be set to ShapeBox")
 	})
 
 	t.Run("applies WithLabel option", func(t *testing.T) {
@@ -115,7 +115,7 @@ func TestNewNode_WithOptions(t *testing.T) {
 
 		n := NewNode("test", WithLabel("My Label"))
 
-		asrt.Equal("My Label", n.Attrs().Label, "expected Label to be set")
+		asrt.Equal("My Label", n.Attrs().Label(), "expected Label to be set")
 	})
 
 	t.Run("applies WithColor option", func(t *testing.T) {
@@ -123,7 +123,7 @@ func TestNewNode_WithOptions(t *testing.T) {
 
 		n := NewNode("test", WithColor("red"))
 
-		asrt.Equal("red", n.Attrs().Color, "expected Color to be set to red")
+		asrt.Equal("red", n.Attrs().Color(), "expected Color to be set to red")
 	})
 
 	t.Run("applies WithFillColor option", func(t *testing.T) {
@@ -131,7 +131,7 @@ func TestNewNode_WithOptions(t *testing.T) {
 
 		n := NewNode("test", WithFillColor("blue"))
 
-		asrt.Equal("blue", n.Attrs().FillColor, "expected FillColor to be set to blue")
+		asrt.Equal("blue", n.Attrs().FillColor(), "expected FillColor to be set to blue")
 	})
 
 	t.Run("applies WithFontName option", func(t *testing.T) {
@@ -139,7 +139,7 @@ func TestNewNode_WithOptions(t *testing.T) {
 
 		n := NewNode("test", WithFontName("Arial"))
 
-		asrt.Equal("Arial", n.Attrs().FontName, "expected FontName to be set to Arial")
+		asrt.Equal("Arial", n.Attrs().FontName(), "expected FontName to be set to Arial")
 	})
 
 	t.Run("applies WithFontSize option", func(t *testing.T) {
@@ -147,7 +147,7 @@ func TestNewNode_WithOptions(t *testing.T) {
 
 		n := NewNode("test", WithFontSize(14.0))
 
-		asrt.Equal(14.0, n.Attrs().FontSize, "expected FontSize to be set to 14.0")
+		asrt.Equal(14.0, n.Attrs().FontSize(), "expected FontSize to be set to 14.0")
 	})
 
 	t.Run("works with no options", func(t *testing.T) {
@@ -165,21 +165,21 @@ func TestNewNode_WithMultipleOptions(t *testing.T) {
 		asrt := assert.New(t)
 
 		n := NewNode("test",
-			WithShape(ShapeBox),
+			WithBoxShape(),
 			WithLabel("My Node"),
 			WithColor("red"),
 		)
 
-		asrt.Equal(ShapeBox, n.Attrs().Shape, "expected Shape to be set")
-		asrt.Equal("My Node", n.Attrs().Label, "expected Label to be set")
-		asrt.Equal("red", n.Attrs().Color, "expected Color to be set")
+		asrt.Equal(ShapeBox, n.Attrs().Shape(), "expected Shape to be set")
+		asrt.Equal("My Node", n.Attrs().Label(), "expected Label to be set")
+		asrt.Equal("red", n.Attrs().Color(), "expected Color to be set")
 	})
 
 	t.Run("applies all available option types", func(t *testing.T) {
 		asrt := assert.New(t)
 
 		n := NewNode("test",
-			WithShape(ShapeCircle),
+			WithCircleShape(),
 			WithLabel("All Options"),
 			WithColor("blue"),
 			WithFillColor("lightblue"),
@@ -187,12 +187,12 @@ func TestNewNode_WithMultipleOptions(t *testing.T) {
 			WithFontSize(16.0),
 		)
 
-		asrt.Equal(ShapeCircle, n.Attrs().Shape, "expected Shape to be set")
-		asrt.Equal("All Options", n.Attrs().Label, "expected Label to be set")
-		asrt.Equal("blue", n.Attrs().Color, "expected Color to be set")
-		asrt.Equal("lightblue", n.Attrs().FillColor, "expected FillColor to be set")
-		asrt.Equal("Helvetica", n.Attrs().FontName, "expected FontName to be set")
-		asrt.Equal(16.0, n.Attrs().FontSize, "expected FontSize to be set")
+		asrt.Equal(ShapeCircle, n.Attrs().Shape(), "expected Shape to be set")
+		asrt.Equal("All Options", n.Attrs().Label(), "expected Label to be set")
+		asrt.Equal("blue", n.Attrs().Color(), "expected Color to be set")
+		asrt.Equal("lightblue", n.Attrs().FillColor(), "expected FillColor to be set")
+		asrt.Equal("Helvetica", n.Attrs().FontName(), "expected FontName to be set")
+		asrt.Equal(16.0, n.Attrs().FontSize(), "expected FontSize to be set")
 	})
 }
 
@@ -200,48 +200,54 @@ func TestNewNode_WithNodeAttributesStruct(t *testing.T) {
 	t.Run("applies NodeAttributes as an option", func(t *testing.T) {
 		asrt := assert.New(t)
 
+		shape := ShapeBox
+		fontName := "Arial"
+		fontSize := 12.0
 		commonAttrs := NodeAttributes{
-			Shape:    ShapeBox,
-			FontName: "Arial",
-			FontSize: 12.0,
+			shape:    &shape,
+			fontName: &fontName,
+			fontSize: &fontSize,
 		}
 
 		n := NewNode("test", commonAttrs)
 
-		asrt.Equal(ShapeBox, n.Attrs().Shape, "expected Shape to be set from NodeAttributes")
-		asrt.Equal("Arial", n.Attrs().FontName, "expected FontName to be set from NodeAttributes")
-		asrt.Equal(12.0, n.Attrs().FontSize, "expected FontSize to be set from NodeAttributes")
+		asrt.Equal(ShapeBox, n.Attrs().Shape(), "expected Shape to be set from NodeAttributes")
+		asrt.Equal("Arial", n.Attrs().FontName(), "expected FontName to be set from NodeAttributes")
+		asrt.Equal(12.0, n.Attrs().FontSize(), "expected FontSize to be set from NodeAttributes")
 	})
 
 	t.Run("applies NodeAttributes with additional options", func(t *testing.T) {
 		asrt := assert.New(t)
 
+		shape := ShapeBox
+		fontName := "Arial"
 		commonAttrs := NodeAttributes{
-			Shape:    ShapeBox,
-			FontName: "Arial",
+			shape:    &shape,
+			fontName: &fontName,
 		}
 
 		n := NewNode("test", commonAttrs, WithLabel("Custom Label"))
 
-		asrt.Equal(ShapeBox, n.Attrs().Shape, "expected Shape from NodeAttributes")
-		asrt.Equal("Arial", n.Attrs().FontName, "expected FontName from NodeAttributes")
-		asrt.Equal("Custom Label", n.Attrs().Label, "expected Label from WithLabel option")
+		asrt.Equal(ShapeBox, n.Attrs().Shape(), "expected Shape from NodeAttributes")
+		asrt.Equal("Arial", n.Attrs().FontName(), "expected FontName from NodeAttributes")
+		asrt.Equal("Custom Label", n.Attrs().Label(), "expected Label from WithLabel option")
 	})
 
-	t.Run("NodeAttributes only copies non-zero fields", func(t *testing.T) {
+	t.Run("NodeAttributes only copies non-nil fields", func(t *testing.T) {
 		asrt := assert.New(t)
 
 		// Create attrs with only some fields set
+		shape := ShapeBox
 		commonAttrs := NodeAttributes{
-			Shape: ShapeBox,
-			// Label, Color, etc. are zero values
+			shape: &shape,
+			// Label, Color, etc. are nil
 		}
 
 		n := NewNode("test", commonAttrs, WithLabel("Test"))
 
-		asrt.Equal(ShapeBox, n.Attrs().Shape, "expected Shape to be set")
-		asrt.Equal("Test", n.Attrs().Label, "expected Label to be set")
-		asrt.Empty(n.Attrs().Color, "expected Color to remain empty (zero value not copied)")
+		asrt.Equal(ShapeBox, n.Attrs().Shape(), "expected Shape to be set")
+		asrt.Equal("Test", n.Attrs().Label(), "expected Label to be set")
+		asrt.Empty(n.Attrs().Color(), "expected Color to remain empty (nil value not copied)")
 	})
 }
 
@@ -250,11 +256,11 @@ func TestNewNode_OptionsAppliedInOrder(t *testing.T) {
 		asrt := assert.New(t)
 
 		n := NewNode("test",
-			WithShape(ShapeCircle),
-			WithShape(ShapeBox),
+			WithCircleShape(),
+			WithBoxShape(),
 		)
 
-		asrt.Equal(ShapeBox, n.Attrs().Shape, "expected later WithShape to override earlier one")
+		asrt.Equal(ShapeBox, n.Attrs().Shape(), "expected later shape option to override earlier one")
 	})
 
 	t.Run("later label overrides earlier label", func(t *testing.T) {
@@ -265,46 +271,52 @@ func TestNewNode_OptionsAppliedInOrder(t *testing.T) {
 			WithLabel("Second"),
 		)
 
-		asrt.Equal("Second", n.Attrs().Label, "expected later label to override earlier one")
+		asrt.Equal("Second", n.Attrs().Label(), "expected later label to override earlier one")
 	})
 
 	t.Run("NodeAttributes then individual options", func(t *testing.T) {
 		asrt := assert.New(t)
 
+		shape := ShapeCircle
+		label := "From Attrs"
 		commonAttrs := NodeAttributes{
-			Shape: ShapeCircle,
-			Label: "From Attrs",
+			shape: &shape,
+			label: &label,
 		}
 
 		n := NewNode("test", commonAttrs, WithLabel("Overridden"))
 
-		asrt.Equal(ShapeCircle, n.Attrs().Shape, "expected Shape from NodeAttributes")
-		asrt.Equal("Overridden", n.Attrs().Label, "expected Label to be overridden by later option")
+		asrt.Equal(ShapeCircle, n.Attrs().Shape(), "expected Shape from NodeAttributes")
+		asrt.Equal("Overridden", n.Attrs().Label(), "expected Label to be overridden by later option")
 	})
 
 	t.Run("individual options then NodeAttributes", func(t *testing.T) {
 		asrt := assert.New(t)
 
+		shape := ShapeBox
+		label := "From Attrs"
 		commonAttrs := NodeAttributes{
-			Shape: ShapeBox,
-			Label: "From Attrs",
+			shape: &shape,
+			label: &label,
 		}
 
-		n := NewNode("test", WithShape(ShapeCircle), commonAttrs)
+		n := NewNode("test", WithCircleShape(), commonAttrs)
 
-		asrt.Equal(ShapeBox, n.Attrs().Shape, "expected Shape from later NodeAttributes to override")
-		asrt.Equal("From Attrs", n.Attrs().Label, "expected Label from NodeAttributes")
+		asrt.Equal(ShapeBox, n.Attrs().Shape(), "expected Shape from later NodeAttributes to override")
+		asrt.Equal("From Attrs", n.Attrs().Label(), "expected Label from NodeAttributes")
 	})
 
-	t.Run("NodeAttributes with zero values should not override non-zero values", func(t *testing.T) {
+	t.Run("NodeAttributes with nil values should not override non-nil values", func(t *testing.T) {
 		asrt := assert.New(t)
 
 		// This test demonstrates the selective copying requirement
 		// A reusable NodeAttributes template with only some fields set
+		shape := ShapeBox
+		fontName := "Arial"
 		template := NodeAttributes{
-			Shape:    ShapeBox,
-			FontName: "Arial",
-			// Label, Color, FillColor, FontSize are zero values
+			shape:    &shape,
+			fontName: &fontName,
+			// Label, Color, FillColor, FontSize are nil
 		}
 
 		// Apply options first, then the template
@@ -312,14 +324,14 @@ func TestNewNode_OptionsAppliedInOrder(t *testing.T) {
 		n := NewNode("test",
 			WithLabel("Important Label"),
 			WithColor("red"),
-			template, // This should NOT override Label and Color to empty strings
+			template, // This should NOT override Label and Color to nil
 		)
 
-		asrt.Equal(ShapeBox, n.Attrs().Shape, "expected Shape from template")
-		asrt.Equal("Arial", n.Attrs().FontName, "expected FontName from template")
-		asrt.Equal("Important Label", n.Attrs().Label, "expected Label to NOT be overridden by template's zero value")
-		asrt.Equal("red", n.Attrs().Color, "expected Color to NOT be overridden by template's zero value")
-		asrt.Empty(n.Attrs().FillColor, "expected FillColor to remain empty")
-		asrt.Equal(0.0, n.Attrs().FontSize, "expected FontSize to remain zero")
+		asrt.Equal(ShapeBox, n.Attrs().Shape(), "expected Shape from template")
+		asrt.Equal("Arial", n.Attrs().FontName(), "expected FontName from template")
+		asrt.Equal("Important Label", n.Attrs().Label(), "expected Label to NOT be overridden by template's nil value")
+		asrt.Equal("red", n.Attrs().Color(), "expected Color to NOT be overridden by template's nil value")
+		asrt.Empty(n.Attrs().FillColor(), "expected FillColor to remain empty")
+		asrt.Equal(0.0, n.Attrs().FontSize(), "expected FontSize to remain zero")
 	})
 }

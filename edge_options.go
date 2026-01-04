@@ -16,37 +16,37 @@ func newEdgeOption(fn func(*EdgeAttributes)) EdgeOption {
 
 func WithEdgeLabel(l string) EdgeOption {
 	return newEdgeOption(func(a *EdgeAttributes) {
-		a.Label = l
+		a.label = &l
 	})
 }
 
 func WithEdgeColor(c string) EdgeOption {
 	return newEdgeOption(func(a *EdgeAttributes) {
-		a.Color = c
+		a.color = &c
 	})
 }
 
 func WithEdgeStyle(s EdgeStyle) EdgeOption {
 	return newEdgeOption(func(a *EdgeAttributes) {
-		a.Style = s
+		a.style = &s
 	})
 }
 
 func WithArrowHead(t ArrowType) EdgeOption {
 	return newEdgeOption(func(a *EdgeAttributes) {
-		a.ArrowHead = t
+		a.arrowHead = &t
 	})
 }
 
 func WithArrowTail(t ArrowType) EdgeOption {
 	return newEdgeOption(func(a *EdgeAttributes) {
-		a.ArrowTail = t
+		a.arrowTail = &t
 	})
 }
 
 func WithWeight(w float64) EdgeOption {
 	return newEdgeOption(func(a *EdgeAttributes) {
-		a.Weight = w
+		a.weight = &w
 	})
 }
 
