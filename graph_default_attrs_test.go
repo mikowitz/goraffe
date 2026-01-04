@@ -267,7 +267,7 @@ func TestGraph_DefaultAttrs_IndependentFromInstanceAttrs(t *testing.T) {
 		g := NewGraph(WithDefaultNodeAttrs(WithBoxShape()))
 		n := NewNode("A", WithCircleShape())
 
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		// Default should not be affected by individual node
 		asrt.Equal(ShapeBox, g.DefaultNodeAttrs().Shape(), "expected default to remain ShapeBox")
@@ -280,7 +280,8 @@ func TestGraph_DefaultAttrs_IndependentFromInstanceAttrs(t *testing.T) {
 		g := NewGraph(WithDefaultEdgeAttrs(WithEdgeColor("gray")))
 		n1 := NewNode("A")
 		n2 := NewNode("B")
-		e := g.AddEdge(n1, n2, WithEdgeColor("red"))
+		e, err := g.AddEdge(n1, n2, WithEdgeColor("red"))
+		asrt.NoError(err)
 
 		// Default should not be affected by individual edge
 		asrt.Equal("gray", g.DefaultEdgeAttrs().Color(), "expected default to remain gray")
@@ -503,7 +504,8 @@ func TestWithDefaultEdgeAttrs_UsingEdgeAttributesStruct(t *testing.T) {
 		g := NewGraph(WithDefaultEdgeAttrs(template))
 		n1 := NewNode("A")
 		n2 := NewNode("B")
-		e := g.AddEdge(n1, n2, template, WithEdgeLabel("A to B"))
+		e, err := g.AddEdge(n1, n2, template, WithEdgeLabel("A to B"))
+		asrt.NoError(err)
 
 		// Both should have the template values
 		asrt.Equal(EdgeStyleDashed, g.DefaultEdgeAttrs().Style(), "expected default Style from template")

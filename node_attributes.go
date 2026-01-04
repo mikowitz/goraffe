@@ -4,18 +4,24 @@ import (
 	"maps"
 )
 
+// Shape represents the visual shape of a node.
+// See https://www.graphviz.org/doc/info/shapes.html for all available shapes.
 type Shape string
 
-// NOTE: incomplete list of possible node shapes
+// Predefined node shapes supported by Graphviz.
+// This is not an exhaustive list; see Graphviz documentation for all available shapes.
 const (
-	ShapeBox       Shape = "box"
-	ShapeCircle    Shape = "circle"
-	ShapeEllipse   Shape = "ellipse"
-	ShapeDiamond   Shape = "diamond"
-	ShapeRecord    Shape = "record"
-	ShapePlaintext Shape = "plaintext"
+	ShapeBox       Shape = "box"       // Rectangular box shape
+	ShapeCircle    Shape = "circle"    // Circular shape
+	ShapeEllipse   Shape = "ellipse"   // Elliptical shape (default)
+	ShapeDiamond   Shape = "diamond"   // Diamond shape
+	ShapeRecord    Shape = "record"    // Record-based shape for structured nodes
+	ShapePlaintext Shape = "plaintext" // Text with no surrounding shape
 )
 
+// NodeAttributes holds the visual and structural properties of a node.
+// All fields use pointer types to distinguish between "not set" and "explicitly set to zero value".
+// Use the getter methods (Label(), Shape(), etc.) to access values safely.
 type NodeAttributes struct {
 	label     *string
 	shape     *Shape
@@ -26,11 +32,15 @@ type NodeAttributes struct {
 	custom    map[string]string
 }
 
+// Custom returns a copy of all custom attributes set via WithNodeAttribute.
+// Returns an empty map if no custom attributes are set.
+// The returned map is a copy and can be safely modified without affecting the node.
 func (a NodeAttributes) Custom() map[string]string {
 	ret := make(map[string]string)
 	if a.custom != nil {
 		maps.Copy(ret, a.custom)
 	}
+
 	return ret
 }
 
@@ -38,6 +48,7 @@ func (a *NodeAttributes) setCustom(key, value string) {
 	if a.custom == nil {
 		a.custom = make(map[string]string)
 	}
+
 	a.custom[key] = value
 }
 
@@ -48,6 +59,7 @@ func (a *NodeAttributes) Label() string {
 	if a.label == nil {
 		return ""
 	}
+
 	return *a.label
 }
 
@@ -57,6 +69,7 @@ func (a *NodeAttributes) Shape() Shape {
 	if a.shape == nil {
 		return ""
 	}
+
 	return *a.shape
 }
 
@@ -67,6 +80,7 @@ func (a *NodeAttributes) Color() string {
 	if a.color == nil {
 		return ""
 	}
+
 	return *a.color
 }
 
@@ -77,6 +91,7 @@ func (a *NodeAttributes) FillColor() string {
 	if a.fillColor == nil {
 		return ""
 	}
+
 	return *a.fillColor
 }
 
@@ -87,6 +102,7 @@ func (a *NodeAttributes) FontName() string {
 	if a.fontName == nil {
 		return ""
 	}
+
 	return *a.fontName
 }
 
@@ -97,6 +113,7 @@ func (a *NodeAttributes) FontSize() float64 {
 	if a.fontSize == nil {
 		return 0.0
 	}
+
 	return *a.fontSize
 }
 
@@ -110,18 +127,23 @@ func (a NodeAttributes) applyNode(dst *NodeAttributes) {
 	if a.label != nil {
 		dst.label = a.label
 	}
+
 	if a.shape != nil {
 		dst.shape = a.shape
 	}
+
 	if a.color != nil {
 		dst.color = a.color
 	}
+
 	if a.fillColor != nil {
 		dst.fillColor = a.fillColor
 	}
+
 	if a.fontName != nil {
 		dst.fontName = a.fontName
 	}
+
 	if a.fontSize != nil {
 		dst.fontSize = a.fontSize
 	}
