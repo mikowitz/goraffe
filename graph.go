@@ -6,6 +6,9 @@ import (
 	"strings"
 )
 
+// Graph represents a Graphviz graph structure that can contain nodes and edges.
+// A graph can be directed or undirected, and optionally strict (preventing duplicate edges).
+// Use NewGraph to create a new graph instance.
 type Graph struct {
 	name             string
 	directed, strict bool
@@ -17,6 +20,13 @@ type Graph struct {
 	defaultEdgeAttrs *EdgeAttributes
 }
 
+// NewGraph creates a new graph with the specified options.
+// By default, graphs are undirected and non-strict. Use the Directed, Undirected,
+// and Strict options to configure the graph type.
+//
+// Example:
+//
+//	g := goraffe.NewGraph(goraffe.Directed, goraffe.WithName("MyGraph"))
 func NewGraph(options ...GraphOption) *Graph {
 	g := &Graph{
 		nodeOrder:        make([]*Node, 0),
@@ -34,14 +44,20 @@ func NewGraph(options ...GraphOption) *Graph {
 	return g
 }
 
+// IsDirected returns true if the graph is directed, false if undirected.
+// Directed graphs use arrows (->) while undirected graphs use lines (--) in DOT output.
 func (g *Graph) IsDirected() bool {
 	return g.directed
 }
 
+// IsStrict returns true if the graph is strict.
+// Strict graphs do not allow duplicate edges between the same pair of nodes.
 func (g *Graph) IsStrict() bool {
 	return g.strict
 }
 
+// Name returns the name of the graph.
+// Returns empty string if no name was set via WithName option.
 func (g *Graph) Name() string {
 	return g.name
 }
@@ -60,6 +76,8 @@ func (g *Graph) AddNode(n *Node) {
 	}
 }
 
+// GetNode retrieves a node from the graph by its ID.
+// Returns nil if no node with the given ID exists in the graph.
 func (g *Graph) GetNode(id string) *Node {
 	if idx, exists := g.nodes[id]; exists {
 		return g.nodeOrder[idx]
@@ -67,10 +85,21 @@ func (g *Graph) GetNode(id string) *Node {
 	return nil
 }
 
+// Nodes returns all nodes in the graph in insertion order.
+// The returned slice should not be modified.
 func (g *Graph) Nodes() []*Node {
 	return g.nodeOrder
 }
 
+// AddEdge creates and adds an edge from one node to another with optional attributes.
+// If either node is not already in the graph, it will be automatically added.
+// Returns the created edge.
+//
+// Example:
+//
+//	n1 := goraffe.NewNode("A")
+//	n2 := goraffe.NewNode("B")
+//	e := g.AddEdge(n1, n2, goraffe.WithEdgeLabel("connects"))
 func (g *Graph) AddEdge(from, to *Node, options ...EdgeOption) *Edge {
 	attrs := &EdgeAttributes{}
 
@@ -95,22 +124,33 @@ func (g *Graph) AddEdge(from, to *Node, options ...EdgeOption) *Edge {
 	return edge
 }
 
+// Edges returns all edges in the graph in insertion order.
+// The returned slice should not be modified.
 func (g *Graph) Edges() []*Edge {
 	return g.edges
 }
 
+// Attrs returns the graph's attributes (label, rank direction, colors, etc.).
+// The returned attributes can be modified to change graph-level properties.
 func (g *Graph) Attrs() *GraphAttributes {
 	return g.attrs
 }
 
+// DefaultNodeAttrs returns the default attributes applied to all nodes in the graph.
+// These defaults can be overridden by individual node attributes.
 func (g *Graph) DefaultNodeAttrs() *NodeAttributes {
 	return g.defaultNodeAttrs
 }
 
+// DefaultEdgeAttrs returns the default attributes applied to all edges in the graph.
+// These defaults can be overridden by individual edge attributes.
 func (g *Graph) DefaultEdgeAttrs() *EdgeAttributes {
 	return g.defaultEdgeAttrs
 }
 
+// String returns the DOT representation of the graph.
+// The output is valid Graphviz DOT format that can be rendered with dot, neato, etc.
+// Note: Currently only outputs nodes; edge output is not yet implemented.
 func (g *Graph) String() string {
 	builder := strings.Builder{}
 
@@ -135,6 +175,15 @@ func (g *Graph) String() string {
 	return builder.String()
 }
 
+// WriteDOT writes the graph's DOT representation to the given writer.
+// This is a convenience method that writes the output of String() to a writer.
+// Returns any error encountered during writing.
+//
+// Example:
+//
+//	f, _ := os.Create("graph.dot")
+//	defer f.Close()
+//	g.WriteDOT(f)
 func (g *Graph) WriteDOT(w io.Writer) error {
 	_, err := w.Write([]byte(g.String()))
 	return err

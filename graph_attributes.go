@@ -2,28 +2,36 @@ package goraffe
 
 import "maps"
 
+// RankDir specifies the direction of graph layout from rank to rank.
+// This controls how nodes are arranged in hierarchical layouts.
 type RankDir string
 
+// Predefined rank directions for graph layout.
 const (
-	RankDirTB RankDir = "TB"
-	RankDirBT RankDir = "BT"
-	RankDirLR RankDir = "LR"
-	RankDirRL RankDir = "RL"
+	RankDirTB RankDir = "TB" // Top to bottom (default)
+	RankDirBT RankDir = "BT" // Bottom to top
+	RankDirLR RankDir = "LR" // Left to right
+	RankDirRL RankDir = "RL" // Right to left
 )
 
+// SplineType controls how edges are drawn between nodes.
 type SplineType string
 
+// Predefined spline types for edge routing.
 const (
-	SplineTrue     SplineType = "true"
-	SplineSpline   SplineType = "spline" // synonym for true
-	SplineFalse    SplineType = "false"
-	SplineLine     SplineType = "line" // synonym for false
-	SplineOrtho    SplineType = "ortho"
-	SplinePolyline SplineType = "polyline"
-	SplineCurved   SplineType = "curved"
-	SplineNone     SplineType = "none"
+	SplineTrue     SplineType = "true"     // Spline curves (default)
+	SplineSpline   SplineType = "spline"   // Synonym for "true"
+	SplineFalse    SplineType = "false"    // Straight lines
+	SplineLine     SplineType = "line"     // Synonym for "false"
+	SplineOrtho    SplineType = "ortho"    // Orthogonal (right-angle) lines
+	SplinePolyline SplineType = "polyline" // Polyline (multiple straight segments)
+	SplineCurved   SplineType = "curved"   // Curved lines
+	SplineNone     SplineType = "none"     // No edges drawn (affects layout only)
 )
 
+// GraphAttributes holds the visual and structural properties of a graph.
+// All fields use pointer types to distinguish between "not set" and "explicitly set to zero value".
+// Use the getter methods (Label(), RankDir(), etc.) to access values safely.
 type GraphAttributes struct {
 	label    *string
 	rankDir  *RankDir
@@ -37,6 +45,9 @@ type GraphAttributes struct {
 	custom   map[string]string
 }
 
+// Custom returns a copy of all custom attributes set via WithGraphAttribute.
+// Returns an empty map if no custom attributes are set.
+// The returned map is a copy and can be safely modified without affecting the graph.
 func (a GraphAttributes) Custom() map[string]string {
 	ret := make(map[string]string)
 	if a.custom != nil {

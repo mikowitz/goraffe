@@ -4,18 +4,24 @@ import (
 	"maps"
 )
 
+// Shape represents the visual shape of a node.
+// See https://www.graphviz.org/doc/info/shapes.html for all available shapes.
 type Shape string
 
-// NOTE: incomplete list of possible node shapes
+// Predefined node shapes supported by Graphviz.
+// This is not an exhaustive list; see Graphviz documentation for all available shapes.
 const (
-	ShapeBox       Shape = "box"
-	ShapeCircle    Shape = "circle"
-	ShapeEllipse   Shape = "ellipse"
-	ShapeDiamond   Shape = "diamond"
-	ShapeRecord    Shape = "record"
-	ShapePlaintext Shape = "plaintext"
+	ShapeBox       Shape = "box"       // Rectangular box shape
+	ShapeCircle    Shape = "circle"    // Circular shape
+	ShapeEllipse   Shape = "ellipse"   // Elliptical shape (default)
+	ShapeDiamond   Shape = "diamond"   // Diamond shape
+	ShapeRecord    Shape = "record"    // Record-based shape for structured nodes
+	ShapePlaintext Shape = "plaintext" // Text with no surrounding shape
 )
 
+// NodeAttributes holds the visual and structural properties of a node.
+// All fields use pointer types to distinguish between "not set" and "explicitly set to zero value".
+// Use the getter methods (Label(), Shape(), etc.) to access values safely.
 type NodeAttributes struct {
 	label     *string
 	shape     *Shape
@@ -26,6 +32,9 @@ type NodeAttributes struct {
 	custom    map[string]string
 }
 
+// Custom returns a copy of all custom attributes set via WithNodeAttribute.
+// Returns an empty map if no custom attributes are set.
+// The returned map is a copy and can be safely modified without affecting the node.
 func (a NodeAttributes) Custom() map[string]string {
 	ret := make(map[string]string)
 	if a.custom != nil {
