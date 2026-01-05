@@ -1,5 +1,7 @@
 package goraffe
 
+// NodeOption is a functional option for configuring node attributes.
+// Options can be passed to NewNode or used to build reusable attribute templates.
 type NodeOption interface {
 	applyNode(*NodeAttributes)
 }
@@ -20,54 +22,90 @@ func withShape(s Shape) NodeOption {
 	})
 }
 
+// WithBoxShape sets the node shape to a rectangular box.
 func WithBoxShape() NodeOption {
 	return withShape(ShapeBox)
 }
 
+// WithCircleShape sets the node shape to a circle.
 func WithCircleShape() NodeOption {
 	return withShape(ShapeCircle)
 }
 
+// WithEllipseShape sets the node shape to an ellipse.
+// This is the default shape in Graphviz.
 func WithEllipseShape() NodeOption {
 	return withShape(ShapeEllipse)
 }
 
+// WithDiamondShape sets the node shape to a diamond.
 func WithDiamondShape() NodeOption {
 	return withShape(ShapeDiamond)
 }
 
+// WithRecordShape sets the node shape to record-based, useful for structured nodes.
 func WithRecordShape() NodeOption {
 	return withShape(ShapeRecord)
 }
 
+// WithPlaintextShape sets the node to display as plain text with no surrounding shape.
 func WithPlaintextShape() NodeOption {
 	return withShape(ShapePlaintext)
 }
 
+// WithLabel sets the text label displayed on or near the node.
+// If not set, the node ID is used as the label by default in Graphviz.
+//
+// Example:
+//
+//	n := goraffe.NewNode("node1", goraffe.WithLabel("Start"))
 func WithLabel(l string) NodeOption {
 	return newNodeOption(func(a *NodeAttributes) {
 		a.label = &l
 	})
 }
 
+// WithColor sets the color of the node border and text.
+// Accepts color names (e.g., "red", "blue") or hex values (e.g., "#FF0000").
+//
+// Example:
+//
+//	n := goraffe.NewNode("node1", goraffe.WithColor("red"))
 func WithColor(c string) NodeOption {
 	return newNodeOption(func(a *NodeAttributes) {
 		a.color = &c
 	})
 }
 
+// WithFillColor sets the fill color for the node interior.
+// Note: Currently automatically sets style="filled" in the output.
+// Accepts color names (e.g., "lightblue") or hex values (e.g., "#E0E0E0").
+//
+// Example:
+//
+//	n := goraffe.NewNode("node1", goraffe.WithFillColor("lightblue"))
 func WithFillColor(c string) NodeOption {
 	return newNodeOption(func(a *NodeAttributes) {
 		a.fillColor = &c
 	})
 }
 
+// WithFontName sets the font family used for the node label text.
+//
+// Example:
+//
+//	n := goraffe.NewNode("node1", goraffe.WithFontName("Helvetica"))
 func WithFontName(n string) NodeOption {
 	return newNodeOption(func(a *NodeAttributes) {
 		a.fontName = &n
 	})
 }
 
+// WithFontSize sets the font size for the node label text in points.
+//
+// Example:
+//
+//	n := goraffe.NewNode("node1", goraffe.WithFontSize(14.0))
 func WithFontSize(s float64) NodeOption {
 	return newNodeOption(func(a *NodeAttributes) {
 		a.fontSize = &s

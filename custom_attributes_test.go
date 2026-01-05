@@ -87,7 +87,8 @@ func TestWithEdgeAttribute_SetsCustom(t *testing.T) {
 		n1 := NewNode("A")
 		n2 := NewNode("B")
 
-		e := g.AddEdge(n1, n2, WithEdgeAttribute("penwidth", "2.0"))
+		e, err := g.AddEdge(n1, n2, WithEdgeAttribute("penwidth", "2.0"))
+		asrt.NoError(err)
 
 		custom := e.Attrs().Custom()
 		asrt.Len(custom, 1, "expected custom map to have 1 entry")
@@ -100,11 +101,12 @@ func TestWithEdgeAttribute_SetsCustom(t *testing.T) {
 		n1 := NewNode("A")
 		n2 := NewNode("B")
 
-		e := g.AddEdge(n1, n2,
+		e, err := g.AddEdge(n1, n2,
 			WithEdgeAttribute("penwidth", "2.0"),
 			WithEdgeAttribute("dir", "both"),
 			WithEdgeAttribute("constraint", "false"),
 		)
+		asrt.NoError(err)
 
 		custom := e.Attrs().Custom()
 		asrt.Len(custom, 3, "expected custom map to have 3 entries")
@@ -119,11 +121,12 @@ func TestWithEdgeAttribute_SetsCustom(t *testing.T) {
 		n1 := NewNode("A")
 		n2 := NewNode("B")
 
-		e := g.AddEdge(n1, n2,
+		e, err := g.AddEdge(n1, n2,
 			WithEdgeLabel("connects"),
 			WithEdgeColor("red"),
 			WithEdgeAttribute("penwidth", "2.0"),
 		)
+		asrt.NoError(err)
 
 		asrt.Equal("connects", e.Attrs().Label(), "expected Label to be set")
 		asrt.Equal("red", e.Attrs().Color(), "expected Color to be set")
@@ -137,11 +140,12 @@ func TestWithEdgeAttribute_SetsCustom(t *testing.T) {
 		n1 := NewNode("A")
 		n2 := NewNode("B")
 
-		e := g.AddEdge(n1, n2,
+		e, err := g.AddEdge(n1, n2,
 			WithEdgeAttribute("attr1", "value1"),
 			WithEdgeAttribute("attr2", "value2"),
 			WithEdgeAttribute("attr3", "value3"),
 		)
+		asrt.NoError(err)
 
 		custom := e.Attrs().Custom()
 		asrt.Len(custom, 3, "expected all custom attributes to accumulate")
@@ -156,10 +160,11 @@ func TestWithEdgeAttribute_SetsCustom(t *testing.T) {
 		n1 := NewNode("A")
 		n2 := NewNode("B")
 
-		e := g.AddEdge(n1, n2,
+		e, err := g.AddEdge(n1, n2,
 			WithEdgeAttribute("penwidth", "1.0"),
 			WithEdgeAttribute("penwidth", "3.0"),
 		)
+		asrt.NoError(err)
 
 		custom := e.Attrs().Custom()
 		asrt.Len(custom, 1, "expected only one entry for duplicated key")
@@ -305,10 +310,11 @@ func TestCustomAttributes_DoNotOverrideTyped(t *testing.T) {
 		n1 := NewNode("A")
 		n2 := NewNode("B")
 
-		e := g.AddEdge(n1, n2,
+		e, err := g.AddEdge(n1, n2,
 			WithEdgeLabel("Typed Label"),
 			WithEdgeAttribute("label", "Custom Label"),
 		)
+		asrt.NoError(err)
 
 		asrt.Equal("Typed Label", e.Attrs().Label(), "expected typed Label to be preserved")
 		custom := e.Attrs().Custom()
@@ -321,10 +327,11 @@ func TestCustomAttributes_DoNotOverrideTyped(t *testing.T) {
 		n1 := NewNode("A")
 		n2 := NewNode("B")
 
-		e := g.AddEdge(n1, n2,
+		e, err := g.AddEdge(n1, n2,
 			WithEdgeStyle(EdgeStyleDashed),
 			WithEdgeAttribute("style", "dotted"),
 		)
+		asrt.NoError(err)
 
 		asrt.Equal(EdgeStyleDashed, e.Attrs().Style(), "expected typed Style to be preserved")
 		custom := e.Attrs().Custom()
@@ -388,13 +395,14 @@ func TestCustomAttributes_MultipleCalls_Accumulate(t *testing.T) {
 		n1 := NewNode("A")
 		n2 := NewNode("B")
 
-		e := g.AddEdge(n1, n2,
+		e, err := g.AddEdge(n1, n2,
 			WithEdgeAttribute("penwidth", "2.0"),
 			WithEdgeLabel("connects"),
 			WithEdgeAttribute("dir", "both"),
 			WithEdgeColor("red"),
 			WithEdgeAttribute("constraint", "false"),
 		)
+		asrt.NoError(err)
 
 		custom := e.Attrs().Custom()
 		asrt.Len(custom, 3, "expected 3 custom attributes to accumulate")

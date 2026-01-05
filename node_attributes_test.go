@@ -9,6 +9,7 @@ import (
 func TestNodeAttributes_ZeroValue(t *testing.T) {
 	t.Run("all fields are empty or zero", func(t *testing.T) {
 		asrt := assert.New(t)
+
 		var attrs NodeAttributes
 
 		asrt.Empty(attrs.Label(), "expected Label to be empty")
@@ -23,6 +24,7 @@ func TestNodeAttributes_ZeroValue(t *testing.T) {
 func TestNodeAttributes_Custom_ReturnsCopy(t *testing.T) {
 	t.Run("returns empty map when custom is nil", func(t *testing.T) {
 		asrt := assert.New(t)
+
 		var attrs NodeAttributes
 
 		custom := attrs.Custom()

@@ -83,7 +83,7 @@ func TestGraph_AddNode(t *testing.T) {
 		g := NewGraph()
 		n := NewNode("A")
 
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		asrt.Equal(1, len(g.Nodes()), "expected graph to have 1 node")
 		asrt.Equal(n, g.GetNode("A"), "expected GetNode to return the added node")
@@ -97,9 +97,9 @@ func TestGraph_AddNode(t *testing.T) {
 		n2 := NewNode("B")
 		n3 := NewNode("C")
 
-		g.AddNode(n1)
-		g.AddNode(n2)
-		g.AddNode(n3)
+		_ = g.AddNode(n1)
+		_ = g.AddNode(n2)
+		_ = g.AddNode(n3)
 
 		asrt.Equal(3, len(g.Nodes()), "expected graph to have 3 nodes")
 		asrt.Equal(n1, g.GetNode("A"), "expected GetNode to return node A")
@@ -114,8 +114,8 @@ func TestGraph_AddNode(t *testing.T) {
 		n1 := NewNode("A")
 		n2 := NewNode("A") // same ID, different node
 
-		g.AddNode(n1)
-		g.AddNode(n2)
+		_ = g.AddNode(n1)
+		_ = g.AddNode(n2)
 
 		asrt.Equal(1, len(g.Nodes()), "expected graph to have 1 node after adding duplicate")
 		asrt.Same(n2, g.GetNode("A"), "expected GetNode to return the replacement node")
@@ -130,9 +130,9 @@ func TestGraph_AddNode(t *testing.T) {
 		n2 := NewNode("B")
 		n3 := NewNode("C")
 
-		g.AddNode(n1)
-		g.AddNode(n2)
-		g.AddNode(n3)
+		_ = g.AddNode(n1)
+		_ = g.AddNode(n2)
+		_ = g.AddNode(n3)
 
 		nodes := g.Nodes()
 		asrt.Equal(n1, nodes[0], "expected first node to be A")
@@ -148,7 +148,7 @@ func TestGraph_GetNode(t *testing.T) {
 		g := NewGraph()
 		n := NewNode("A")
 
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		retrieved := g.GetNode("A")
 		asrt.NotNil(retrieved, "expected GetNode to return non-nil for existing node")
@@ -174,9 +174,9 @@ func TestGraph_Nodes(t *testing.T) {
 		n2 := NewNode("B")
 		n3 := NewNode("C")
 
-		g.AddNode(n1)
-		g.AddNode(n2)
-		g.AddNode(n3)
+		_ = g.AddNode(n1)
+		_ = g.AddNode(n2)
+		_ = g.AddNode(n3)
 
 		nodes := g.Nodes()
 		asrt.Len(nodes, 3, "expected Nodes to return all 3 nodes")
@@ -194,9 +194,9 @@ func TestGraph_Nodes(t *testing.T) {
 		n3 := NewNode("M")
 
 		// Add in a specific order (not alphabetical)
-		g.AddNode(n1)
-		g.AddNode(n2)
-		g.AddNode(n3)
+		_ = g.AddNode(n1)
+		_ = g.AddNode(n2)
+		_ = g.AddNode(n3)
 
 		nodes := g.Nodes()
 		asrt.Equal(3, len(nodes), "expected 3 nodes")
@@ -213,13 +213,13 @@ func TestGraph_Nodes(t *testing.T) {
 		n2 := NewNode("A")
 		n3 := NewNode("M")
 
-		g.AddNode(n1)
-		g.AddNode(n2)
-		g.AddNode(n3)
+		_ = g.AddNode(n1)
+		_ = g.AddNode(n2)
+		_ = g.AddNode(n3)
 
 		// Replace node at position 1
 		n4 := NewNode("A")
-		g.AddNode(n4)
+		_ = g.AddNode(n4)
 
 		nodes := g.Nodes()
 		asrt.Equal(3, len(nodes), "expected still 3 nodes after replace")
@@ -227,5 +227,214 @@ func TestGraph_Nodes(t *testing.T) {
 		asrt.Equal("A", nodes[1].ID(), "expected second node still A (same position)")
 		asrt.Equal(n4, nodes[1], "expected second node to be replaced instance")
 		asrt.Equal("M", nodes[2].ID(), "expected third node still M")
+	})
+}
+
+func TestGraph_AddNode_ValidatesNilNode(t *testing.T) {
+	t.Run("returns error when node is nil", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+
+		err := g.AddNode(nil)
+
+		asrt.Error(err, "expected error when adding nil node")
+		asrt.ErrorIs(err, ErrNilNode, "expected ErrNilNode sentinel error")
+		asrt.Equal(0, len(g.Nodes()), "expected no nodes to be added when nil is passed")
+	})
+
+	t.Run("does not modify graph when nil node is passed", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		n1 := NewNode("A")
+		_ = g.AddNode(n1)
+
+		err := g.AddNode(nil)
+
+		asrt.Error(err, "expected error when adding nil node")
+		asrt.ErrorIs(err, ErrNilNode, "expected ErrNilNode sentinel error")
+		asrt.Equal(1, len(g.Nodes()), "expected node count to remain unchanged")
+		asrt.Same(n1, g.Nodes()[0], "expected existing node to remain unchanged")
+	})
+
+	t.Run("succeeds when node is valid", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		n := NewNode("A")
+
+		err := g.AddNode(n)
+
+		asrt.NoError(err, "expected no error when adding valid node")
+		asrt.Equal(1, len(g.Nodes()), "expected node to be added")
+		asrt.Same(n, g.GetNode("A"), "expected node to be retrievable")
+	})
+}
+
+func TestGraph_AddEdge_ValidatesNilNodes(t *testing.T) {
+	t.Run("returns error when from node is nil", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		to := NewNode("B")
+
+		edge, err := g.AddEdge(nil, to)
+
+		asrt.Error(err, "expected error when from node is nil")
+		asrt.Nil(edge, "expected nil edge when error occurs")
+		asrt.ErrorIs(err, ErrNilNode, "expected ErrNilNode sentinel error")
+		asrt.Equal(0, len(g.Edges()), "expected no edges to be added")
+	})
+
+	t.Run("returns error when to node is nil", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		from := NewNode("A")
+
+		edge, err := g.AddEdge(from, nil)
+
+		asrt.Error(err, "expected error when to node is nil")
+		asrt.Nil(edge, "expected nil edge when error occurs")
+		asrt.ErrorIs(err, ErrNilNode, "expected ErrNilNode sentinel error")
+		asrt.Equal(0, len(g.Edges()), "expected no edges to be added")
+	})
+
+	t.Run("returns error when both nodes are nil", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+
+		edge, err := g.AddEdge(nil, nil)
+
+		asrt.Error(err, "expected error when both nodes are nil")
+		asrt.Nil(edge, "expected nil edge when error occurs")
+		asrt.ErrorIs(err, ErrNilNode, "expected ErrNilNode sentinel error")
+		asrt.Equal(0, len(g.Edges()), "expected no edges to be added")
+	})
+
+	t.Run("does not modify graph when nil node is passed", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2)
+
+		edge, err := g.AddEdge(nil, n2)
+
+		asrt.Error(err, "expected error when from node is nil")
+		asrt.Nil(edge, "expected nil edge when error occurs")
+		asrt.ErrorIs(err, ErrNilNode, "expected ErrNilNode sentinel error")
+		asrt.Equal(1, len(g.Edges()), "expected edge count to remain unchanged")
+		asrt.Equal(2, len(g.Nodes()), "expected node count to remain unchanged")
+	})
+
+	t.Run("succeeds when both nodes are valid", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		from := NewNode("A")
+		to := NewNode("B")
+
+		edge, err := g.AddEdge(from, to)
+
+		asrt.NoError(err, "expected no error when adding valid edge")
+		asrt.NotNil(edge, "expected edge to be created")
+		asrt.Equal(1, len(g.Edges()), "expected edge to be added")
+		asrt.Same(from, edge.From(), "expected edge to have correct from node")
+		asrt.Same(to, edge.To(), "expected edge to have correct to node")
+	})
+
+	t.Run("succeeds with options when nodes are valid", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		from := NewNode("A")
+		to := NewNode("B")
+
+		edge, err := g.AddEdge(from, to, WithEdgeLabel("test"))
+
+		asrt.NoError(err, "expected no error when adding valid edge with options")
+		asrt.NotNil(edge, "expected edge to be created")
+		asrt.Equal("test", edge.Attrs().Label(), "expected edge options to be applied")
+	})
+
+	t.Run("does not apply options when nil node causes error", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		to := NewNode("B")
+
+		edge, err := g.AddEdge(nil, to, WithEdgeLabel("should not be set"))
+
+		asrt.Error(err, "expected error when from node is nil")
+		asrt.Nil(edge, "expected nil edge when error occurs")
+		asrt.ErrorIs(err, ErrNilNode, "expected ErrNilNode sentinel error")
+		asrt.Equal(0, len(g.Edges()), "expected no edges to be added")
+	})
+
+	t.Run("does not implicitly add nil nodes to graph", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		n := NewNode("A")
+
+		edge, err := g.AddEdge(n, nil)
+
+		asrt.Error(err, "expected error when to node is nil")
+		asrt.Nil(edge, "expected nil edge")
+		asrt.ErrorIs(err, ErrNilNode, "expected ErrNilNode sentinel error")
+		// The valid node should not be added to the graph if the edge creation fails
+		asrt.Equal(0, len(g.Nodes()), "expected no nodes when edge creation fails due to nil")
+	})
+}
+
+func TestGraph_AddEdge_NilValidation_WithImplicitNodeAddition(t *testing.T) {
+	t.Run("does not add nodes when from is nil", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		to := NewNode("B")
+
+		edge, err := g.AddEdge(nil, to)
+
+		asrt.Error(err, "expected error")
+		asrt.Nil(edge, "expected nil edge")
+		asrt.ErrorIs(err, ErrNilNode, "expected ErrNilNode sentinel error")
+		asrt.Equal(0, len(g.Nodes()), "expected no nodes added when from is nil")
+		asrt.Nil(g.GetNode("B"), "expected to node not added when from is nil")
+	})
+
+	t.Run("does not add nodes when to is nil", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		from := NewNode("A")
+
+		edge, err := g.AddEdge(from, nil)
+
+		asrt.Error(err, "expected error")
+		asrt.Nil(edge, "expected nil edge")
+		asrt.ErrorIs(err, ErrNilNode, "expected ErrNilNode sentinel error")
+		asrt.Equal(0, len(g.Nodes()), "expected no nodes added when to is nil")
+		asrt.Nil(g.GetNode("A"), "expected from node not added when to is nil")
+	})
+
+	t.Run("adds nodes normally when both are valid", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		from := NewNode("A")
+		to := NewNode("B")
+
+		edge, err := g.AddEdge(from, to)
+
+		asrt.NoError(err, "expected no error")
+		asrt.NotNil(edge, "expected edge to be created")
+		asrt.Equal(2, len(g.Nodes()), "expected both nodes to be added")
+		asrt.NotNil(g.GetNode("A"), "expected from node to be added")
+		asrt.NotNil(g.GetNode("B"), "expected to node to be added")
 	})
 }

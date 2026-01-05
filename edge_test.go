@@ -14,7 +14,8 @@ func TestEdge_FromTo(t *testing.T) {
 		n2 := NewNode("B")
 		g := NewGraph()
 
-		e := g.AddEdge(n1, n2)
+		e, err := g.AddEdge(n1, n2)
+		asrt.NoError(err)
 
 		asrt.Same(n1, e.From(), "expected From to return first node")
 		asrt.Same(n2, e.To(), "expected To to return second node")
@@ -29,10 +30,11 @@ func TestGraph_AddEdge(t *testing.T) {
 		n1 := NewNode("A")
 		n2 := NewNode("B")
 
-		g.AddNode(n1)
-		g.AddNode(n2)
+		_ = g.AddNode(n1)
+		_ = g.AddNode(n2)
 
-		e := g.AddEdge(n1, n2)
+		e, err := g.AddEdge(n1, n2)
+		asrt.NoError(err)
 
 		asrt.NotNil(e, "expected AddEdge to return an edge")
 		asrt.Same(n1, e.From(), "expected edge from to be n1")
@@ -48,7 +50,8 @@ func TestGraph_AddEdge(t *testing.T) {
 		n2 := NewNode("B")
 
 		// Don't add nodes to graph first
-		e := g.AddEdge(n1, n2)
+		e, err := g.AddEdge(n1, n2)
+		asrt.NoError(err)
 
 		asrt.NotNil(e, "expected AddEdge to return an edge")
 		asrt.Len(g.Nodes(), 2, "expected graph to have 2 nodes after implicit add")
@@ -65,9 +68,10 @@ func TestGraph_AddEdge(t *testing.T) {
 		n2 := NewNode("B")
 
 		// Only add one node
-		g.AddNode(n1)
+		_ = g.AddNode(n1)
 
-		e := g.AddEdge(n1, n2)
+		e, err := g.AddEdge(n1, n2)
+		asrt.NoError(err)
 
 		asrt.NotNil(e, "expected AddEdge to return an edge")
 		asrt.Len(g.Nodes(), 2, "expected graph to have 2 nodes after partial implicit add")
@@ -83,8 +87,10 @@ func TestGraph_AddEdge(t *testing.T) {
 		n1 := NewNode("A")
 		n2 := NewNode("B")
 
-		e1 := g.AddEdge(n1, n2)
-		e2 := g.AddEdge(n1, n2) // Parallel edge
+		e1, err := g.AddEdge(n1, n2)
+		asrt.NoError(err)
+		e2, err := g.AddEdge(n1, n2) // Parallel edge
+		asrt.NoError(err)
 
 		asrt.Len(g.Edges(), 2, "expected graph to have 2 edges (parallel edges allowed)")
 		asrt.NotSame(e1, e2, "expected parallel edges to be different instances")
@@ -100,7 +106,8 @@ func TestGraph_AddEdge(t *testing.T) {
 		g := NewGraph()
 		n1 := NewNode("A")
 
-		e := g.AddEdge(n1, n1)
+		e, err := g.AddEdge(n1, n1)
+		asrt.NoError(err)
 
 		asrt.NotNil(e, "expected AddEdge to create self-loop")
 		asrt.Same(n1, e.From(), "expected from to be the same node")
@@ -118,9 +125,12 @@ func TestGraph_Edges(t *testing.T) {
 		n2 := NewNode("B")
 		n3 := NewNode("C")
 
-		e1 := g.AddEdge(n1, n2)
-		e2 := g.AddEdge(n2, n3)
-		e3 := g.AddEdge(n3, n1)
+		e1, err := g.AddEdge(n1, n2)
+		asrt.NoError(err)
+		e2, err := g.AddEdge(n2, n3)
+		asrt.NoError(err)
+		e3, err := g.AddEdge(n3, n1)
+		asrt.NoError(err)
 
 		edges := g.Edges()
 		asrt.Len(edges, 3, "expected graph to have 3 edges")
@@ -137,9 +147,12 @@ func TestGraph_Edges(t *testing.T) {
 		n2 := NewNode("B")
 		n3 := NewNode("C")
 
-		e1 := g.AddEdge(n1, n2)
-		e2 := g.AddEdge(n2, n3)
-		e3 := g.AddEdge(n3, n1)
+		e1, err := g.AddEdge(n1, n2)
+		asrt.NoError(err)
+		e2, err := g.AddEdge(n2, n3)
+		asrt.NoError(err)
+		e3, err := g.AddEdge(n3, n1)
+		asrt.NoError(err)
 
 		edges := g.Edges()
 		asrt.Equal(3, len(edges), "expected 3 edges")
@@ -156,7 +169,8 @@ func TestEdge_Attrs_ReturnsAttributes(t *testing.T) {
 		g := NewGraph()
 		n1 := NewNode("A")
 		n2 := NewNode("B")
-		e := g.AddEdge(n1, n2)
+		e, err := g.AddEdge(n1, n2)
+		asrt.NoError(err)
 
 		attrs := e.Attrs()
 		asrt.NotNil(attrs, "expected Attrs() to return non-nil EdgeAttributes")
@@ -168,7 +182,8 @@ func TestEdge_Attrs_ReturnsAttributes(t *testing.T) {
 		g := NewGraph()
 		n1 := NewNode("A")
 		n2 := NewNode("B")
-		e := g.AddEdge(n1, n2)
+		e, err := g.AddEdge(n1, n2)
+		asrt.NoError(err)
 
 		attrs1 := e.Attrs()
 		attrs2 := e.Attrs()
@@ -182,7 +197,8 @@ func TestEdge_Attrs_ReturnsAttributes(t *testing.T) {
 		g := NewGraph()
 		n1 := NewNode("A")
 		n2 := NewNode("B")
-		e := g.AddEdge(n1, n2)
+		e, err := g.AddEdge(n1, n2)
+		asrt.NoError(err)
 
 		attrs := e.Attrs()
 		asrt.Empty(attrs.Label(), "expected Label to be empty for new edge")
@@ -202,7 +218,8 @@ func TestGraph_AddEdge_WithOptions(t *testing.T) {
 		n1 := NewNode("A")
 		n2 := NewNode("B")
 
-		e := g.AddEdge(n1, n2, WithEdgeLabel("connection"))
+		e, err := g.AddEdge(n1, n2, WithEdgeLabel("connection"))
+		asrt.NoError(err)
 
 		asrt.Equal("connection", e.Attrs().Label(), "expected Label to be set")
 	})
@@ -214,7 +231,8 @@ func TestGraph_AddEdge_WithOptions(t *testing.T) {
 		n1 := NewNode("A")
 		n2 := NewNode("B")
 
-		e := g.AddEdge(n1, n2, WithEdgeColor("red"))
+		e, err := g.AddEdge(n1, n2, WithEdgeColor("red"))
+		asrt.NoError(err)
 
 		asrt.Equal("red", e.Attrs().Color(), "expected Color to be set")
 	})
@@ -226,7 +244,8 @@ func TestGraph_AddEdge_WithOptions(t *testing.T) {
 		n1 := NewNode("A")
 		n2 := NewNode("B")
 
-		e := g.AddEdge(n1, n2, WithEdgeStyle(EdgeStyleDashed))
+		e, err := g.AddEdge(n1, n2, WithEdgeStyle(EdgeStyleDashed))
+		asrt.NoError(err)
 
 		asrt.Equal(EdgeStyleDashed, e.Attrs().Style(), "expected Style to be set")
 	})
@@ -238,7 +257,8 @@ func TestGraph_AddEdge_WithOptions(t *testing.T) {
 		n1 := NewNode("A")
 		n2 := NewNode("B")
 
-		e := g.AddEdge(n1, n2, WithArrowHead(ArrowNormal))
+		e, err := g.AddEdge(n1, n2, WithArrowHead(ArrowNormal))
+		asrt.NoError(err)
 
 		asrt.Equal(ArrowNormal, e.Attrs().ArrowHead(), "expected ArrowHead to be set")
 	})
@@ -250,7 +270,8 @@ func TestGraph_AddEdge_WithOptions(t *testing.T) {
 		n1 := NewNode("A")
 		n2 := NewNode("B")
 
-		e := g.AddEdge(n1, n2, WithArrowTail(ArrowDot))
+		e, err := g.AddEdge(n1, n2, WithArrowTail(ArrowDot))
+		asrt.NoError(err)
 
 		asrt.Equal(ArrowDot, e.Attrs().ArrowTail(), "expected ArrowTail to be set")
 	})
@@ -262,7 +283,8 @@ func TestGraph_AddEdge_WithOptions(t *testing.T) {
 		n1 := NewNode("A")
 		n2 := NewNode("B")
 
-		e := g.AddEdge(n1, n2, WithWeight(2.5))
+		e, err := g.AddEdge(n1, n2, WithWeight(2.5))
+		asrt.NoError(err)
 
 		asrt.Equal(2.5, e.Attrs().Weight(), "expected Weight to be set")
 	})
@@ -276,7 +298,7 @@ func TestGraph_AddEdge_WithMultipleOptions(t *testing.T) {
 		n1 := NewNode("A")
 		n2 := NewNode("B")
 
-		e := g.AddEdge(n1, n2,
+		e, err := g.AddEdge(n1, n2,
 			WithEdgeLabel("important"),
 			WithEdgeColor("blue"),
 			WithEdgeStyle(EdgeStyleBold),
@@ -284,6 +306,7 @@ func TestGraph_AddEdge_WithMultipleOptions(t *testing.T) {
 			WithArrowTail(ArrowNone),
 			WithWeight(3.0),
 		)
+		asrt.NoError(err)
 
 		attrs := e.Attrs()
 		asrt.Equal("important", attrs.Label(), "expected Label to be set")
@@ -302,8 +325,10 @@ func TestGraph_AddEdge_WithMultipleOptions(t *testing.T) {
 		n2 := NewNode("B")
 		n3 := NewNode("C")
 
-		e1 := g.AddEdge(n1, n2, WithEdgeLabel("first"), WithEdgeColor("red"))
-		e2 := g.AddEdge(n2, n3, WithEdgeLabel("second"), WithEdgeColor("green"))
+		e1, err := g.AddEdge(n1, n2, WithEdgeLabel("first"), WithEdgeColor("red"))
+		asrt.NoError(err)
+		e2, err := g.AddEdge(n2, n3, WithEdgeLabel("second"), WithEdgeColor("green"))
+		asrt.NoError(err)
 
 		asrt.Equal("first", e1.Attrs().Label(), "expected e1 to have its own label")
 		asrt.Equal("red", e1.Attrs().Color(), "expected e1 to have its own color")
@@ -332,7 +357,8 @@ func TestGraph_AddEdge_WithEdgeAttributesStruct(t *testing.T) {
 		n1 := NewNode("A")
 		n2 := NewNode("B")
 
-		e := g.AddEdge(n1, n2, template)
+		e, err := g.AddEdge(n1, n2, template)
+		asrt.NoError(err)
 
 		attrs := e.Attrs()
 		asrt.Equal(EdgeStyleDashed, attrs.Style(), "expected Style from template")
@@ -356,7 +382,8 @@ func TestGraph_AddEdge_WithEdgeAttributesStruct(t *testing.T) {
 		n1 := NewNode("A")
 		n2 := NewNode("B")
 
-		e := g.AddEdge(n1, n2, template, WithEdgeLabel("Custom"), WithWeight(2.0))
+		e, err := g.AddEdge(n1, n2, template, WithEdgeLabel("Custom"), WithWeight(2.0))
+		asrt.NoError(err)
 
 		attrs := e.Attrs()
 		asrt.Equal(EdgeStyleDashed, attrs.Style(), "expected Style from template")
@@ -383,7 +410,8 @@ func TestGraph_AddEdge_WithEdgeAttributesStruct(t *testing.T) {
 		n2 := NewNode("B")
 
 		// First set some attributes directly
-		_ = g.AddEdge(n1, n2, WithEdgeLabel("Important"), WithWeight(3.0))
+		_, err := g.AddEdge(n1, n2, WithEdgeLabel("Important"), WithWeight(3.0))
+		asrt.NoError(err)
 
 		// Now apply template - should NOT overwrite existing non-nil values
 		// (This test simulates the behavior, but in practice the template is applied during AddEdge)
@@ -391,7 +419,8 @@ func TestGraph_AddEdge_WithEdgeAttributesStruct(t *testing.T) {
 
 		// Actually, we need to create a new edge to test this properly
 		n3 := NewNode("C")
-		e2 := g.AddEdge(n2, n3, WithEdgeLabel("PreSet"), WithWeight(5.0), template)
+		e2, err := g.AddEdge(n2, n3, WithEdgeLabel("PreSet"), WithWeight(5.0), template)
+		asrt.NoError(err)
 
 		attrs := e2.Attrs()
 		asrt.Equal(EdgeStyleBold, attrs.Style(), "expected Style to be set from template")
@@ -410,11 +439,12 @@ func TestGraph_AddEdge_OptionsAppliedInOrder(t *testing.T) {
 		n1 := NewNode("A")
 		n2 := NewNode("B")
 
-		e := g.AddEdge(n1, n2,
+		e, err := g.AddEdge(n1, n2,
 			WithEdgeLabel("first"),
 			WithEdgeLabel("second"),
 			WithEdgeLabel("third"),
 		)
+		asrt.NoError(err)
 
 		asrt.Equal("third", e.Attrs().Label(), "expected last Label option to win")
 	})
@@ -426,13 +456,14 @@ func TestGraph_AddEdge_OptionsAppliedInOrder(t *testing.T) {
 		n1 := NewNode("A")
 		n2 := NewNode("B")
 
-		e := g.AddEdge(n1, n2,
+		e, err := g.AddEdge(n1, n2,
 			WithEdgeColor("red"),
 			WithEdgeStyle(EdgeStyleSolid),
 			WithEdgeColor("blue"),          // Override color
 			WithWeight(1.0),                // New field
 			WithEdgeStyle(EdgeStyleDashed), // Override style
 		)
+		asrt.NoError(err)
 
 		attrs := e.Attrs()
 		asrt.Equal("blue", attrs.Color(), "expected last Color option to win")
@@ -457,11 +488,12 @@ func TestGraph_AddEdge_OptionsAppliedInOrder(t *testing.T) {
 		n1 := NewNode("A")
 		n2 := NewNode("B")
 
-		e := g.AddEdge(n1, n2,
+		e, err := g.AddEdge(n1, n2,
 			template,
 			WithEdgeLabel("Override"),
 			WithEdgeColor("red"),
 		)
+		asrt.NoError(err)
 
 		attrs := e.Attrs()
 		asrt.Equal(EdgeStyleDashed, attrs.Style(), "expected Style from template (not overridden)")
@@ -484,11 +516,12 @@ func TestGraph_AddEdge_OptionsAppliedInOrder(t *testing.T) {
 		n1 := NewNode("A")
 		n2 := NewNode("B")
 
-		e := g.AddEdge(n1, n2,
+		e, err := g.AddEdge(n1, n2,
 			WithEdgeLabel("First"),
 			WithEdgeColor("blue"),
 			template, // Applied last, will override Label but not Color
 		)
+		asrt.NoError(err)
 
 		attrs := e.Attrs()
 		asrt.Equal("Template Label", attrs.Label(), "expected Label from template (applied last)")

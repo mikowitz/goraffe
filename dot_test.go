@@ -161,6 +161,7 @@ func TestGraph_WriteDOT_WritesToWriter(t *testing.T) {
 	t.Run("writes directed graph to writer", func(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Directed)
+
 		var buf bytes.Buffer
 
 		err := g.WriteDOT(&buf)
@@ -172,6 +173,7 @@ func TestGraph_WriteDOT_WritesToWriter(t *testing.T) {
 	t.Run("writes undirected graph to writer", func(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Undirected)
+
 		var buf bytes.Buffer
 
 		err := g.WriteDOT(&buf)
@@ -183,6 +185,7 @@ func TestGraph_WriteDOT_WritesToWriter(t *testing.T) {
 	t.Run("writes strict graph to writer", func(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Strict, Directed)
+
 		var buf bytes.Buffer
 
 		err := g.WriteDOT(&buf)
@@ -194,6 +197,7 @@ func TestGraph_WriteDOT_WritesToWriter(t *testing.T) {
 	t.Run("writes named graph to writer", func(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Directed, WithName("TestGraph"))
+
 		var buf bytes.Buffer
 
 		err := g.WriteDOT(&buf)
@@ -205,6 +209,7 @@ func TestGraph_WriteDOT_WritesToWriter(t *testing.T) {
 	t.Run("WriteDOT and String produce same output", func(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Strict, Directed, WithName("G"))
+
 		var buf bytes.Buffer
 
 		err := g.WriteDOT(&buf)
@@ -218,6 +223,7 @@ func TestGraph_WriteDOT_WritesToWriter(t *testing.T) {
 		asrt := assert.New(t)
 		g1 := NewGraph(Directed)
 		g2 := NewGraph(Undirected)
+
 		var buf bytes.Buffer
 
 		err1 := g1.WriteDOT(&buf)
@@ -225,6 +231,7 @@ func TestGraph_WriteDOT_WritesToWriter(t *testing.T) {
 
 		asrt.NoError(err1, "expected first WriteDOT to succeed")
 		asrt.NoError(err2, "expected second WriteDOT to succeed")
+
 		expected := "digraph {\n}graph {\n}"
 		asrt.Equal(expected, buf.String(), "expected both graphs written to buffer")
 	})
@@ -232,6 +239,7 @@ func TestGraph_WriteDOT_WritesToWriter(t *testing.T) {
 	t.Run("writes to strings.Builder", func(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Directed, WithName("SB"))
+
 		var sb strings.Builder
 
 		err := g.WriteDOT(&sb)
@@ -393,7 +401,7 @@ func TestDOT_SingleNode_NoAttributes(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Directed)
 		n := NewNode("A")
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		output := g.String()
 
@@ -405,7 +413,7 @@ func TestDOT_SingleNode_NoAttributes(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Directed)
 		n := NewNode("SimpleID")
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		output := g.String()
 
@@ -417,7 +425,7 @@ func TestDOT_SingleNode_NoAttributes(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Directed)
 		n := NewNode("A")
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		output := g.String()
 
@@ -432,7 +440,7 @@ func TestDOT_SingleNode_NoAttributes(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Directed)
 		n := NewNode("A")
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		output := g.String()
 
@@ -443,7 +451,7 @@ func TestDOT_SingleNode_NoAttributes(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Undirected)
 		n := NewNode("A")
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		output := g.String()
 
@@ -458,7 +466,7 @@ func TestDOT_SingleNode_WithLabel(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Directed)
 		n := NewNode("A", WithLabel("Node A"))
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		output := g.String()
 
@@ -469,7 +477,7 @@ func TestDOT_SingleNode_WithLabel(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Directed)
 		n := NewNode("A", WithLabel("My Label"))
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		output := g.String()
 
@@ -481,7 +489,7 @@ func TestDOT_SingleNode_WithLabel(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Directed)
 		n := NewNode("A", WithLabel("Label with spaces"))
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		output := g.String()
 
@@ -495,7 +503,7 @@ func TestDOT_SingleNode_WithShape(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Directed)
 		n := NewNode("A", WithBoxShape())
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		output := g.String()
 
@@ -521,7 +529,7 @@ func TestDOT_SingleNode_WithShape(t *testing.T) {
 		for _, tc := range testCases {
 			g := NewGraph(Directed)
 			n := NewNode("A", tc.option)
-			g.AddNode(n)
+			_ = g.AddNode(n)
 
 			output := g.String()
 			asrt.Contains(output, tc.expected, "expected shape attribute for %s", tc.name)
@@ -535,7 +543,7 @@ func TestDOT_SingleNode_MultipleAttributes(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Directed)
 		n := NewNode("A", WithBoxShape(), WithLabel("Node A"))
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		output := g.String()
 
@@ -556,7 +564,7 @@ func TestDOT_SingleNode_MultipleAttributes(t *testing.T) {
 			WithFontName("Arial"),
 			WithFontSize(14.0),
 		)
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		output := g.String()
 
@@ -573,7 +581,7 @@ func TestDOT_SingleNode_MultipleAttributes(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Directed)
 		n := NewNode("A", WithBoxShape())
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		output := g.String()
 
@@ -587,11 +595,11 @@ func TestDOT_SingleNode_MultipleAttributes(t *testing.T) {
 		asrt := assert.New(t)
 		g1 := NewGraph(Directed)
 		n1 := NewNode("A", WithLabel("A"), WithBoxShape())
-		g1.AddNode(n1)
+		_ = g1.AddNode(n1)
 
 		g2 := NewGraph(Directed)
 		n2 := NewNode("A", WithBoxShape(), WithLabel("A"))
-		g2.AddNode(n2)
+		_ = g2.AddNode(n2)
 
 		output1 := g1.String()
 		output2 := g2.String()
@@ -606,7 +614,7 @@ func TestDOT_SingleNode_CustomAttribute(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Directed)
 		n := NewNode("A", WithNodeAttribute("peripheries", "2"))
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		output := g.String()
 
@@ -620,7 +628,7 @@ func TestDOT_SingleNode_CustomAttribute(t *testing.T) {
 			WithNodeAttribute("peripheries", "2"),
 			WithNodeAttribute("tooltip", "Hover text"),
 		)
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		output := g.String()
 
@@ -636,7 +644,7 @@ func TestDOT_SingleNode_CustomAttribute(t *testing.T) {
 			WithNodeAttribute("peripheries", "2"),
 			WithLabel("Node A"),
 		)
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		output := g.String()
 
@@ -654,9 +662,10 @@ func TestDOT_MultipleNodes(t *testing.T) {
 		n1 := NewNode("A")
 		n2 := NewNode("B")
 		n3 := NewNode("C")
-		g.AddNode(n1)
-		g.AddNode(n2)
-		g.AddNode(n3)
+
+		_ = g.AddNode(n1)
+		_ = g.AddNode(n2)
+		_ = g.AddNode(n3)
 
 		output := g.String()
 
@@ -673,9 +682,10 @@ func TestDOT_MultipleNodes(t *testing.T) {
 		n1 := NewNode("A", WithBoxShape(), WithLabel("Node A"))
 		n2 := NewNode("B")
 		n3 := NewNode("C", WithLabel("Node C"))
-		g.AddNode(n1)
-		g.AddNode(n2)
-		g.AddNode(n3)
+
+		_ = g.AddNode(n1)
+		_ = g.AddNode(n2)
+		_ = g.AddNode(n3)
 
 		output := g.String()
 
@@ -690,9 +700,10 @@ func TestDOT_MultipleNodes(t *testing.T) {
 		n1 := NewNode("A", WithLabel("First"))
 		n2 := NewNode("B")
 		n3 := NewNode("A", WithLabel("Replaced"))
-		g.AddNode(n1)
-		g.AddNode(n2)
-		g.AddNode(n3) // Replaces n1 in place
+
+		_ = g.AddNode(n1)
+		_ = g.AddNode(n2)
+		_ = g.AddNode(n3) // Replaces n1 in place
 
 		output := g.String()
 
@@ -710,7 +721,7 @@ func TestDOT_NodeID_Quoting(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Directed)
 		n := NewNode("node1")
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		output := g.String()
 
@@ -721,7 +732,7 @@ func TestDOT_NodeID_Quoting(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Directed)
 		n := NewNode("node with spaces")
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		output := g.String()
 
@@ -732,7 +743,7 @@ func TestDOT_NodeID_Quoting(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Directed)
 		n := NewNode("node-with-dashes")
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		output := g.String()
 
@@ -743,7 +754,7 @@ func TestDOT_NodeID_Quoting(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Directed)
 		n := NewNode("123node")
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		output := g.String()
 
@@ -754,7 +765,7 @@ func TestDOT_NodeID_Quoting(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Directed)
 		n := NewNode("")
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		output := g.String()
 
@@ -768,7 +779,7 @@ func TestDOT_AttributeValueFormatting(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Directed)
 		n := NewNode("A", WithLabel("Label"), WithColor("red"))
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		output := g.String()
 
@@ -780,7 +791,7 @@ func TestDOT_AttributeValueFormatting(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Directed)
 		n := NewNode("A", WithFontSize(14.5))
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		output := g.String()
 
@@ -794,7 +805,7 @@ func TestDOT_NodesWithGraphOptions(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Strict, Directed)
 		n := NewNode("A")
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		output := g.String()
 
@@ -806,7 +817,7 @@ func TestDOT_NodesWithGraphOptions(t *testing.T) {
 		asrt := assert.New(t)
 		g := NewGraph(Directed, WithName("G"))
 		n := NewNode("A", WithLabel("Node A"))
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		output := g.String()
 
@@ -819,8 +830,9 @@ func TestDOT_NodesWithGraphOptions(t *testing.T) {
 		g := NewGraph(Undirected)
 		n1 := NewNode("A", WithCircleShape())
 		n2 := NewNode("B", WithBoxShape())
-		g.AddNode(n1)
-		g.AddNode(n2)
+
+		_ = g.AddNode(n1)
+		_ = g.AddNode(n2)
 
 		output := g.String()
 

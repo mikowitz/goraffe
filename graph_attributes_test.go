@@ -10,6 +10,7 @@ import (
 func TestGraphAttributes_ZeroValue(t *testing.T) {
 	t.Run("all fields are empty or zero", func(t *testing.T) {
 		asrt := assert.New(t)
+
 		var attrs GraphAttributes
 
 		asrt.Empty(attrs.Label(), "expected Label to be empty")
@@ -28,6 +29,7 @@ func TestGraphAttributes_ZeroValue(t *testing.T) {
 func TestGraphAttributes_Custom_ReturnsCopy(t *testing.T) {
 	t.Run("returns empty map when custom is nil", func(t *testing.T) {
 		asrt := assert.New(t)
+
 		var attrs GraphAttributes
 
 		custom := attrs.Custom()
@@ -480,7 +482,7 @@ func TestNewGraph_GraphAttributesDoNotAffectNodeEdgeOperations(t *testing.T) {
 		)
 
 		n := NewNode("A")
-		g.AddNode(n)
+		_ = g.AddNode(n)
 
 		asrt.Len(g.Nodes(), 1, "expected graph to have 1 node")
 		asrt.Same(n, g.Nodes()[0], "expected node to be added")
@@ -495,7 +497,8 @@ func TestNewGraph_GraphAttributesDoNotAffectNodeEdgeOperations(t *testing.T) {
 
 		n1 := NewNode("A")
 		n2 := NewNode("B")
-		e := g.AddEdge(n1, n2)
+		e, err := g.AddEdge(n1, n2)
+		asrt.NoError(err)
 
 		asrt.Len(g.Edges(), 1, "expected graph to have 1 edge")
 		asrt.Same(e, g.Edges()[0], "expected edge to be added")

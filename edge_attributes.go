@@ -2,25 +2,34 @@ package goraffe
 
 import "maps"
 
-type (
-	EdgeStyle string
-	ArrowType string
-)
+// EdgeStyle represents the visual style of an edge line.
+type EdgeStyle string
 
+// ArrowType represents the type of arrowhead or arrowtail on an edge.
+// See https://www.graphviz.org/docs/attr-types/arrowType/ for all available types.
+type ArrowType string
+
+// Predefined edge styles supported by Graphviz.
 const (
-	EdgeStyleSolid     EdgeStyle = "solid"
-	EdgeStyleDashed    EdgeStyle = "dashed"
-	EdgeStyleDotted    EdgeStyle = "dotted"
-	EdgeStyleBold      EdgeStyle = "bold"
-	EdgeStyleInvisible EdgeStyle = "invis"
-
-	// NOTE: https://www.graphviz.org/docs/attr-types/arrowType/
-	ArrowNormal ArrowType = "normal"
-	ArrowDot    ArrowType = "dot"
-	ArrowNone   ArrowType = "none"
-	ArrowVee    ArrowType = "vee"
+	EdgeStyleSolid     EdgeStyle = "solid"  // Solid line (default)
+	EdgeStyleDashed    EdgeStyle = "dashed" // Dashed line
+	EdgeStyleDotted    EdgeStyle = "dotted" // Dotted line
+	EdgeStyleBold      EdgeStyle = "bold"   // Bold solid line
+	EdgeStyleInvisible EdgeStyle = "invis"  // Invisible edge (affects layout but not visible)
 )
 
+// Predefined arrow types supported by Graphviz.
+// This is not an exhaustive list; see Graphviz documentation for all available arrow types.
+const (
+	ArrowNormal ArrowType = "normal" // Standard arrow (default)
+	ArrowDot    ArrowType = "dot"    // Circular dot
+	ArrowNone   ArrowType = "none"   // No arrow
+	ArrowVee    ArrowType = "vee"    // V-shaped arrow
+)
+
+// EdgeAttributes holds the visual and structural properties of an edge.
+// All fields use pointer types to distinguish between "not set" and "explicitly set to zero value".
+// Use the getter methods (Label(), Color(), etc.) to access values safely.
 type EdgeAttributes struct {
 	label     *string
 	color     *string
@@ -31,11 +40,15 @@ type EdgeAttributes struct {
 	custom    map[string]string
 }
 
+// Custom returns a copy of all custom attributes set via WithEdgeAttribute.
+// Returns an empty map if no custom attributes are set.
+// The returned map is a copy and can be safely modified without affecting the edge.
 func (a EdgeAttributes) Custom() map[string]string {
 	ret := make(map[string]string)
 	if a.custom != nil {
 		maps.Copy(ret, a.custom)
 	}
+
 	return ret
 }
 
@@ -43,6 +56,7 @@ func (a *EdgeAttributes) setCustom(key, value string) {
 	if a.custom == nil {
 		a.custom = make(map[string]string)
 	}
+
 	a.custom[key] = value
 }
 
@@ -53,6 +67,7 @@ func (a *EdgeAttributes) Label() string {
 	if a.label == nil {
 		return ""
 	}
+
 	return *a.label
 }
 
@@ -63,6 +78,7 @@ func (a *EdgeAttributes) Color() string {
 	if a.color == nil {
 		return ""
 	}
+
 	return *a.color
 }
 
@@ -72,6 +88,7 @@ func (a *EdgeAttributes) Style() EdgeStyle {
 	if a.style == nil {
 		return ""
 	}
+
 	return *a.style
 }
 
@@ -81,6 +98,7 @@ func (a *EdgeAttributes) ArrowHead() ArrowType {
 	if a.arrowHead == nil {
 		return ""
 	}
+
 	return *a.arrowHead
 }
 
@@ -90,6 +108,7 @@ func (a *EdgeAttributes) ArrowTail() ArrowType {
 	if a.arrowTail == nil {
 		return ""
 	}
+
 	return *a.arrowTail
 }
 
@@ -100,6 +119,7 @@ func (a *EdgeAttributes) Weight() float64 {
 	if a.weight == nil {
 		return 0.0
 	}
+
 	return *a.weight
 }
 
@@ -113,18 +133,23 @@ func (a EdgeAttributes) applyEdge(dst *EdgeAttributes) {
 	if a.label != nil {
 		dst.label = a.label
 	}
+
 	if a.color != nil {
 		dst.color = a.color
 	}
+
 	if a.style != nil {
 		dst.style = a.style
 	}
+
 	if a.arrowHead != nil {
 		dst.arrowHead = a.arrowHead
 	}
+
 	if a.arrowTail != nil {
 		dst.arrowTail = a.arrowTail
 	}
+
 	if a.weight != nil {
 		dst.weight = a.weight
 	}
