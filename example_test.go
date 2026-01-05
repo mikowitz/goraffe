@@ -24,6 +24,7 @@ func Example_basicDirectedGraph() {
 	// digraph {
 	// 	"A";
 	// 	"B";
+	// 	"A" -> "B";
 	// }
 }
 
@@ -91,6 +92,8 @@ func Example_edgeAttributes() {
 	// 	"A" [label="Start"];
 	// 	"B" [label="Process"];
 	// 	"C" [label="End"];
+	// 	"A" -> "B" [color="blue", label="begin"];
+	// 	"B" -> "C" [arrowhead="dot", label="complete", style="dashed"];
 	// }
 }
 
@@ -115,6 +118,9 @@ func Example_undirectedGraph() {
 	// 	"A";
 	// 	"B";
 	// 	"C";
+	// 	"A" -- "B";
+	// 	"B" -- "C";
+	// 	"C" -- "A";
 	// }
 }
 
@@ -141,6 +147,8 @@ func Example_graphLayout() {
 	// 	"input" [label="Input"];
 	// 	"process" [label="Process"];
 	// 	"output" [label="Output"];
+	// 	"input" -> "process";
+	// 	"process" -> "output";
 	// }
 }
 
@@ -174,6 +182,8 @@ func Example_defaultAttributes() {
 	// 	"A";
 	// 	"B";
 	// 	"C" [fillcolor="lightblue", style="filled"];
+	// 	"A" -> "B";
+	// 	"B" -> "C";
 	// }
 }
 

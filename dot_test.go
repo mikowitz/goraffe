@@ -841,3 +841,726 @@ func TestDOT_NodesWithGraphOptions(t *testing.T) {
 		asrt.Contains(output, "\"B\" [shape=\"box\"];", "expected second node")
 	})
 }
+
+// Test single edge with no attributes
+func TestDOT_SingleEdge_NoAttributes(t *testing.T) {
+	t.Run("renders edge with arrow syntax in directed graph", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2)
+
+		output := g.String()
+
+		asrt.Contains(output, "\"A\" -> \"B\";", "expected edge with arrow syntax")
+	})
+
+	t.Run("edge appears after nodes in output", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2)
+
+		output := g.String()
+
+		lines := strings.Split(output, "\n")
+		asrt.Equal(5, len(lines), "expected 5 lines: opening, 2 nodes, 1 edge, closing")
+		asrt.Contains(lines[1], "\"A\";", "expected first node on line 2")
+		asrt.Contains(lines[2], "\"B\";", "expected second node on line 3")
+		asrt.Contains(lines[3], "\"A\" -> \"B\";", "expected edge on line 4 after nodes")
+	})
+
+	t.Run("edge line is indented with tab", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2)
+
+		output := g.String()
+
+		asrt.Contains(output, "\t\"A\" -> \"B\";", "expected edge line to be indented with tab")
+	})
+
+	t.Run("both node IDs are quoted", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2)
+
+		output := g.String()
+
+		asrt.Contains(output, "\"A\" -> \"B\"", "expected both node IDs to be quoted")
+		asrt.NotContains(output, "A -> B", "expected no unquoted node IDs")
+	})
+}
+
+// Test directed vs undirected edge syntax
+func TestDOT_SingleEdge_Directed(t *testing.T) {
+	t.Run("directed graph uses arrow syntax", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2)
+
+		output := g.String()
+
+		asrt.Contains(output, "\"A\" -> \"B\";", "expected -> syntax for directed graph")
+		asrt.NotContains(output, "\"A\" -- \"B\"", "expected no -- syntax in directed graph")
+	})
+}
+
+func TestDOT_SingleEdge_Undirected(t *testing.T) {
+	t.Run("undirected graph uses line syntax", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Undirected)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2)
+
+		output := g.String()
+
+		asrt.Contains(output, "\"A\" -- \"B\";", "expected -- syntax for undirected graph")
+		asrt.NotContains(output, "\"A\" -> \"B\"", "expected no -> syntax in undirected graph")
+	})
+
+	t.Run("undirected edge with attributes", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Undirected)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2, WithEdgeLabel("connects"))
+
+		output := g.String()
+
+		asrt.Contains(output, "\"A\" -- \"B\" [label=\"connects\"];", "expected -- syntax with attributes")
+	})
+}
+
+// Test edge with label
+func TestDOT_SingleEdge_WithLabel(t *testing.T) {
+	t.Run("renders label attribute", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2, WithEdgeLabel("connects"))
+
+		output := g.String()
+
+		asrt.Contains(output, "\"A\" -> \"B\" [label=\"connects\"];", "expected edge with label attribute")
+	})
+
+	t.Run("label value is quoted", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2, WithEdgeLabel("my label"))
+
+		output := g.String()
+
+		asrt.Contains(output, "label=\"my label\"", "expected quoted label value")
+		asrt.NotContains(output, "label=my label", "expected no unquoted label value")
+	})
+
+	t.Run("label with special characters", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2, WithEdgeLabel("Label with spaces"))
+
+		output := g.String()
+
+		asrt.Contains(output, "label=\"Label with spaces\"", "expected label with spaces to be preserved")
+	})
+}
+
+// Test edge with multiple attributes
+func TestDOT_SingleEdge_MultipleAttributes(t *testing.T) {
+	t.Run("renders multiple attributes separated by commas", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2, WithEdgeLabel("test"), WithEdgeColor("red"), WithEdgeStyle(EdgeStyleDashed))
+
+		output := g.String()
+
+		asrt.Contains(output, "\"A\" -> \"B\" [", "expected attribute section to start")
+		asrt.Contains(output, "label=\"test\"", "expected label attribute")
+		asrt.Contains(output, "color=\"red\"", "expected color attribute")
+		asrt.Contains(output, "style=\"dashed\"", "expected style attribute")
+		asrt.Contains(output, ", ", "expected comma separator between attributes")
+	})
+
+	t.Run("attributes are sorted alphabetically", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2, WithEdgeLabel("z"), WithEdgeColor("a"))
+
+		output := g.String()
+
+		// color comes before label alphabetically
+		colorIdx := strings.Index(output, "color=\"a\"")
+		labelIdx := strings.Index(output, "label=\"z\"")
+		asrt.Greater(labelIdx, colorIdx, "expected attributes in alphabetical order (color before label)")
+	})
+
+	t.Run("attributes in consistent order regardless of option order", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g1 := NewGraph(Directed)
+		n1a := NewNode("A")
+		n2a := NewNode("B")
+		_, _ = g1.AddEdge(n1a, n2a, WithEdgeLabel("test"), WithEdgeColor("red"))
+
+		g2 := NewGraph(Directed)
+		n1b := NewNode("A")
+		n2b := NewNode("B")
+		_, _ = g2.AddEdge(n1b, n2b, WithEdgeColor("red"), WithEdgeLabel("test"))
+
+		output1 := g1.String()
+		output2 := g2.String()
+
+		asrt.Equal(output1, output2, "expected consistent attribute order regardless of option order")
+	})
+}
+
+// Test edge with all attributes
+func TestDOT_SingleEdge_AllAttributes(t *testing.T) {
+	t.Run("renders all edge attribute types", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2,
+			WithEdgeLabel("connects"),
+			WithEdgeColor("blue"),
+			WithEdgeStyle(EdgeStyleDashed),
+			WithArrowHead(ArrowDot),
+			WithArrowTail(ArrowNormal),
+			WithWeight(2.5),
+		)
+
+		output := g.String()
+
+		asrt.Contains(output, "label=\"connects\"", "expected label")
+		asrt.Contains(output, "color=\"blue\"", "expected color")
+		asrt.Contains(output, "style=\"dashed\"", "expected style")
+		asrt.Contains(output, "arrowhead=\"dot\"", "expected arrowhead (lowercase)")
+		asrt.Contains(output, "arrowtail=\"normal\"", "expected arrowtail (lowercase)")
+		asrt.Contains(output, "weight=\"2.50\"", "expected weight")
+	})
+
+	t.Run("arrowhead uses lowercase in DOT output", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2, WithArrowHead(ArrowVee))
+
+		output := g.String()
+
+		asrt.Contains(output, "arrowhead=\"vee\"", "expected lowercase arrowhead in DOT")
+		asrt.NotContains(output, "arrowHead=", "expected no camelCase arrowHead")
+	})
+
+	t.Run("arrowtail uses lowercase in DOT output", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2, WithArrowTail(ArrowDot))
+
+		output := g.String()
+
+		asrt.Contains(output, "arrowtail=\"dot\"", "expected lowercase arrowtail in DOT")
+		asrt.NotContains(output, "arrowTail=", "expected no camelCase arrowTail")
+	})
+}
+
+// Test edge weight formatting
+func TestDOT_SingleEdge_Weight(t *testing.T) {
+	t.Run("weight formatted with two decimal places", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2, WithWeight(2.5))
+
+		output := g.String()
+
+		asrt.Contains(output, "weight=\"2.50\"", "expected weight formatted as %.2f")
+	})
+
+	t.Run("integer weight formatted with decimal places", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2, WithWeight(3))
+
+		output := g.String()
+
+		asrt.Contains(output, "weight=\"3.00\"", "expected integer weight with .00")
+	})
+
+	t.Run("weight with many decimal places is truncated", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2, WithWeight(2.12345))
+
+		output := g.String()
+
+		asrt.Contains(output, "weight=\"2.12\"", "expected weight truncated to 2 decimal places")
+		asrt.NotContains(output, "weight=\"2.12345\"", "expected no more than 2 decimal places")
+	})
+}
+
+// Test edge with custom attributes
+func TestDOT_SingleEdge_CustomAttribute(t *testing.T) {
+	t.Run("renders custom attribute", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2, WithEdgeAttribute("penwidth", "2.0"))
+
+		output := g.String()
+
+		asrt.Contains(output, "penwidth=\"2.0\"", "expected custom attribute to be rendered")
+	})
+
+	t.Run("multiple custom attributes", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2,
+			WithEdgeAttribute("penwidth", "2.0"),
+			WithEdgeAttribute("tooltip", "Hover text"),
+		)
+
+		output := g.String()
+
+		asrt.Contains(output, "penwidth=\"2.0\"", "expected first custom attribute")
+		asrt.Contains(output, "tooltip=\"Hover text\"", "expected second custom attribute")
+	})
+
+	t.Run("custom and typed attributes together", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2,
+			WithEdgeLabel("test"),
+			WithEdgeAttribute("penwidth", "2.0"),
+			WithEdgeColor("red"),
+		)
+
+		output := g.String()
+
+		asrt.Contains(output, "label=\"test\"", "expected typed label attribute")
+		asrt.Contains(output, "color=\"red\"", "expected typed color attribute")
+		asrt.Contains(output, "penwidth=\"2.0\"", "expected custom attribute")
+	})
+
+	t.Run("custom attributes sorted with typed attributes", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2,
+			WithEdgeLabel("z"),
+			WithEdgeAttribute("aaa", "first"),
+		)
+
+		output := g.String()
+
+		// aaa should come before label alphabetically
+		aaaIdx := strings.Index(output, "aaa=\"first\"")
+		labelIdx := strings.Index(output, "label=\"z\"")
+		asrt.Greater(labelIdx, aaaIdx, "expected custom attribute sorted with typed attributes")
+	})
+}
+
+// Test multiple edges
+func TestDOT_MultipleEdges(t *testing.T) {
+	t.Run("renders all edges in insertion order", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		n3 := NewNode("C")
+
+		_, _ = g.AddEdge(n1, n2)
+		_, _ = g.AddEdge(n2, n3)
+		_, _ = g.AddEdge(n3, n1)
+
+		output := g.String()
+
+		asrt.Contains(output, "\"A\" -> \"B\";", "expected first edge A->B")
+		asrt.Contains(output, "\"B\" -> \"C\";", "expected second edge B->C")
+		asrt.Contains(output, "\"C\" -> \"A\";", "expected third edge C->A")
+
+		// Verify edges appear in insertion order by checking their positions
+		aIdx := strings.Index(output, "\"A\" -> \"B\";")
+		bIdx := strings.Index(output, "\"B\" -> \"C\";")
+		cIdx := strings.Index(output, "\"C\" -> \"A\";")
+		asrt.Greater(bIdx, aIdx, "expected second edge after first edge")
+		asrt.Greater(cIdx, bIdx, "expected third edge after second edge")
+	})
+
+	t.Run("edges with mixed attributes", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		n3 := NewNode("C")
+
+		_, _ = g.AddEdge(n1, n2, WithEdgeLabel("first"))
+		_, _ = g.AddEdge(n2, n3)
+		_, _ = g.AddEdge(n3, n1, WithEdgeColor("red"), WithEdgeLabel("third"))
+
+		output := g.String()
+
+		asrt.Contains(output, "\"A\" -> \"B\" [label=\"first\"];", "expected first edge with label")
+		asrt.Contains(output, "\"B\" -> \"C\";", "expected second edge without attributes")
+		asrt.Contains(output, "\"C\" -> \"A\" [color=\"red\", label=\"third\"];",
+			"expected third edge with multiple attributes",
+		)
+	})
+}
+
+// Test parallel edges (multiple edges between same nodes)
+func TestDOT_ParallelEdges(t *testing.T) {
+	t.Run("renders both edges between same nodes", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+
+		_, _ = g.AddEdge(n1, n2, WithEdgeLabel("first"))
+		_, _ = g.AddEdge(n1, n2, WithEdgeLabel("second"))
+
+		output := g.String()
+
+		firstCount := strings.Count(output, "\"A\" -> \"B\" [label=\"first\"];")
+		secondCount := strings.Count(output, "\"A\" -> \"B\" [label=\"second\"];")
+
+		asrt.Equal(1, firstCount, "expected first edge to appear once")
+		asrt.Equal(1, secondCount, "expected second edge to appear once")
+	})
+
+	t.Run("parallel edges in undirected graph", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Undirected)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+
+		_, _ = g.AddEdge(n1, n2)
+		_, _ = g.AddEdge(n1, n2, WithEdgeLabel("parallel"))
+
+		output := g.String()
+
+		asrt.Contains(output, "\"A\" -- \"B\";", "expected first undirected edge")
+		asrt.Contains(output, "\"A\" -- \"B\" [label=\"parallel\"];", "expected second undirected edge")
+	})
+}
+
+// Test self-loop edge
+func TestDOT_SelfLoopEdge(t *testing.T) {
+	t.Run("renders edge from node to itself", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n := NewNode("A")
+		_, _ = g.AddEdge(n, n)
+
+		output := g.String()
+
+		asrt.Contains(output, "\"A\" -> \"A\";", "expected self-loop edge")
+	})
+
+	t.Run("self-loop with attributes", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n := NewNode("A")
+		_, _ = g.AddEdge(n, n, WithEdgeLabel("loop"))
+
+		output := g.String()
+
+		asrt.Contains(output, "\"A\" -> \"A\" [label=\"loop\"];", "expected self-loop with label")
+	})
+
+	t.Run("self-loop in undirected graph", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Undirected)
+		n := NewNode("A")
+		_, _ = g.AddEdge(n, n)
+
+		output := g.String()
+
+		asrt.Contains(output, "\"A\" -- \"A\";", "expected undirected self-loop")
+	})
+}
+
+// Test complete graph integration
+func TestDOT_CompleteGraph(t *testing.T) {
+	t.Run("renders complete graph with nodes and edges", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed, WithName("G"))
+		n1 := NewNode("A", WithBoxShape())
+		n2 := NewNode("B", WithLabel("Node B"))
+
+		_ = g.AddNode(n1)
+		_ = g.AddNode(n2)
+		_, _ = g.AddEdge(n1, n2, WithEdgeLabel("connects"), WithEdgeColor("red"))
+
+		output := g.String()
+
+		asrt.Contains(output, "digraph G {", "expected graph declaration")
+		asrt.Contains(output, "\"A\" [shape=\"box\"];", "expected first node with attributes")
+		asrt.Contains(output, "\"B\" [label=\"Node B\"];", "expected second node with label")
+		asrt.Contains(output, "\"A\" -> \"B\" [color=\"red\", label=\"connects\"];", "expected edge with attributes")
+
+		// Verify edge appears after nodes
+		nodeAIdx := strings.Index(output, "\"A\" [shape=\"box\"];")
+		nodeBIdx := strings.Index(output, "\"B\" [label=\"Node B\"];")
+		edgeIdx := strings.Index(output, "\"A\" -> \"B\"")
+		asrt.Greater(edgeIdx, nodeAIdx, "expected edge after node A")
+		asrt.Greater(edgeIdx, nodeBIdx, "expected edge after node B")
+	})
+
+	t.Run("strict graph with nodes and edges", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Strict, Directed, WithName("StrictG"))
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+
+		_, _ = g.AddEdge(n1, n2)
+
+		output := g.String()
+
+		asrt.Contains(output, "strict digraph StrictG {", "expected strict graph declaration")
+		asrt.Contains(output, "\"A\" -> \"B\";", "expected edge in strict graph")
+	})
+
+	t.Run("undirected graph with nodes and edges", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Undirected, WithName("UG"))
+		n1 := NewNode("A", WithCircleShape())
+		n2 := NewNode("B", WithBoxShape())
+
+		_, _ = g.AddEdge(n1, n2, WithEdgeStyle(EdgeStyleDashed))
+
+		output := g.String()
+
+		asrt.Contains(output, "graph UG {", "expected undirected graph declaration")
+		asrt.Contains(output, "\"A\" [shape=\"circle\"];", "expected first node")
+		asrt.Contains(output, "\"B\" [shape=\"box\"];", "expected second node")
+		asrt.Contains(output, "\"A\" -- \"B\" [style=\"dashed\"];", "expected undirected edge")
+	})
+}
+
+// Test edge output appears after nodes
+func TestDOT_EdgeOutputAfterNodes(t *testing.T) {
+	t.Run("nodes added implicitly by edges appear before edges", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+
+		// Add edge without explicitly adding nodes first
+		_, _ = g.AddEdge(n1, n2)
+
+		output := g.String()
+
+		lines := strings.Split(output, "\n")
+		asrt.Contains(lines[1], "\"A\";", "expected implicitly added node A")
+		asrt.Contains(lines[2], "\"B\";", "expected implicitly added node B")
+		asrt.Contains(lines[3], "\"A\" -> \"B\";", "expected edge after nodes")
+	})
+}
+
+// Test different arrow types
+func TestDOT_Edge_ArrowTypes(t *testing.T) {
+	t.Run("different arrowhead values", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		testCases := []struct {
+			name     string
+			arrow    ArrowType
+			expected string
+		}{
+			{"normal", ArrowNormal, "arrowhead=\"normal\""},
+			{"dot", ArrowDot, "arrowhead=\"dot\""},
+			{"vee", ArrowVee, "arrowhead=\"vee\""},
+			{"none", ArrowNone, "arrowhead=\"none\""},
+		}
+
+		for _, tc := range testCases {
+			g := NewGraph(Directed)
+			n1 := NewNode("A")
+			n2 := NewNode("B")
+			_, _ = g.AddEdge(n1, n2, WithArrowHead(tc.arrow))
+
+			output := g.String()
+			asrt.Contains(output, tc.expected, "expected arrowhead for %s", tc.name)
+		}
+	})
+
+	t.Run("different arrowtail values", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		testCases := []struct {
+			name     string
+			arrow    ArrowType
+			expected string
+		}{
+			{"normal", ArrowNormal, "arrowtail=\"normal\""},
+			{"dot", ArrowDot, "arrowtail=\"dot\""},
+			{"vee", ArrowVee, "arrowtail=\"vee\""},
+			{"none", ArrowNone, "arrowtail=\"none\""},
+		}
+
+		for _, tc := range testCases {
+			g := NewGraph(Directed)
+			n1 := NewNode("A")
+			n2 := NewNode("B")
+			_, _ = g.AddEdge(n1, n2, WithArrowTail(tc.arrow))
+
+			output := g.String()
+			asrt.Contains(output, tc.expected, "expected arrowtail for %s", tc.name)
+		}
+	})
+
+	t.Run("both arrowhead and arrowtail", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2, WithArrowHead(ArrowDot), WithArrowTail(ArrowVee))
+
+		output := g.String()
+
+		asrt.Contains(output, "arrowhead=\"dot\"", "expected arrowhead")
+		asrt.Contains(output, "arrowtail=\"vee\"", "expected arrowtail")
+	})
+}
+
+// Test different edge styles
+func TestDOT_Edge_Styles(t *testing.T) {
+	t.Run("different edge style values", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		testCases := []struct {
+			name     string
+			style    EdgeStyle
+			expected string
+		}{
+			{"solid", EdgeStyleSolid, "style=\"solid\""},
+			{"dashed", EdgeStyleDashed, "style=\"dashed\""},
+			{"dotted", EdgeStyleDotted, "style=\"dotted\""},
+			{"bold", EdgeStyleBold, "style=\"bold\""},
+			{"invis", EdgeStyleInvisible, "style=\"invis\""},
+		}
+
+		for _, tc := range testCases {
+			g := NewGraph(Directed)
+			n1 := NewNode("A")
+			n2 := NewNode("B")
+			_, _ = g.AddEdge(n1, n2, WithEdgeStyle(tc.style))
+
+			output := g.String()
+			asrt.Contains(output, tc.expected, "expected style for %s", tc.name)
+		}
+	})
+}
+
+// Test edge ID quoting with special characters
+func TestDOT_Edge_NodeIDsQuoted(t *testing.T) {
+	t.Run("node IDs with spaces are quoted", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("node with spaces")
+		n2 := NewNode("another node")
+		_, _ = g.AddEdge(n1, n2)
+
+		output := g.String()
+
+		asrt.Contains(output, "\"node with spaces\" -> \"another node\";", "expected quoted node IDs with spaces")
+	})
+
+	t.Run("node IDs with special characters are quoted", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("node-with-dashes")
+		n2 := NewNode("node:with:colons")
+		_, _ = g.AddEdge(n1, n2)
+
+		output := g.String()
+
+		asrt.Contains(output, "\"node-with-dashes\" -> \"node:with:colons\";",
+			"expected quoted node IDs with special characters",
+		)
+	})
+
+	t.Run("empty node ID is quoted", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2)
+
+		output := g.String()
+
+		asrt.Contains(output, "\"\" -> \"B\";", "expected quoted empty node ID")
+	})
+}

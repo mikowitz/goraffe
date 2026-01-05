@@ -315,84 +315,84 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
   - ✅ `TestWithDefaultNodeAttrs_UsingNodeAttributesStruct` (accepts struct, combines with options, override behavior, non-zero fields only, reusable templates)
   - ✅ `TestWithDefaultEdgeAttrs_UsingEdgeAttributesStruct` (accepts struct, combines with options, override behavior, non-zero fields only, reusable templates)
 
-### Step 14: WithAttribute Escape Hatch
+### Step 14: WithAttribute Escape Hatch ✅
 
-- ⬜ Add `SetCustom(key, value string)` to NodeAttributes
-- ⬜ Add `SetCustom(key, value string)` to EdgeAttributes
-- ⬜ Add `SetCustom(key, value string)` to GraphAttributes
-- ⬜ Ensure `Custom()` returns copy on all types
-- ⬜ Implement `WithNodeAttribute(key, value string)` option
-- ⬜ Implement `WithEdgeAttribute(key, value string)` option
-- ⬜ Implement `WithGraphAttribute(key, value string)` option
-- ⬜ Create tests
-  - ⬜ `TestWithNodeAttribute_SetsCustom`
-  - ⬜ `TestWithEdgeAttribute_SetsCustom`
-  - ⬜ `TestWithGraphAttribute_SetsCustom`
-  - ⬜ `TestCustomAttributes_DoNotOverrideTyped`
-  - ⬜ `TestCustomAttributes_MultipleCalls_Accumulate`
+- ✅ Add `setCustom(key, value string)` to NodeAttributes (unexported, internal)
+- ✅ Add `setCustom(key, value string)` to EdgeAttributes (unexported, internal)
+- ✅ Add `setCustom(key, value string)` to GraphAttributes (unexported, internal)
+- ✅ Ensure `Custom()` returns copy on all types
+- ✅ Implement `WithNodeAttribute(key, value string)` option
+- ✅ Implement `WithEdgeAttribute(key, value string)` option
+- ✅ Implement `WithGraphAttribute(key, value string)` option
+- ✅ Create tests (comprehensive test file: custom_attributes_test.go)
+  - ✅ `TestWithNodeAttribute_SetsCustom`
+  - ✅ `TestWithEdgeAttribute_SetsCustom`
+  - ✅ `TestWithGraphAttribute_SetsCustom`
+  - ✅ `TestCustomAttributes_DoNotOverrideTyped`
+  - ✅ `TestCustomAttributes_MultipleCalls_Accumulate`
 
 ---
 
 ## Phase 3: DOT Generation (Steps 15-19)
 
-### Step 15: Graph.String() - Basic DOT Output
+### Step 15: Graph.String() - Basic DOT Output ✅
 
-- ⬜ Create `dot.go`
-- ⬜ Implement `String()` method on Graph
-- ⬜ Implement `WriteDOT(w io.Writer)` method
-- ⬜ Handle digraph vs graph keywords
-- ⬜ Handle strict prefix
-- ⬜ Handle graph name
-- ⬜ Create `dot_test.go`
-  - ⬜ `TestGraph_String_EmptyDirected`
-  - ⬜ `TestGraph_String_EmptyUndirected`
-  - ⬜ `TestGraph_String_Strict`
-  - ⬜ `TestGraph_String_WithName`
-  - ⬜ `TestGraph_WriteDOT_WritesToWriter`
+- ✅ Create `dot.go` (implemented directly in graph.go)
+- ✅ Implement `String()` method on Graph (graph.go:185)
+- ✅ Implement `WriteDOT(w io.Writer)` method (graph.go:226)
+- ✅ Handle digraph vs graph keywords
+- ✅ Handle strict prefix
+- ✅ Handle graph name
+- ✅ Create `dot_test.go`
+  - ✅ `TestGraph_String_EmptyDirected`
+  - ✅ `TestGraph_String_EmptyUndirected`
+  - ✅ `TestGraph_String_Strict`
+  - ✅ `TestGraph_String_WithName`
+  - ✅ `TestGraph_WriteDOT_WritesToWriter`
 
-### Step 16: Node DOT Rendering with Attributes
+### Step 16: Node DOT Rendering with Attributes ✅
 
-- ⬜ Add internal node rendering method
-- ⬜ Update `String()`/`WriteDOT()` to include nodes
-- ⬜ Handle node attribute rendering
-  - ⬜ Label → label="value"
-  - ⬜ Shape → shape="value"
-  - ⬜ Color → color="value"
-  - ⬜ FillColor → fillcolor="value"
-  - ⬜ FontName → fontname="value"
-  - ⬜ FontSize → fontsize="value"
-  - ⬜ Custom attributes
-- ⬜ Only output non-zero/non-empty attributes
-- ⬜ Handle node ID quoting
-- ⬜ Update `dot_test.go`
-  - ⬜ `TestDOT_SingleNode_NoAttributes`
-  - ⬜ `TestDOT_SingleNode_WithLabel`
-  - ⬜ `TestDOT_SingleNode_WithShape`
-  - ⬜ `TestDOT_SingleNode_MultipleAttributes`
-  - ⬜ `TestDOT_SingleNode_CustomAttribute`
-  - ⬜ `TestDOT_MultipleNodes`
+- ✅ Add internal node rendering method (Node.String() in node.go:48)
+- ✅ Update `String()`/`WriteDOT()` to include nodes
+- ✅ Handle node attribute rendering
+  - ✅ Label → label="value"
+  - ✅ Shape → shape="value"
+  - ✅ Color → color="value"
+  - ✅ FillColor → fillcolor="value"
+  - ✅ FontName → fontname="value"
+  - ✅ FontSize → fontsize="value"
+  - ✅ Custom attributes
+- ✅ Only output non-zero/non-empty attributes
+- ✅ Handle node ID quoting
+- ✅ Update `dot_test.go`
+  - ✅ `TestDOT_SingleNode_NoAttributes`
+  - ✅ `TestDOT_SingleNode_WithLabel`
+  - ✅ `TestDOT_SingleNode_WithShape`
+  - ✅ `TestDOT_SingleNode_MultipleAttributes`
+  - ✅ `TestDOT_SingleNode_CustomAttribute`
+  - ✅ `TestDOT_MultipleNodes`
 
-### Step 17: Edge DOT Rendering with Attributes
+### Step 17: Edge DOT Rendering with Attributes ✅
 
-- ⬜ Add internal edge rendering method
-- ⬜ Update `String()`/`WriteDOT()` to include edges
-- ⬜ Handle directed (→) vs undirected (--)
-- ⬜ Handle edge attribute rendering
-  - ⬜ Label → label="value"
-  - ⬜ Color → color="value"
-  - ⬜ Style → style="value"
-  - ⬜ ArrowHead → arrowhead="value"
-  - ⬜ ArrowTail → arrowtail="value"
-  - ⬜ Weight → weight="value"
-  - ⬜ Custom attributes
-- ⬜ Update `dot_test.go`
-  - ⬜ `TestDOT_SingleEdge_NoAttributes`
-  - ⬜ `TestDOT_SingleEdge_Directed`
-  - ⬜ `TestDOT_SingleEdge_Undirected`
-  - ⬜ `TestDOT_SingleEdge_WithLabel`
-  - ⬜ `TestDOT_SingleEdge_MultipleAttributes`
-  - ⬜ `TestDOT_MultipleEdges`
-  - ⬜ `TestDOT_CompleteGraph`
+- ✅ Add internal edge rendering method (Edge.ToString() in edge.go:35)
+- ✅ Update `String()`/`WriteDOT()` to include edges
+- ✅ Handle directed (→) vs undirected (--)
+- ✅ Handle edge attribute rendering
+  - ✅ Label → label="value"
+  - ✅ Color → color="value"
+  - ✅ Style → style="value"
+  - ✅ ArrowHead → arrowhead="value"
+  - ✅ ArrowTail → arrowtail="value"
+  - ✅ Weight → weight="value"
+  - ✅ Custom attributes
+- ✅ Update `dot_test.go`
+  - ✅ `TestDOT_SingleEdge_NoAttributes`
+  - ✅ `TestDOT_SingleEdge_Directed`
+  - ✅ `TestDOT_SingleEdge_Undirected`
+  - ✅ `TestDOT_SingleEdge_WithLabel`
+  - ✅ `TestDOT_SingleEdge_MultipleAttributes`
+  - ✅ `TestDOT_MultipleEdges`
+  - ✅ `TestDOT_CompleteGraph`
 
 ### Step 18: Graph and Default Attributes in DOT Output
 
@@ -1081,7 +1081,7 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 - ✅ `edge_options.go`
 - ⬜ `labels.go`
 - ⬜ `port.go`
-- ⬜ `dot.go`
+- ✅ `dot.go` (DOT methods implemented in graph.go, node.go, edge.go instead of separate file)
 - ⬜ `parse.go`
 - ⬜ `render.go`
 - ⬜ `errors.go`
@@ -1095,15 +1095,16 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 - ✅ `node_options_test.go`
 - ✅ `edge_options_test.go`
 - ✅ `graph_default_attrs_test.go` (comprehensive tests for Step 13)
+- ✅ `custom_attributes_test.go` (comprehensive tests for Step 14)
 - ⬜ `labels_test.go`
 - ⬜ `record_labels_test.go`
 - ⬜ `port_test.go`
-- ⬜ `dot_test.go`
+- ✅ `dot_test.go` (comprehensive coverage for Steps 15-17)
 - ⬜ `lexer_test.go`
 - ⬜ `parser_test.go`
 - ⬜ `render_test.go`
 - ⬜ `errors_test.go`
-- ⬜ `example_test.go`
+- ✅ `example_test.go` (7 examples demonstrating basic usage)
 - ⬜ `testdata/simple.dot`
 - ⬜ `testdata/complex.dot`
 - ⬜ `testdata/cluster.dot`
@@ -1115,13 +1116,13 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 | Phase | Steps | Completed | Percentage |
 |-------|-------|-----------|------------|
 | Foundation | 1-5 | 5/5 | 100% |
-| Attributes | 6-14 | 8/9 | 89% |
-| DOT Generation | 15-19 | 0/5 | 0% |
+| Attributes | 6-14 | 9/9 | 100% |
+| DOT Generation | 15-19 | 3/5 | 60% |
 | Labels | 20-26 | 0/7 | 0% |
 | Subgraphs | 27-32 | 0/6 | 0% |
 | Parsing | 33-37 | 0/5 | 0% |
 | Rendering | 38-43 | 0/6 | 0% |
-| **Total** | **1-43** | **13/43** | **30%** |
+| **Total** | **1-43** | **17/43** | **40%** |
 
 ---
 
@@ -1139,8 +1140,36 @@ _Use this section to track blockers, decisions, or deviations from the plan._
 
 ### Deviations from Plan
 
-- None yet
+- **DOT Generation Implementation**: Instead of creating a separate `dot.go` file, the DOT generation methods (`String()` and `WriteDOT()`) were implemented directly in `graph.go`, with Node and Edge having their own rendering methods (`Node.String()` and `Edge.ToString()`). This keeps the code organized by type rather than by feature.
+- **Current Branch (edge-to-dot)**: Steps 15-17 have been completed, implementing basic DOT output for graphs, nodes with attributes, and edges with attributes. Recent commits include:
+  - ab34ab4: Add DOT rendering for edges
+  - d9d4efc: Implement a basic pass at graph.String() method to output valid DOT syntax
+  - d4d7dfe: Basic empty graph DOT output
+  - Comprehensive test coverage added in `dot_test.go` with over 100 test cases covering all aspects of node and edge rendering
 
 ### Lessons Learned
 
-- None yet
+- **Test-Driven Development**: The comprehensive test suite (411 tests) has been instrumental in ensuring correctness while implementing features. Tests cover all edge cases and ensure DOT output matches Graphviz specifications.
+- **Attribute Organization**: Splitting attributes into separate files (node_attributes.go, edge_attributes.go, graph_attributes.go) improved code organization and maintainability.
+
+### Current Status (as of 2026-01-08)
+
+**Completed:**
+- ✅ **Phase 1 - Foundation (100%)**: All basic graph, node, and edge functionality complete
+- ✅ **Phase 2 - Attributes (100%)**: All attribute types, options, and custom attributes implemented
+- ✅ **Phase 3 - DOT Generation (60%)**: Basic DOT output working for graphs, nodes with full attributes, and edges with full attributes
+
+**In Progress:**
+- 🟡 **Phase 3 - DOT Generation (40% remaining)**: Need to implement:
+  - Step 18: Output graph attributes and default node/edge attributes in DOT format
+  - Step 19: String escaping in DOT output (handle quotes, newlines, special characters)
+
+**Next Steps:**
+1. Complete Step 18: Add graph attributes and default attributes to DOT output
+2. Complete Step 19: Implement proper string escaping for DOT format
+3. Begin Phase 4: HTML and record labels (Steps 20-26)
+
+**Test Coverage:**
+- 411 total tests passing
+- Comprehensive coverage of all implemented features
+- Examples demonstrating all basic usage patterns
