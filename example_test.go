@@ -144,6 +144,8 @@ func Example_graphLayout() {
 	fmt.Println(g.String())
 	// Output:
 	// digraph LRGraph {
+	// 	label="System Flow";
+	// 	rankdir="LR";
 	// 	"input" [label="Input"];
 	// 	"process" [label="Process"];
 	// 	"output" [label="Output"];
@@ -179,6 +181,8 @@ func Example_defaultAttributes() {
 	fmt.Println(g.String())
 	// Output:
 	// digraph {
+	// 	node [fillcolor="lightyellow", shape="circle", style="filled"];
+	// 	edge [color="gray"];
 	// 	"A";
 	// 	"B";
 	// 	"C" [fillcolor="lightblue", style="filled"];

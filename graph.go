@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sort"
 	"strings"
 )
 
@@ -201,6 +202,10 @@ func (g *Graph) String() string {
 
 	builder.WriteString(" {\n")
 
+	g.addGraphAttributes(&builder)
+	g.addDefaultNodeAttributes(&builder)
+	g.addDefaultEdgeAttrbiutes(&builder)
+
 	for _, node := range g.nodeOrder {
 		builder.WriteString(fmt.Sprintf("\t%s;\n", node))
 	}
@@ -227,4 +232,40 @@ func (g *Graph) WriteDOT(w io.Writer) error {
 	_, err := w.Write([]byte(g.String()))
 
 	return err
+}
+
+func (g *Graph) addGraphAttributes(builder *strings.Builder) {
+	attrs := g.attrs.List()
+	var attrsStr string
+
+	if len(attrs) > 0 {
+		sort.Strings(attrs)
+		attrsStr = strings.Join(attrs, "\n")
+
+		fmt.Fprintf(builder, "%s\n", attrsStr)
+	}
+}
+
+func (g *Graph) addDefaultNodeAttributes(builder *strings.Builder) {
+	attrs := g.defaultNodeAttrs.List()
+	var attrsStr string
+
+	if len(attrs) > 0 {
+		sort.Strings(attrs)
+		attrsStr = "[" + strings.Join(attrs, ", ") + "]"
+
+		fmt.Fprintf(builder, "\tnode %s;\n", attrsStr)
+	}
+}
+
+func (g *Graph) addDefaultEdgeAttrbiutes(builder *strings.Builder) {
+	attrs := g.defaultEdgeAttrs.List()
+	var attrsStr string
+
+	if len(attrs) > 0 {
+		sort.Strings(attrs)
+		attrsStr = "[" + strings.Join(attrs, ", ") + "]"
+
+		fmt.Fprintf(builder, "\tedge %s;\n", attrsStr)
+	}
 }

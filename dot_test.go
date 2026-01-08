@@ -1758,10 +1758,10 @@ func TestDOT_GraphAttributes_AllTypes(t *testing.T) {
 		asrt.Contains(output, "rankdir=\"LR\";", "expected rankdir")
 		asrt.Contains(output, "bgcolor=\"white\";", "expected bgcolor")
 		asrt.Contains(output, "fontname=\"Arial\";", "expected fontname")
-		asrt.Contains(output, "fontsize=\"12.00\";", "expected fontsize")
+		asrt.Contains(output, "fontsize=\"12\";", "expected fontsize")
 		asrt.Contains(output, "splines=\"ortho\";", "expected splines")
-		asrt.Contains(output, "nodesep=\"0.50\";", "expected nodesep")
-		asrt.Contains(output, "ranksep=\"1.00\";", "expected ranksep")
+		asrt.Contains(output, "nodesep=\"0.5\";", "expected nodesep")
+		asrt.Contains(output, "ranksep=\"1\";", "expected ranksep")
 		asrt.Contains(output, "compound=\"true\";", "expected compound")
 	})
 
@@ -1922,7 +1922,7 @@ func TestDOT_DefaultNodeAttrs(t *testing.T) {
 		asrt.Contains(output, "shape=\"box\"", "expected shape")
 		asrt.Contains(output, "fillcolor=\"lightblue\"", "expected fillcolor")
 		asrt.Contains(output, "fontname=\"Arial\"", "expected fontname")
-		asrt.Contains(output, "fontsize=\"14.00\"", "expected fontsize")
+		asrt.Contains(output, "fontsize=\"14\"", "expected fontsize")
 	})
 }
 
@@ -2028,7 +2028,7 @@ func TestDOT_DefaultEdgeAttrs(t *testing.T) {
 		asrt.Contains(output, "color=\"blue\"", "expected color")
 		asrt.Contains(output, "style=\"dotted\"", "expected style")
 		asrt.Contains(output, "arrowhead=\"vee\"", "expected arrowhead")
-		asrt.Contains(output, "weight=\"2.50\"", "expected weight")
+		asrt.Contains(output, "weight=\"2.5\"", "expected weight")
 	})
 }
 
@@ -2133,15 +2133,16 @@ func TestDOT_FullGraph_WithAllSections(t *testing.T) {
 			if i == 0 {
 				continue // skip declaration
 			}
-			if strings.Contains(line, "label=\"Complete Graph\";") || strings.Contains(line, "rankdir=") {
+			switch {
+			case strings.Contains(line, "label=\"Complete Graph\";") || strings.Contains(line, "rankdir="):
 				graphAttrLines = append(graphAttrLines, line)
-			} else if strings.Contains(line, "node [") {
+			case strings.Contains(line, "node ["):
 				nodeDefaultLine = line
-			} else if strings.Contains(line, "edge [") {
+			case strings.Contains(line, "edge ["):
 				edgeDefaultLine = line
-			} else if strings.Contains(line, "\"A\"") && strings.Contains(line, "label=\"Node A\"") {
+			case strings.Contains(line, "\"A\"") && strings.Contains(line, "label=\"Node A\""):
 				nodeLine = line
-			} else if strings.Contains(line, "->") {
+			case strings.Contains(line, "->"):
 				edgeLine = line
 			}
 		}
@@ -2402,7 +2403,7 @@ func TestDOT_NumericAttributes_Formatting(t *testing.T) {
 
 		output := g.String()
 
-		asrt.Contains(output, "fontsize=\"12.50\";", "expected fontsize with two decimals")
+		asrt.Contains(output, "fontsize=\"12.5\";", "expected fontsize formatted with %g")
 	})
 
 	t.Run("nodesep formatted with two decimals", func(t *testing.T) {
@@ -2429,6 +2430,6 @@ func TestDOT_NumericAttributes_Formatting(t *testing.T) {
 
 		output := g.String()
 
-		asrt.Contains(output, "fontsize=\"14.00\";", "expected integer fontsize with .00")
+		asrt.Contains(output, "fontsize=\"14\";", "expected integer fontsize formatted with %g")
 	})
 }

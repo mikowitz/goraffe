@@ -1,6 +1,9 @@
 package goraffe
 
-import "maps"
+import (
+	"fmt"
+	"maps"
+)
 
 // RankDir specifies the direction of graph layout from rank to rank.
 // This controls how nodes are arranged in hierarchical layouts.
@@ -160,4 +163,41 @@ func (a *GraphAttributes) Compound() bool {
 	}
 
 	return *a.compound
+}
+
+func (a *GraphAttributes) List() []string {
+	attrs := []string{}
+	if a.bgColor != nil {
+		attrs = append(attrs, fmt.Sprintf("\tbgcolor=\"%s\";", a.BgColor()))
+	}
+	if a.compound != nil {
+		attrs = append(attrs, fmt.Sprintf("\tcompound=\"%t\";", a.Compound()))
+	}
+	if a.fontName != nil {
+		attrs = append(attrs, fmt.Sprintf("\tfontname=\"%s\";", a.FontName()))
+	}
+	if a.fontSize != nil {
+		attrs = append(attrs, fmt.Sprintf("\tfontsize=\"%g\";", a.FontSize()))
+	}
+	if a.label != nil {
+		attrs = append(attrs, fmt.Sprintf("\tlabel=\"%s\";", a.Label()))
+	}
+	if a.nodeSep != nil {
+		attrs = append(attrs, fmt.Sprintf("\tnodesep=\"%g\";", a.NodeSep()))
+	}
+	if a.rankDir != nil {
+		attrs = append(attrs, fmt.Sprintf("\trankdir=\"%s\";", a.RankDir()))
+	}
+	if a.rankSep != nil {
+		attrs = append(attrs, fmt.Sprintf("\tranksep=\"%g\";", a.RankSep()))
+	}
+	if a.splines != nil {
+		attrs = append(attrs, fmt.Sprintf("\tsplines=\"%s\";", a.Splines()))
+	}
+
+	for k, v := range a.custom {
+		attrs = append(attrs, fmt.Sprintf("\t%s=\"%s\";", k, v))
+	}
+
+	return attrs
 }
