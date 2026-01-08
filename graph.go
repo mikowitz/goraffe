@@ -205,6 +205,10 @@ func (g *Graph) String() string {
 		builder.WriteString(fmt.Sprintf("\t%s;\n", node))
 	}
 
+	for _, edge := range g.edges {
+		builder.WriteString(fmt.Sprintf("\t%s;\n", edge.ToString(g.directed)))
+	}
+
 	builder.WriteString("}")
 
 	return builder.String()
