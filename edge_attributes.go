@@ -1,6 +1,9 @@
 package goraffe
 
-import "maps"
+import (
+	"fmt"
+	"maps"
+)
 
 // EdgeStyle represents the visual style of an edge line.
 type EdgeStyle string
@@ -153,4 +156,33 @@ func (a EdgeAttributes) applyEdge(dst *EdgeAttributes) {
 	if a.weight != nil {
 		dst.weight = a.weight
 	}
+}
+
+func (a EdgeAttributes) List() []string {
+	attrs := make([]string, 0)
+
+	if a.label != nil {
+		attrs = append(attrs, fmt.Sprintf(`label="%s"`, a.Label()))
+	}
+	if a.color != nil {
+		attrs = append(attrs, fmt.Sprintf(`color="%s"`, a.Color()))
+	}
+	if a.style != nil {
+		attrs = append(attrs, fmt.Sprintf(`style="%s"`, a.Style()))
+	}
+	if a.arrowHead != nil {
+		attrs = append(attrs, fmt.Sprintf(`arrowhead="%s"`, a.ArrowHead()))
+	}
+	if a.arrowTail != nil {
+		attrs = append(attrs, fmt.Sprintf(`arrowtail="%s"`, a.ArrowTail()))
+	}
+	if a.weight != nil {
+		attrs = append(attrs, fmt.Sprintf(`weight="%g"`, a.Weight()))
+	}
+
+	for k, v := range a.custom {
+		attrs = append(attrs, fmt.Sprintf(`%s="%s"`, k, v))
+	}
+
+	return attrs
 }

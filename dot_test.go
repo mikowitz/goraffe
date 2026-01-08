@@ -574,7 +574,7 @@ func TestDOT_SingleNode_MultipleAttributes(t *testing.T) {
 		asrt.Contains(output, "fillcolor=\"lightblue\"", "expected fillcolor")
 		asrt.Contains(output, "style=\"filled\"", "expected style to be filled")
 		asrt.Contains(output, "fontname=\"Arial\"", "expected fontname")
-		asrt.Contains(output, "fontsize=\"14.00\"", "expected fontsize")
+		asrt.Contains(output, "fontsize=\"14\"", "expected fontsize")
 	})
 
 	t.Run("only non-zero attributes are rendered", func(t *testing.T) {
@@ -795,7 +795,7 @@ func TestDOT_AttributeValueFormatting(t *testing.T) {
 
 		output := g.String()
 
-		asrt.Contains(output, "fontsize=\"14.50\"", "expected fontsize as quoted string")
+		asrt.Contains(output, "fontsize=\"14.5\"", "expected fontsize as quoted string")
 	})
 }
 
@@ -1070,7 +1070,7 @@ func TestDOT_SingleEdge_AllAttributes(t *testing.T) {
 		asrt.Contains(output, "style=\"dashed\"", "expected style")
 		asrt.Contains(output, "arrowhead=\"dot\"", "expected arrowhead (lowercase)")
 		asrt.Contains(output, "arrowtail=\"normal\"", "expected arrowtail (lowercase)")
-		asrt.Contains(output, "weight=\"2.50\"", "expected weight")
+		asrt.Contains(output, "weight=\"2.5\"", "expected weight")
 	})
 
 	t.Run("arrowhead uses lowercase in DOT output", func(t *testing.T) {
@@ -1114,7 +1114,7 @@ func TestDOT_SingleEdge_Weight(t *testing.T) {
 
 		output := g.String()
 
-		asrt.Contains(output, "weight=\"2.50\"", "expected weight formatted as %.2f")
+		asrt.Contains(output, "weight=\"2.5\"", "expected weight formatted as %g")
 	})
 
 	t.Run("integer weight formatted with decimal places", func(t *testing.T) {
@@ -1127,7 +1127,7 @@ func TestDOT_SingleEdge_Weight(t *testing.T) {
 
 		output := g.String()
 
-		asrt.Contains(output, "weight=\"3.00\"", "expected integer weight with .00")
+		asrt.Contains(output, "weight=\"3\"", "expected integer weight formatted as %g")
 	})
 
 	t.Run("weight with many decimal places is truncated", func(t *testing.T) {
@@ -1140,8 +1140,7 @@ func TestDOT_SingleEdge_Weight(t *testing.T) {
 
 		output := g.String()
 
-		asrt.Contains(output, "weight=\"2.12\"", "expected weight truncated to 2 decimal places")
-		asrt.NotContains(output, "weight=\"2.12345\"", "expected no more than 2 decimal places")
+		asrt.Contains(output, "weight=\"2.12345\"", "expected float weight formatted as %g")
 	})
 }
 
@@ -1562,5 +1561,875 @@ func TestDOT_Edge_NodeIDsQuoted(t *testing.T) {
 		output := g.String()
 
 		asrt.Contains(output, "\"\" -> \"B\";", "expected quoted empty node ID")
+	})
+}
+
+// Test graph attributes in DOT output - single attribute (rankdir)
+func TestDOT_GraphAttributes_RankDir(t *testing.T) {
+	t.Run("outputs rankdir attribute", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed, WithRankDir(RankDirLR))
+
+		output := g.String()
+
+		asrt.Contains(output, "rankdir=\"LR\";", "expected rankdir attribute in output")
+	})
+
+	t.Run("rankdir appears after opening brace", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed, WithName("G"), WithRankDir(RankDirLR))
+
+		output := g.String()
+		lines := strings.Split(output, "\n")
+
+		asrt.Contains(lines[0], "digraph G {", "expected graph declaration on first line")
+		asrt.Contains(lines[1], "rankdir=\"LR\";", "expected rankdir on second line")
+	})
+
+	t.Run("rankdir is indented with tab", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed, WithRankDir(RankDirTB))
+
+		output := g.String()
+
+		asrt.Contains(output, "\trankdir=\"TB\";", "expected rankdir to be indented with tab")
+	})
+
+	t.Run("different rankdir values", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		testCases := []struct {
+			name     string
+			rankDir  RankDir
+			expected string
+		}{
+			{"TB", RankDirTB, "rankdir=\"TB\""},
+			{"BT", RankDirBT, "rankdir=\"BT\""},
+			{"LR", RankDirLR, "rankdir=\"LR\""},
+			{"RL", RankDirRL, "rankdir=\"RL\""},
+		}
+
+		for _, tc := range testCases {
+			g := NewGraph(Directed, WithRankDir(tc.rankDir))
+			output := g.String()
+			asrt.Contains(output, tc.expected, "expected %s rankdir value", tc.name)
+		}
+	})
+}
+
+// Test graph attributes - label
+func TestDOT_GraphAttributes_Label(t *testing.T) {
+	t.Run("outputs graph label attribute", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed, WithGraphLabel("My Graph"))
+
+		output := g.String()
+
+		asrt.Contains(output, "label=\"My Graph\";", "expected graph label attribute")
+	})
+
+	t.Run("label appears after opening brace before nodes", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed, WithGraphLabel("Test"))
+		n := NewNode("A")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		labelIdx := strings.Index(output, "label=\"Test\";")
+		nodeIdx := strings.Index(output, "\"A\";")
+		asrt.Greater(nodeIdx, labelIdx, "expected label before nodes")
+	})
+
+	t.Run("label with spaces", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed, WithGraphLabel("Graph With Spaces"))
+
+		output := g.String()
+
+		asrt.Contains(output, "label=\"Graph With Spaces\";", "expected label with spaces preserved")
+	})
+}
+
+// Test multiple graph attributes together
+func TestDOT_GraphAttributes_Multiple(t *testing.T) {
+	t.Run("outputs all set graph attributes", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithGraphLabel("My Graph"),
+			WithRankDir(RankDirLR),
+			WithBgColor("lightgray"),
+		)
+
+		output := g.String()
+
+		asrt.Contains(output, "label=\"My Graph\";", "expected label")
+		asrt.Contains(output, "rankdir=\"LR\";", "expected rankdir")
+		asrt.Contains(output, "bgcolor=\"lightgray\";", "expected bgcolor")
+	})
+
+	t.Run("attributes are sorted alphabetically", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithRankDir(RankDirLR),
+			WithGraphLabel("Test"),
+			WithBgColor("white"),
+		)
+
+		output := g.String()
+
+		bgcolorIdx := strings.Index(output, "bgcolor=")
+		labelIdx := strings.Index(output, "label=")
+		rankdirIdx := strings.Index(output, "rankdir=")
+
+		asrt.Greater(labelIdx, bgcolorIdx, "expected bgcolor before label alphabetically")
+		asrt.Greater(rankdirIdx, labelIdx, "expected label before rankdir alphabetically")
+	})
+
+	t.Run("each attribute on its own line", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithGraphLabel("Test"),
+			WithRankDir(RankDirTB),
+		)
+
+		output := g.String()
+		lines := strings.Split(output, "\n")
+
+		foundLabel := false
+		foundRankDir := false
+		for _, line := range lines {
+			if strings.Contains(line, "label=\"Test\";") {
+				foundLabel = true
+			}
+			if strings.Contains(line, "rankdir=\"TB\";") {
+				foundRankDir = true
+			}
+		}
+
+		asrt.True(foundLabel, "expected label on its own line")
+		asrt.True(foundRankDir, "expected rankdir on its own line")
+	})
+
+	t.Run("all attributes appear before nodes", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithGraphLabel("Test"),
+			WithRankDir(RankDirLR),
+		)
+		n := NewNode("A")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		labelIdx := strings.Index(output, "label=")
+		rankdirIdx := strings.Index(output, "rankdir=")
+		nodeIdx := strings.Index(output, "\"A\";")
+
+		asrt.Greater(nodeIdx, labelIdx, "expected attributes before nodes")
+		asrt.Greater(nodeIdx, rankdirIdx, "expected attributes before nodes")
+	})
+}
+
+// Test all graph attribute types
+func TestDOT_GraphAttributes_AllTypes(t *testing.T) {
+	t.Run("outputs all graph attribute types", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithGraphLabel("Complete"),
+			WithRankDir(RankDirLR),
+			WithBgColor("white"),
+			WithGraphFontName("Arial"),
+			WithGraphFontSize(12.0),
+			WithSplines(SplineOrtho),
+			WithNodeSep(0.5),
+			WithRankSep(1.0),
+			WithCompound(true),
+		)
+
+		output := g.String()
+
+		asrt.Contains(output, "label=\"Complete\";", "expected label")
+		asrt.Contains(output, "rankdir=\"LR\";", "expected rankdir")
+		asrt.Contains(output, "bgcolor=\"white\";", "expected bgcolor")
+		asrt.Contains(output, "fontname=\"Arial\";", "expected fontname")
+		asrt.Contains(output, "fontsize=\"12\";", "expected fontsize")
+		asrt.Contains(output, "splines=\"ortho\";", "expected splines")
+		asrt.Contains(output, "nodesep=\"0.5\";", "expected nodesep")
+		asrt.Contains(output, "ranksep=\"1\";", "expected ranksep")
+		asrt.Contains(output, "compound=\"true\";", "expected compound")
+	})
+
+	t.Run("uses correct DOT attribute names", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithBgColor("white"),
+			WithRankDir(RankDirLR),
+			WithNodeSep(0.5),
+		)
+
+		output := g.String()
+
+		asrt.Contains(output, "bgcolor=", "expected lowercase bgcolor")
+		asrt.NotContains(output, "bgColor=", "expected no camelCase bgColor")
+		asrt.Contains(output, "rankdir=", "expected lowercase rankdir")
+		asrt.NotContains(output, "rankDir=", "expected no camelCase rankDir")
+		asrt.Contains(output, "nodesep=", "expected lowercase nodesep")
+		asrt.NotContains(output, "nodeSep=", "expected no camelCase nodeSep")
+	})
+
+	t.Run("different spline types", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		testCases := []struct {
+			name     string
+			spline   SplineType
+			expected string
+		}{
+			{"true", SplineTrue, "splines=\"true\""},
+			{"false", SplineFalse, "splines=\"false\""},
+			{"ortho", SplineOrtho, "splines=\"ortho\""},
+			{"polyline", SplinePolyline, "splines=\"polyline\""},
+			{"curved", SplineCurved, "splines=\"curved\""},
+			{"spline", SplineSpline, "splines=\"spline\""},
+			{"line", SplineLine, "splines=\"line\""},
+			{"none", SplineNone, "splines=\"none\""},
+		}
+
+		for _, tc := range testCases {
+			g := NewGraph(Directed, WithSplines(tc.spline))
+			output := g.String()
+			asrt.Contains(output, tc.expected, "expected %s spline value", tc.name)
+		}
+	})
+
+	t.Run("compound boolean formatting", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		gTrue := NewGraph(Directed, WithCompound(true))
+		outputTrue := gTrue.String()
+		asrt.Contains(outputTrue, "compound=\"true\";", "expected true as string")
+
+		gFalse := NewGraph(Directed, WithCompound(false))
+		outputFalse := gFalse.String()
+		asrt.Contains(outputFalse, "compound=\"false\";", "expected false as string")
+	})
+}
+
+// Test default node attributes output
+func TestDOT_DefaultNodeAttrs(t *testing.T) {
+	t.Run("outputs default node attributes", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithDefaultNodeAttrs(WithBoxShape(), WithColor("blue")),
+		)
+
+		output := g.String()
+
+		asrt.Contains(output, "node [", "expected node attributes section")
+		asrt.Contains(output, "shape=\"box\"", "expected shape in defaults")
+		asrt.Contains(output, "color=\"blue\"", "expected color in defaults")
+		asrt.Contains(output, "];", "expected closing bracket and semicolon")
+	})
+
+	t.Run("default node attrs appear after graph attrs", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithGraphLabel("Test"),
+			WithDefaultNodeAttrs(WithBoxShape()),
+		)
+
+		output := g.String()
+
+		labelIdx := strings.Index(output, "label=\"Test\";")
+		nodeDefaultsIdx := strings.Index(output, "node [")
+
+		asrt.Greater(nodeDefaultsIdx, labelIdx, "expected node defaults after graph attributes")
+	})
+
+	t.Run("default node attrs appear before nodes", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithDefaultNodeAttrs(WithBoxShape()),
+		)
+		n := NewNode("A")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		nodeDefaultsIdx := strings.Index(output, "node [")
+		nodeIdx := strings.Index(output, "\"A\";")
+
+		asrt.Greater(nodeIdx, nodeDefaultsIdx, "expected node defaults before actual nodes")
+	})
+
+	t.Run("node default attributes are sorted", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithDefaultNodeAttrs(
+				WithLabel("Default Label"),
+				WithBoxShape(),
+				WithColor("red"),
+			),
+		)
+
+		output := g.String()
+
+		colorIdx := strings.Index(output, "color=\"red\"")
+		labelIdx := strings.Index(output, "label=\"Default Label\"")
+		shapeIdx := strings.Index(output, "shape=\"box\"")
+
+		asrt.Greater(labelIdx, colorIdx, "expected color before label alphabetically")
+		asrt.Greater(shapeIdx, labelIdx, "expected label before shape alphabetically")
+	})
+
+	t.Run("node defaults format is correct", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithDefaultNodeAttrs(WithBoxShape()),
+		)
+
+		output := g.String()
+
+		asrt.Contains(output, "\tnode [shape=\"box\"];", "expected correct format with tab and semicolon")
+	})
+
+	t.Run("multiple node default attributes", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithDefaultNodeAttrs(
+				WithBoxShape(),
+				WithFillColor("lightblue"),
+				WithFontName("Arial"),
+				WithFontSize(14.0),
+			),
+		)
+
+		output := g.String()
+
+		asrt.Contains(output, "shape=\"box\"", "expected shape")
+		asrt.Contains(output, "fillcolor=\"lightblue\"", "expected fillcolor")
+		asrt.Contains(output, "fontname=\"Arial\"", "expected fontname")
+		asrt.Contains(output, "fontsize=\"14\"", "expected fontsize")
+	})
+}
+
+// Test default edge attributes output
+func TestDOT_DefaultEdgeAttrs(t *testing.T) {
+	t.Run("outputs default edge attributes", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithDefaultEdgeAttrs(WithEdgeColor("gray"), WithEdgeStyle(EdgeStyleDashed)),
+		)
+
+		output := g.String()
+
+		asrt.Contains(output, "edge [", "expected edge attributes section")
+		asrt.Contains(output, "color=\"gray\"", "expected color in defaults")
+		asrt.Contains(output, "style=\"dashed\"", "expected style in defaults")
+		asrt.Contains(output, "];", "expected closing bracket and semicolon")
+	})
+
+	t.Run("default edge attrs appear after node defaults", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithDefaultNodeAttrs(WithBoxShape()),
+			WithDefaultEdgeAttrs(WithEdgeColor("gray")),
+		)
+
+		output := g.String()
+
+		nodeDefaultsIdx := strings.Index(output, "node [")
+		edgeDefaultsIdx := strings.Index(output, "edge [")
+
+		asrt.Greater(edgeDefaultsIdx, nodeDefaultsIdx, "expected edge defaults after node defaults")
+	})
+
+	t.Run("default edge attrs appear before nodes", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithDefaultEdgeAttrs(WithEdgeColor("gray")),
+		)
+		n := NewNode("A")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		edgeDefaultsIdx := strings.Index(output, "edge [")
+		nodeIdx := strings.Index(output, "\"A\";")
+
+		asrt.Greater(nodeIdx, edgeDefaultsIdx, "expected edge defaults before actual nodes")
+	})
+
+	t.Run("edge default attributes are sorted", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithDefaultEdgeAttrs(
+				WithEdgeLabel("default"),
+				WithEdgeColor("blue"),
+				WithArrowHead(ArrowDot),
+			),
+		)
+
+		output := g.String()
+
+		arrowIdx := strings.Index(output, "arrowhead=\"dot\"")
+		colorIdx := strings.Index(output, "color=\"blue\"")
+		labelIdx := strings.Index(output, "label=\"default\"")
+
+		asrt.Greater(colorIdx, arrowIdx, "expected arrowhead before color alphabetically")
+		asrt.Greater(labelIdx, colorIdx, "expected color before label alphabetically")
+	})
+
+	t.Run("edge defaults format is correct", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithDefaultEdgeAttrs(WithEdgeColor("red")),
+		)
+
+		output := g.String()
+
+		asrt.Contains(output, "\tedge [color=\"red\"];", "expected correct format with tab and semicolon")
+	})
+
+	t.Run("multiple edge default attributes", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithDefaultEdgeAttrs(
+				WithEdgeLabel("edge"),
+				WithEdgeColor("blue"),
+				WithEdgeStyle(EdgeStyleDotted),
+				WithArrowHead(ArrowVee),
+				WithWeight(2.5),
+			),
+		)
+
+		output := g.String()
+
+		asrt.Contains(output, "label=\"edge\"", "expected label")
+		asrt.Contains(output, "color=\"blue\"", "expected color")
+		asrt.Contains(output, "style=\"dotted\"", "expected style")
+		asrt.Contains(output, "arrowhead=\"vee\"", "expected arrowhead")
+		asrt.Contains(output, "weight=\"2.5\"", "expected weight")
+	})
+}
+
+// Test that default sections are only output if non-empty
+func TestDOT_DefaultAttrs_OnlyIfNonEmpty(t *testing.T) {
+	t.Run("no node defaults when not set", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("A")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.NotContains(output, "node [", "expected no node defaults section when empty")
+	})
+
+	t.Run("no edge defaults when not set", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2)
+
+		output := g.String()
+
+		asrt.NotContains(output, "edge [", "expected no edge defaults section when empty")
+	})
+
+	t.Run("empty graph with no attributes has no attribute lines", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+
+		output := g.String()
+
+		expected := "digraph {\n}"
+		asrt.Equal(expected, output, "expected only graph declaration and closing brace")
+	})
+
+	t.Run("outputs node defaults but not edge defaults", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithDefaultNodeAttrs(WithBoxShape()),
+		)
+
+		output := g.String()
+
+		asrt.Contains(output, "node [", "expected node defaults")
+		asrt.NotContains(output, "edge [", "expected no edge defaults")
+	})
+
+	t.Run("outputs edge defaults but not node defaults", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithDefaultEdgeAttrs(WithEdgeColor("gray")),
+		)
+
+		output := g.String()
+
+		asrt.Contains(output, "edge [", "expected edge defaults")
+		asrt.NotContains(output, "node [", "expected no node defaults")
+	})
+}
+
+// Test full graph with all sections
+func TestDOT_FullGraph_WithAllSections(t *testing.T) {
+	t.Run("outputs all sections in correct order", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Strict,
+			Directed,
+			WithName("G"),
+			WithGraphLabel("Complete Graph"),
+			WithRankDir(RankDirLR),
+			WithDefaultNodeAttrs(WithBoxShape(), WithFontName("Arial")),
+			WithDefaultEdgeAttrs(WithEdgeColor("gray")),
+		)
+		n1 := NewNode("A", WithLabel("Node A"))
+		n2 := NewNode("B", WithLabel("Node B"))
+		_ = g.AddNode(n1)
+		_ = g.AddNode(n2)
+		_, _ = g.AddEdge(n1, n2, WithEdgeLabel("connects"))
+
+		output := g.String()
+		lines := strings.Split(output, "\n")
+
+		// Verify structure
+		asrt.GreaterOrEqual(len(lines), 8, "expected at least 8 lines")
+
+		// Line 0: Graph declaration
+		asrt.Contains(lines[0], "strict digraph G {", "expected graph declaration")
+
+		// Find attribute lines (order may vary due to sorting)
+		graphAttrLines := []string{}
+		nodeDefaultLine := ""
+		edgeDefaultLine := ""
+		nodeLine := ""
+		edgeLine := ""
+
+		for i, line := range lines {
+			if i == 0 {
+				continue // skip declaration
+			}
+			switch {
+			case strings.Contains(line, "label=\"Complete Graph\";") || strings.Contains(line, "rankdir="):
+				graphAttrLines = append(graphAttrLines, line)
+			case strings.Contains(line, "node ["):
+				nodeDefaultLine = line
+			case strings.Contains(line, "edge ["):
+				edgeDefaultLine = line
+			case strings.Contains(line, "\"A\"") && strings.Contains(line, "label=\"Node A\""):
+				nodeLine = line
+			case strings.Contains(line, "->"):
+				edgeLine = line
+			}
+		}
+
+		asrt.Greater(len(graphAttrLines), 0, "expected graph attributes")
+		asrt.NotEmpty(nodeDefaultLine, "expected node default line")
+		asrt.NotEmpty(edgeDefaultLine, "expected edge default line")
+		asrt.NotEmpty(nodeLine, "expected node line")
+		asrt.NotEmpty(edgeLine, "expected edge line")
+	})
+
+	t.Run("complete output matches expected format", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithName("Test"),
+			WithGraphLabel("My Graph"),
+			WithRankDir(RankDirLR),
+			WithDefaultNodeAttrs(WithBoxShape()),
+			WithDefaultEdgeAttrs(WithEdgeColor("gray")),
+		)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_ = g.AddNode(n1)
+		_ = g.AddNode(n2)
+		_, _ = g.AddEdge(n1, n2)
+
+		output := g.String()
+
+		// Verify all expected elements are present
+		asrt.Contains(output, "digraph Test {", "expected graph declaration")
+		asrt.Contains(output, "label=\"My Graph\";", "expected graph label")
+		asrt.Contains(output, "rankdir=\"LR\";", "expected rankdir")
+		asrt.Contains(output, "node [shape=\"box\"];", "expected node defaults")
+		asrt.Contains(output, "edge [color=\"gray\"];", "expected edge defaults")
+		asrt.Contains(output, "\"A\";", "expected node A")
+		asrt.Contains(output, "\"B\";", "expected node B")
+		asrt.Contains(output, "\"A\" -> \"B\";", "expected edge")
+		asrt.Contains(output, "}", "expected closing brace")
+	})
+}
+
+// Test explicit output order verification
+func TestDOT_OutputOrder_Verification(t *testing.T) {
+	t.Run("verifies strict ordering of all sections", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithGraphLabel("Test"),
+			WithDefaultNodeAttrs(WithBoxShape()),
+			WithDefaultEdgeAttrs(WithEdgeColor("gray")),
+		)
+		n := NewNode("A")
+		_ = g.AddNode(n)
+		n1 := NewNode("B")
+		n2 := NewNode("C")
+		_, _ = g.AddEdge(n1, n2)
+
+		output := g.String()
+
+		// Get positions of key elements
+		graphAttrIdx := strings.Index(output, "label=\"Test\";")
+		nodeDefaultIdx := strings.Index(output, "node [")
+		edgeDefaultIdx := strings.Index(output, "edge [")
+		firstNodeIdx := strings.Index(output, "\"A\";")
+		edgeIdx := strings.Index(output, "->")
+
+		// Verify ordering
+		asrt.NotEqual(-1, graphAttrIdx, "expected graph attributes to exist")
+		asrt.NotEqual(-1, nodeDefaultIdx, "expected node defaults to exist")
+		asrt.NotEqual(-1, edgeDefaultIdx, "expected edge defaults to exist")
+		asrt.NotEqual(-1, firstNodeIdx, "expected nodes to exist")
+		asrt.NotEqual(-1, edgeIdx, "expected edges to exist")
+
+		asrt.Greater(nodeDefaultIdx, graphAttrIdx, "expected node defaults after graph attrs")
+		asrt.Greater(edgeDefaultIdx, nodeDefaultIdx, "expected edge defaults after node defaults")
+		asrt.Greater(firstNodeIdx, edgeDefaultIdx, "expected nodes after edge defaults")
+		asrt.Greater(edgeIdx, firstNodeIdx, "expected edges after nodes")
+	})
+
+	t.Run("graph attributes before everything else", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithGraphLabel("First"),
+			WithRankDir(RankDirLR),
+		)
+		n := NewNode("A")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		firstGraphAttrIdx := strings.Index(output, "label=\"First\";")
+		nodeIdx := strings.Index(output, "\"A\";")
+
+		asrt.Greater(nodeIdx, firstGraphAttrIdx, "expected all graph attrs before nodes")
+	})
+}
+
+// Test graph attributes with empty graph (no nodes/edges)
+func TestDOT_GraphAttributes_EmptyGraph(t *testing.T) {
+	t.Run("attributes work with no nodes or edges", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithGraphLabel("Empty"),
+			WithRankDir(RankDirTB),
+		)
+
+		output := g.String()
+
+		asrt.Contains(output, "label=\"Empty\";", "expected label in empty graph")
+		asrt.Contains(output, "rankdir=\"TB\";", "expected rankdir in empty graph")
+	})
+
+	t.Run("structure is correct for empty graph with attributes", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed, WithGraphLabel("Test"))
+
+		output := g.String()
+		lines := strings.Split(output, "\n")
+
+		asrt.Equal(3, len(lines), "expected 3 lines: declaration, label, closing")
+		asrt.Contains(lines[0], "digraph {", "expected graph declaration")
+		asrt.Contains(lines[1], "label=\"Test\";", "expected label")
+		asrt.Equal("}", lines[2], "expected closing brace")
+	})
+}
+
+// Test custom graph attributes
+func TestDOT_CustomGraphAttribute(t *testing.T) {
+	t.Run("outputs custom graph attribute", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithGraphAttribute("margin", "0.5"),
+		)
+
+		output := g.String()
+
+		asrt.Contains(output, "margin=\"0.5\";", "expected custom attribute")
+	})
+
+	t.Run("custom and typed attributes together", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithGraphLabel("Test"),
+			WithGraphAttribute("margin", "0.5"),
+			WithRankDir(RankDirLR),
+		)
+
+		output := g.String()
+
+		asrt.Contains(output, "label=\"Test\";", "expected typed label")
+		asrt.Contains(output, "rankdir=\"LR\";", "expected typed rankdir")
+		asrt.Contains(output, "margin=\"0.5\";", "expected custom margin")
+	})
+
+	t.Run("custom attributes sorted with typed attributes", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithGraphLabel("zzz"),
+			WithGraphAttribute("aaa", "first"),
+		)
+
+		output := g.String()
+
+		aaaIdx := strings.Index(output, "aaa=\"first\"")
+		labelIdx := strings.Index(output, "label=\"zzz\"")
+
+		asrt.Greater(labelIdx, aaaIdx, "expected custom attribute sorted alphabetically with typed attrs")
+	})
+}
+
+// Test default node attributes with custom
+func TestDOT_DefaultNodeAttrs_WithCustom(t *testing.T) {
+	t.Run("outputs custom node default attributes", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithDefaultNodeAttrs(
+				WithBoxShape(),
+				WithNodeAttribute("peripheries", "2"),
+			),
+		)
+
+		output := g.String()
+
+		asrt.Contains(output, "node [", "expected node defaults section")
+		asrt.Contains(output, "shape=\"box\"", "expected typed shape")
+		asrt.Contains(output, "peripheries=\"2\"", "expected custom peripheries")
+	})
+
+	t.Run("custom and typed node defaults sorted together", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithDefaultNodeAttrs(
+				WithLabel("zzz"),
+				WithNodeAttribute("aaa", "first"),
+			),
+		)
+
+		output := g.String()
+
+		aaaIdx := strings.Index(output, "aaa=\"first\"")
+		labelIdx := strings.Index(output, "label=\"zzz\"")
+
+		asrt.Greater(labelIdx, aaaIdx, "expected custom sorted with typed attributes")
+	})
+}
+
+// Test default edge attributes with custom
+func TestDOT_DefaultEdgeAttrs_WithCustom(t *testing.T) {
+	t.Run("outputs custom edge default attributes", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithDefaultEdgeAttrs(
+				WithEdgeColor("blue"),
+				WithEdgeAttribute("penwidth", "2.0"),
+			),
+		)
+
+		output := g.String()
+
+		asrt.Contains(output, "edge [", "expected edge defaults section")
+		asrt.Contains(output, "color=\"blue\"", "expected typed color")
+		asrt.Contains(output, "penwidth=\"2.0\"", "expected custom penwidth")
+	})
+
+	t.Run("custom and typed edge defaults sorted together", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithDefaultEdgeAttrs(
+				WithEdgeLabel("zzz"),
+				WithEdgeAttribute("aaa", "first"),
+			),
+		)
+
+		output := g.String()
+
+		aaaIdx := strings.Index(output, "aaa=\"first\"")
+		labelIdx := strings.Index(output, "label=\"zzz\"")
+
+		asrt.Greater(labelIdx, aaaIdx, "expected custom sorted with typed attributes")
+	})
+}
+
+// Test numeric attribute formatting
+func TestDOT_NumericAttributes_Formatting(t *testing.T) {
+	t.Run("fontsize formatted with two decimals", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed, WithGraphFontSize(12.5))
+
+		output := g.String()
+
+		asrt.Contains(output, "fontsize=\"12.5\";", "expected fontsize formatted with %g")
+	})
+
+	t.Run("nodesep formatted with two decimals", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed, WithNodeSep(0.75))
+
+		output := g.String()
+
+		asrt.Contains(output, "nodesep=\"0.75\";", "expected nodesep with two decimals")
+	})
+
+	t.Run("ranksep formatted with two decimals", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed, WithRankSep(1.25))
+
+		output := g.String()
+
+		asrt.Contains(output, "ranksep=\"1.25\";", "expected ranksep with two decimals")
+	})
+
+	t.Run("integer values formatted with decimal places", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed, WithGraphFontSize(14))
+
+		output := g.String()
+
+		asrt.Contains(output, "fontsize=\"14\";", "expected integer fontsize formatted with %g")
 	})
 }

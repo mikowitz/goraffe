@@ -43,31 +43,7 @@ func (e *Edge) ToString(directed bool) string {
 	}
 	builder.WriteString(fmt.Sprintf(`"%s"`, e.to.ID()))
 
-	attrs := make([]string, 0)
-
-	if e.attrs.label != nil {
-		attrs = append(attrs, fmt.Sprintf(`label="%s"`, e.attrs.Label()))
-	}
-	if e.attrs.color != nil {
-		attrs = append(attrs, fmt.Sprintf(`color="%s"`, e.attrs.Color()))
-	}
-	if e.attrs.style != nil {
-		attrs = append(attrs, fmt.Sprintf(`style="%s"`, e.attrs.Style()))
-	}
-	if e.attrs.arrowHead != nil {
-		attrs = append(attrs, fmt.Sprintf(`arrowhead="%s"`, e.attrs.ArrowHead()))
-	}
-	if e.attrs.arrowTail != nil {
-		attrs = append(attrs, fmt.Sprintf(`arrowtail="%s"`, e.attrs.ArrowTail()))
-	}
-	if e.attrs.weight != nil {
-		attrs = append(attrs, fmt.Sprintf(`weight="%0.2f"`, e.attrs.Weight()))
-	}
-
-	for k, v := range e.attrs.custom {
-		attrs = append(attrs, fmt.Sprintf(`%s="%s"`, k, v))
-	}
-
+	attrs := e.attrs.List()
 	var attrsStr string
 
 	if len(attrs) > 0 {
