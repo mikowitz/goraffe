@@ -77,7 +77,7 @@ func (n *Node) String() string {
 	}
 
 	if n.attrs.fontSize != nil {
-		attrs = append(attrs, fmt.Sprintf(`fontsize="%0.2f"`, n.attrs.FontSize()))
+		attrs = append(attrs, fmt.Sprintf(`fontsize="%g"`, n.attrs.FontSize()))
 	}
 
 	for k, v := range n.attrs.custom {

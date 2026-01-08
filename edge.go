@@ -61,7 +61,7 @@ func (e *Edge) ToString(directed bool) string {
 		attrs = append(attrs, fmt.Sprintf(`arrowtail="%s"`, e.attrs.ArrowTail()))
 	}
 	if e.attrs.weight != nil {
-		attrs = append(attrs, fmt.Sprintf(`weight="%0.2f"`, e.attrs.Weight()))
+		attrs = append(attrs, fmt.Sprintf(`weight="%g"`, e.attrs.Weight()))
 	}
 
 	for k, v := range e.attrs.custom {
