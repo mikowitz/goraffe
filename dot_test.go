@@ -107,7 +107,7 @@ func TestGraph_String_WithName(t *testing.T) {
 
 		output := g.String()
 
-		asrt.Equal("digraph G {\n}", output, "expected graph name between type and opening brace")
+		asrt.Equal("digraph \"G\" {\n}", output, "expected graph name between type and opening brace")
 	})
 
 	t.Run("undirected graph with name", func(t *testing.T) {
@@ -116,7 +116,7 @@ func TestGraph_String_WithName(t *testing.T) {
 
 		output := g.String()
 
-		asrt.Equal("graph MyGraph {\n}", output, "expected graph name for undirected graph")
+		asrt.Equal("graph \"MyGraph\" {\n}", output, "expected graph name for undirected graph")
 	})
 
 	t.Run("strict directed graph with name", func(t *testing.T) {
@@ -125,7 +125,7 @@ func TestGraph_String_WithName(t *testing.T) {
 
 		output := g.String()
 
-		asrt.Equal("strict digraph StrictGraph {\n}", output, "expected strict, digraph, name order")
+		asrt.Equal("strict digraph \"StrictGraph\" {\n}", output, "expected strict, digraph, name order")
 	})
 
 	t.Run("graph name with underscores", func(t *testing.T) {
@@ -134,7 +134,7 @@ func TestGraph_String_WithName(t *testing.T) {
 
 		output := g.String()
 
-		asrt.Contains(output, "digraph my_graph_name", "expected name with underscores to be preserved")
+		asrt.Contains(output, "digraph \"my_graph_name\"", "expected name with underscores to be preserved")
 	})
 
 	t.Run("graph name with numbers", func(t *testing.T) {
@@ -143,7 +143,7 @@ func TestGraph_String_WithName(t *testing.T) {
 
 		output := g.String()
 
-		asrt.Contains(output, "digraph Graph123", "expected name with numbers to be preserved")
+		asrt.Contains(output, "digraph \"Graph123\"", "expected name with numbers to be preserved")
 	})
 
 	t.Run("empty name is omitted", func(t *testing.T) {
@@ -203,7 +203,7 @@ func TestGraph_WriteDOT_WritesToWriter(t *testing.T) {
 		err := g.WriteDOT(&buf)
 
 		asrt.NoError(err, "expected WriteDOT to succeed without error")
-		asrt.Equal("digraph TestGraph {\n}", buf.String(), "expected named graph output")
+		asrt.Equal("digraph \"TestGraph\" {\n}", buf.String(), "expected named graph output")
 	})
 
 	t.Run("WriteDOT and String produce same output", func(t *testing.T) {
@@ -245,7 +245,7 @@ func TestGraph_WriteDOT_WritesToWriter(t *testing.T) {
 		err := g.WriteDOT(&sb)
 
 		asrt.NoError(err, "expected WriteDOT to work with strings.Builder")
-		asrt.Equal("digraph SB {\n}", sb.String(), "expected output written to strings.Builder")
+		asrt.Equal("digraph \"SB\" {\n}", sb.String(), "expected output written to strings.Builder")
 	})
 }
 
@@ -310,8 +310,8 @@ func TestGraph_String_OutputFormatting(t *testing.T) {
 
 		output := g.String()
 
-		asrt.Contains(output, "digraph G", "expected space between digraph and name")
-		asrt.NotContains(output, "digraphG", "expected no concatenation of keyword and name")
+		asrt.Contains(output, "digraph \"G\"", "expected space between digraph and name")
+		asrt.NotContains(output, "digraph\"G\"", "expected no concatenation of keyword and name")
 	})
 
 	t.Run("space between name and opening brace", func(t *testing.T) {
@@ -320,8 +320,8 @@ func TestGraph_String_OutputFormatting(t *testing.T) {
 
 		output := g.String()
 
-		asrt.Contains(output, "G {", "expected space between name and opening brace")
-		asrt.NotContains(output, "G{", "expected no concatenation of name and brace")
+		asrt.Contains(output, "\"G\" {", "expected space between name and opening brace")
+		asrt.NotContains(output, "\"G\"{", "expected no concatenation of name and brace")
 	})
 }
 
@@ -351,7 +351,7 @@ func TestGraph_String_OptionOrderIndependence(t *testing.T) {
 
 		asrt.Equal(output1, output2, "expected same output regardless of option order")
 		asrt.Equal(output2, output3, "expected same output regardless of option order")
-		asrt.Equal("strict digraph G {\n}", output1, "expected consistent output")
+		asrt.Equal("strict digraph \"G\" {\n}", output1, "expected consistent output")
 	})
 }
 
@@ -390,7 +390,7 @@ func TestGraph_String_EdgeCases(t *testing.T) {
 
 		output := g.String()
 
-		asrt.Equal("digraph Second {\n}", output, "expected last name to be used")
+		asrt.Equal("digraph \"Second\" {\n}", output, "expected last name to be used")
 		asrt.NotContains(output, "First", "expected earlier name to be overridden")
 	})
 }
@@ -821,7 +821,7 @@ func TestDOT_NodesWithGraphOptions(t *testing.T) {
 
 		output := g.String()
 
-		expected := "digraph G {\n\t\"A\" [label=\"Node A\"];\n}"
+		expected := "digraph \"G\" {\n\t\"A\" [label=\"Node A\"];\n}"
 		asrt.Equal(expected, output, "expected node in named graph")
 	})
 
@@ -1357,7 +1357,7 @@ func TestDOT_CompleteGraph(t *testing.T) {
 
 		output := g.String()
 
-		asrt.Contains(output, "digraph G {", "expected graph declaration")
+		asrt.Contains(output, "digraph \"G\" {", "expected graph declaration")
 		asrt.Contains(output, "\"A\" [shape=\"box\"];", "expected first node with attributes")
 		asrt.Contains(output, "\"B\" [label=\"Node B\"];", "expected second node with label")
 		asrt.Contains(output, "\"A\" -> \"B\" [color=\"red\", label=\"connects\"];", "expected edge with attributes")
@@ -1381,7 +1381,7 @@ func TestDOT_CompleteGraph(t *testing.T) {
 
 		output := g.String()
 
-		asrt.Contains(output, "strict digraph StrictG {", "expected strict graph declaration")
+		asrt.Contains(output, "strict digraph \"StrictG\" {", "expected strict graph declaration")
 		asrt.Contains(output, "\"A\" -> \"B\";", "expected edge in strict graph")
 	})
 
@@ -1396,7 +1396,7 @@ func TestDOT_CompleteGraph(t *testing.T) {
 
 		output := g.String()
 
-		asrt.Contains(output, "graph UG {", "expected undirected graph declaration")
+		asrt.Contains(output, "graph \"UG\" {", "expected undirected graph declaration")
 		asrt.Contains(output, "\"A\" [shape=\"circle\"];", "expected first node")
 		asrt.Contains(output, "\"B\" [shape=\"box\"];", "expected second node")
 		asrt.Contains(output, "\"A\" -- \"B\" [style=\"dashed\"];", "expected undirected edge")
@@ -1582,7 +1582,7 @@ func TestDOT_GraphAttributes_RankDir(t *testing.T) {
 		output := g.String()
 		lines := strings.Split(output, "\n")
 
-		asrt.Contains(lines[0], "digraph G {", "expected graph declaration on first line")
+		asrt.Contains(lines[0], "digraph \"G\" {", "expected graph declaration on first line")
 		asrt.Contains(lines[1], "rankdir=\"LR\";", "expected rankdir on second line")
 	})
 
@@ -2120,7 +2120,7 @@ func TestDOT_FullGraph_WithAllSections(t *testing.T) {
 		asrt.GreaterOrEqual(len(lines), 8, "expected at least 8 lines")
 
 		// Line 0: Graph declaration
-		asrt.Contains(lines[0], "strict digraph G {", "expected graph declaration")
+		asrt.Contains(lines[0], "strict digraph \"G\" {", "expected graph declaration")
 
 		// Find attribute lines (order may vary due to sorting)
 		graphAttrLines := []string{}
@@ -2173,7 +2173,7 @@ func TestDOT_FullGraph_WithAllSections(t *testing.T) {
 		output := g.String()
 
 		// Verify all expected elements are present
-		asrt.Contains(output, "digraph Test {", "expected graph declaration")
+		asrt.Contains(output, "digraph \"Test\" {", "expected graph declaration")
 		asrt.Contains(output, "label=\"My Graph\";", "expected graph label")
 		asrt.Contains(output, "rankdir=\"LR\";", "expected rankdir")
 		asrt.Contains(output, "node [shape=\"box\"];", "expected node defaults")
@@ -2431,5 +2431,862 @@ func TestDOT_NumericAttributes_Formatting(t *testing.T) {
 		output := g.String()
 
 		asrt.Contains(output, "fontsize=\"14\";", "expected integer fontsize formatted with %g")
+	})
+}
+
+// ==================== Step 19: String Escaping in DOT Output ====================
+
+// Test escaping backslashes in node IDs
+func TestDOT_Escaping_Backslashes_NodeID(t *testing.T) {
+	t.Run("backslash in node ID is escaped", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode(`path\to\file`)
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"path\\to\\file";`, "expected backslashes escaped in node ID")
+	})
+
+	t.Run("multiple backslashes escaped correctly", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode(`C:\Windows\System32`)
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"C:\\Windows\\System32";`, "expected all backslashes escaped")
+	})
+
+	t.Run("trailing backslash escaped", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode(`path\`)
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"path\\";`, "expected trailing backslash escaped")
+	})
+
+	t.Run("leading backslash escaped", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode(`\root`)
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"\\root";`, "expected leading backslash escaped")
+	})
+
+	t.Run("consecutive backslashes escaped", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode(`path\\\\share`)
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"path\\\\\\\\share";`, "expected consecutive backslashes each escaped")
+	})
+}
+
+// Test escaping double quotes in node IDs
+func TestDOT_Escaping_Quotes_NodeID(t *testing.T) {
+	t.Run("double quote in node ID is escaped", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode(`say "hello"`)
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"say \"hello\"";`, "expected quotes escaped in node ID")
+	})
+
+	t.Run("single quote in middle", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode(`user"name`)
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"user\"name";`, "expected quote escaped")
+	})
+
+	t.Run("multiple quotes escaped", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode(`"quoted" "words"`)
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"\"quoted\" \"words\"";`, "expected all quotes escaped")
+	})
+
+	t.Run("leading quote escaped", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode(`"start`)
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"\"start";`, "expected leading quote escaped")
+	})
+
+	t.Run("trailing quote escaped", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode(`end"`)
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"end\"";`, "expected trailing quote escaped")
+	})
+}
+
+// Test escaping newlines in node IDs
+func TestDOT_Escaping_Newlines_NodeID(t *testing.T) {
+	t.Run("newline in node ID is escaped to literal backslash-n", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("line1\nline2")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"line1\nline2";`, "expected newline escaped to literal \\n")
+		asrt.NotContains(output, "line1\nline2", "expected no actual newline in output")
+	})
+
+	t.Run("multiple newlines escaped", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("a\nb\nc")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"a\nb\nc";`, "expected all newlines escaped")
+	})
+
+	t.Run("leading newline escaped", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("\nstart")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"\nstart";`, "expected leading newline escaped")
+	})
+
+	t.Run("trailing newline escaped", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("end\n")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"end\n";`, "expected trailing newline escaped")
+	})
+
+	t.Run("consecutive newlines escaped", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("a\n\nb")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"a\n\nb";`, "expected consecutive newlines escaped")
+	})
+}
+
+// Test escaping backslashes in attribute values
+func TestDOT_Escaping_Backslashes_AttributeValue(t *testing.T) {
+	t.Run("backslash in label attribute is escaped", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("A", WithLabel(`path\to\file`))
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `label="path\\to\\file"`, "expected backslashes escaped in label")
+	})
+
+	t.Run("backslash in edge label", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2, WithEdgeLabel(`path\file`))
+
+		output := g.String()
+
+		asrt.Contains(output, `label="path\\file"`, "expected backslash escaped in edge label")
+	})
+
+	t.Run("backslash in graph label", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed, WithGraphLabel(`C:\Project`))
+
+		output := g.String()
+
+		asrt.Contains(output, `label="C:\\Project";`, "expected backslash escaped in graph label")
+	})
+
+	t.Run("backslash in custom attribute value", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("A", WithNodeAttribute("tooltip", `hover\text`))
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `tooltip="hover\\text"`, "expected backslash escaped in custom attribute")
+	})
+}
+
+// Test escaping double quotes in attribute values
+func TestDOT_Escaping_Quotes_AttributeValue(t *testing.T) {
+	t.Run("quote in label attribute is escaped", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("A", WithLabel(`Say "Hello"`))
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `label="Say \"Hello\""`, "expected quotes escaped in label")
+	})
+
+	t.Run("quote in edge label", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2, WithEdgeLabel(`"important"`))
+
+		output := g.String()
+
+		asrt.Contains(output, `label="\"important\""`, "expected quotes escaped in edge label")
+	})
+
+	t.Run("quote in graph label", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed, WithGraphLabel(`The "Main" Graph`))
+
+		output := g.String()
+
+		asrt.Contains(output, `label="The \"Main\" Graph";`, "expected quotes escaped in graph label")
+	})
+
+	t.Run("multiple quotes in label", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("A", WithLabel(`"word1" "word2" "word3"`))
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `label="\"word1\" \"word2\" \"word3\""`, "expected all quotes escaped")
+	})
+}
+
+// Test escaping newlines in attribute values
+func TestDOT_Escaping_Newlines_AttributeValue(t *testing.T) {
+	t.Run("newline in label attribute is escaped to literal backslash-n", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("A", WithLabel("Line 1\nLine 2"))
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `label="Line 1\nLine 2"`, "expected newline escaped to literal \\n")
+		// Verify no actual newline in the label value
+		lines := strings.Split(output, "\n")
+		for _, line := range lines {
+			if strings.Contains(line, "label=") {
+				asrt.NotContains(line, "Line 1\nLine 2", "expected no actual newline in label")
+			}
+		}
+	})
+
+	t.Run("newline in edge label", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2, WithEdgeLabel("First\nSecond"))
+
+		output := g.String()
+
+		asrt.Contains(output, `label="First\nSecond"`, "expected newline escaped in edge label")
+	})
+
+	t.Run("newline in graph label", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed, WithGraphLabel("Multi\nLine\nTitle"))
+
+		output := g.String()
+
+		asrt.Contains(output, `label="Multi\nLine\nTitle";`, "expected newlines escaped in graph label")
+	})
+
+	t.Run("multiple consecutive newlines", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("A", WithLabel("Para1\n\nPara2"))
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `label="Para1\n\nPara2"`, "expected consecutive newlines escaped")
+	})
+}
+
+// Test combined escaping (multiple special characters)
+func TestDOT_Escaping_Combined(t *testing.T) {
+	t.Run("backslash and quote in same node ID", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode(`path\"file`)
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"path\\\"file";`, "expected both backslash and quote escaped")
+	})
+
+	t.Run("backslash and newline in label", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("A", WithLabel("path\\file\nnext"))
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `label="path\\file\nnext"`, "expected backslash and newline escaped")
+	})
+
+	t.Run("quote and newline in label", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("A", WithLabel("Say \"Hi\"\nBye"))
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `label="Say \"Hi\"\nBye"`, "expected quote and newline escaped")
+	})
+
+	t.Run("all three special chars in label", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("A", WithLabel("C:\\path\\to \"file\"\nNew line"))
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `label="C:\\path\\to \"file\"\nNew line"`, "expected all special chars escaped")
+	})
+
+	t.Run("complex escaping in edge label", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2, WithEdgeLabel("Path: C:\\Users\\\"Me\"\nDone"))
+
+		output := g.String()
+
+		asrt.Contains(output, `label="Path: C:\\Users\\\"Me\"\nDone"`, "expected complex escaping")
+	})
+}
+
+// Test node IDs with spaces require quoting
+func TestDOT_NodeID_WithSpaces(t *testing.T) {
+	t.Run("node ID with single space is quoted", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("node one")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"node one";`, "expected node ID with space to be quoted")
+	})
+
+	t.Run("node ID with multiple spaces is quoted", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("this has many spaces")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"this has many spaces";`, "expected node ID with multiple spaces quoted")
+	})
+
+	t.Run("node ID with leading space is quoted", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode(" leading")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `" leading";`, "expected node ID with leading space quoted")
+	})
+
+	t.Run("node ID with trailing space is quoted", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("trailing ")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"trailing ";`, "expected node ID with trailing space quoted")
+	})
+
+	t.Run("node ID with space appears in edges", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n1 := NewNode("node one")
+		n2 := NewNode("node two")
+		_, _ = g.AddEdge(n1, n2)
+
+		output := g.String()
+
+		asrt.Contains(output, `"node one" -> "node two";`, "expected quoted node IDs in edge")
+	})
+}
+
+// Test node IDs with special characters require quoting
+func TestDOT_NodeID_WithSpecialChars(t *testing.T) {
+	t.Run("node ID with hyphen is quoted", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("node-one")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"node-one";`, "expected node ID with hyphen quoted")
+	})
+
+	t.Run("node ID with period is quoted", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("node.one")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"node.one";`, "expected node ID with period quoted")
+	})
+
+	t.Run("node ID with colon is quoted", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("node:port")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"node:port";`, "expected node ID with colon quoted")
+	})
+
+	t.Run("node ID with forward slash is quoted", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("node/path")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"node/path";`, "expected node ID with slash quoted")
+	})
+
+	t.Run("node ID with parentheses is quoted", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("func(x)")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"func(x)";`, "expected node ID with parentheses quoted")
+	})
+
+	t.Run("node ID with brackets is quoted", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("arr[0]")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"arr[0]";`, "expected node ID with brackets quoted")
+	})
+
+	t.Run("node ID with braces is quoted", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("set{}")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"set{}";`, "expected node ID with braces quoted")
+	})
+}
+
+// Test node IDs starting with digit require quoting
+func TestDOT_NodeID_StartingWithDigit(t *testing.T) {
+	t.Run("node ID starting with digit is quoted", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("123node")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"123node";`, "expected node ID starting with digit quoted")
+	})
+
+	t.Run("node ID that is only digits is quoted", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("12345")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"12345";`, "expected numeric node ID quoted")
+	})
+
+	t.Run("node ID starting with zero is quoted", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("0x1F")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"0x1F";`, "expected node ID starting with 0 quoted")
+	})
+}
+
+// Test simple alphanumeric node IDs (optionally unquoted, but we always quote for safety)
+func TestDOT_NodeID_SimpleAlphanumeric(t *testing.T) {
+	t.Run("simple lowercase node ID is quoted for safety", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("node")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"node";`, "expected simple node ID quoted for safety")
+	})
+
+	t.Run("simple uppercase node ID is quoted for safety", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("NODE")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"NODE";`, "expected uppercase node ID quoted for safety")
+	})
+
+	t.Run("camelCase node ID is quoted for safety", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("myNode")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"myNode";`, "expected camelCase node ID quoted for safety")
+	})
+
+	t.Run("node ID with underscores is quoted for safety", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("my_node_1")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"my_node_1";`, "expected node ID with underscores quoted for safety")
+	})
+}
+
+// Test graph name escaping
+func TestDOT_GraphName_Escaping(t *testing.T) {
+	t.Run("graph name with quote is escaped", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed, WithName(`My"Graph`))
+
+		output := g.String()
+
+		asrt.Contains(output, `digraph "My\"Graph"`, "expected quote escaped in graph name")
+	})
+
+	t.Run("graph name with backslash is escaped", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed, WithName(`Graph\1`))
+
+		output := g.String()
+
+		asrt.Contains(output, `digraph "Graph\\1"`, "expected backslash escaped in graph name")
+	})
+
+	t.Run("graph name with newline is escaped", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed, WithName("Multi\nLine"))
+
+		output := g.String()
+
+		asrt.Contains(output, `digraph "Multi\nLine"`, "expected newline escaped in graph name")
+	})
+
+	t.Run("graph name with space is quoted", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed, WithName("My Graph"))
+
+		output := g.String()
+
+		asrt.Contains(output, `digraph "My Graph"`, "expected graph name with space quoted")
+	})
+
+	t.Run("simple graph name is quoted for safety", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed, WithName("G"))
+
+		output := g.String()
+
+		asrt.Contains(output, `digraph "G"`, "expected simple graph name quoted for safety")
+	})
+}
+
+// Test complex strings with multiple escape scenarios
+func TestDOT_ComplexStrings(t *testing.T) {
+	t.Run("node with complex ID and label", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode(`user\admin`, WithLabel("Name: \"Admin\"\nRole: Supervisor"))
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"user\\admin"`, "expected backslash escaped in node ID")
+		asrt.Contains(output, `label="Name: \"Admin\"\nRole: Supervisor"`, "expected complex label escaping")
+	})
+
+	t.Run("edge with complex labels on both nodes and edge", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n1 := NewNode("A", WithLabel("\"Start\"\nPoint"))
+		n2 := NewNode("B", WithLabel("\"End\"\nPoint"))
+		_, _ = g.AddEdge(n1, n2, WithEdgeLabel("Path: C:\\\\Users\n\"Active\""))
+
+		output := g.String()
+
+		asrt.Contains(output, `"A" [label="\"Start\"\nPoint"]`, "expected escaping in first node")
+		asrt.Contains(output, `"B" [label="\"End\"\nPoint"]`, "expected escaping in second node")
+		asrt.Contains(output, `"A" -> "B" [label="Path: C:\\\\Users\n\"Active\""]`, "expected complex edge label escaping")
+	})
+
+	t.Run("full graph with escaping in all sections", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(
+			Directed,
+			WithName(`My"Graph`),
+			WithGraphLabel("Title: \"Main\"\nSubtitle: Details"),
+		)
+		n1 := NewNode(`node\1`, WithLabel(`"First"`))
+		n2 := NewNode(`node 2`, WithLabel("Second\nLine"))
+		_ = g.AddNode(n1)
+		_ = g.AddNode(n2)
+		_, _ = g.AddEdge(n1, n2, WithEdgeLabel("Link\n\"Active\""))
+
+		output := g.String()
+
+		asrt.Contains(output, `digraph "My\"Graph"`, "expected graph name escaping")
+		asrt.Contains(output, `label="Title: \"Main\"\nSubtitle: Details"`, "expected graph label escaping")
+		asrt.Contains(output, `"node\\1" [label="\"First\""]`, "expected first node escaping")
+		asrt.Contains(output, `"node 2" [label="Second\nLine"]`, "expected second node escaping")
+		asrt.Contains(output, `"node\\1" -> "node 2" [label="Link\n\"Active\""]`, "expected edge escaping")
+	})
+}
+
+// Test edge cases for string escaping
+func TestDOT_Escaping_EdgeCases(t *testing.T) {
+	t.Run("empty string node ID", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("")
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"";`, "expected empty string quoted")
+	})
+
+	t.Run("node ID with only backslashes", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode(`\\\`)
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"\\\\\\";`, "expected all backslashes escaped")
+	})
+
+	t.Run("node ID with only quotes", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode(`"""`)
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `"\"\"\"";`, "expected all quotes escaped")
+	})
+
+	t.Run("label with only newlines", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("A", WithLabel("\n\n\n"))
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `label="\n\n\n"`, "expected all newlines escaped")
+	})
+
+	t.Run("empty label attribute", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("A", WithLabel(""))
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `label=""`, "expected empty label quoted")
+	})
+
+	t.Run("tab character in label", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("A", WithLabel("Col1\tCol2"))
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		// Tab may or may not be escaped; just verify output contains it somehow
+		asrt.Contains(output, "label=", "expected label attribute")
+	})
+}
+
+// Test attribute value escaping (always quoted)
+func TestDOT_AttributeValues_AlwaysQuoted(t *testing.T) {
+	t.Run("string attribute values are quoted", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("A", WithLabel("Simple"))
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `label="Simple"`, "expected string value quoted")
+	})
+
+	t.Run("color attribute values are quoted", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("A", WithColor("blue"))
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `color="blue"`, "expected color value quoted")
+	})
+
+	t.Run("shape attribute values are quoted", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("A", WithBoxShape())
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `shape="box"`, "expected shape value quoted")
+	})
+
+	t.Run("custom attribute values are quoted", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("A", WithNodeAttribute("custom", "value"))
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `custom="value"`, "expected custom attribute value quoted")
+	})
+
+	t.Run("numeric attribute values are quoted as strings", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Directed)
+		n := NewNode("A", WithFontSize(12.5))
+		_ = g.AddNode(n)
+
+		output := g.String()
+
+		asrt.Contains(output, `fontsize="12.5"`, "expected numeric value quoted")
+	})
+}
+
+// Test undirected graph edge escaping
+func TestDOT_Escaping_UndirectedEdges(t *testing.T) {
+	t.Run("undirected edge with escaped node IDs", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Undirected)
+		n1 := NewNode(`node\1`)
+		n2 := NewNode(`node"2`)
+		_, _ = g.AddEdge(n1, n2)
+
+		output := g.String()
+
+		asrt.Contains(output, `"node\\1" -- "node\"2";`, "expected escaped node IDs in undirected edge")
+	})
+
+	t.Run("undirected edge with escaped label", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph(Undirected)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		_, _ = g.AddEdge(n1, n2, WithEdgeLabel("Link\n\"Active\""))
+
+		output := g.String()
+
+		asrt.Contains(output, `label="Link\n\"Active\""`, "expected escaped edge label in undirected graph")
 	})
 }

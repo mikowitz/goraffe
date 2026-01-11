@@ -162,26 +162,26 @@ func (a EdgeAttributes) List() []string {
 	attrs := make([]string, 0)
 
 	if a.label != nil {
-		attrs = append(attrs, fmt.Sprintf(`label="%s"`, a.Label()))
+		attrs = append(attrs, fmt.Sprintf(`label="%s"`, escapeDOTString(a.Label())))
 	}
 	if a.color != nil {
-		attrs = append(attrs, fmt.Sprintf(`color="%s"`, a.Color()))
+		attrs = append(attrs, fmt.Sprintf(`color="%s"`, escapeDOTString(a.Color())))
 	}
 	if a.style != nil {
-		attrs = append(attrs, fmt.Sprintf(`style="%s"`, a.Style()))
+		attrs = append(attrs, fmt.Sprintf(`style="%s"`, escapeDOTString(string(a.Style()))))
 	}
 	if a.arrowHead != nil {
-		attrs = append(attrs, fmt.Sprintf(`arrowhead="%s"`, a.ArrowHead()))
+		attrs = append(attrs, fmt.Sprintf(`arrowhead="%s"`, escapeDOTString(string(a.ArrowHead()))))
 	}
 	if a.arrowTail != nil {
-		attrs = append(attrs, fmt.Sprintf(`arrowtail="%s"`, a.ArrowTail()))
+		attrs = append(attrs, fmt.Sprintf(`arrowtail="%s"`, escapeDOTString(string(a.ArrowTail()))))
 	}
 	if a.weight != nil {
 		attrs = append(attrs, fmt.Sprintf(`weight="%g"`, a.Weight()))
 	}
 
 	for k, v := range a.custom {
-		attrs = append(attrs, fmt.Sprintf(`%s="%s"`, k, v))
+		attrs = append(attrs, fmt.Sprintf(`%s="%s"`, k, escapeDOTString(v)))
 	}
 
 	return attrs
