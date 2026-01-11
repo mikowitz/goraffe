@@ -168,35 +168,35 @@ func (a *GraphAttributes) Compound() bool {
 func (a *GraphAttributes) List() []string {
 	attrs := []string{}
 	if a.bgColor != nil {
-		attrs = append(attrs, fmt.Sprintf("\tbgcolor=\"%s\";", a.BgColor()))
+		attrs = append(attrs, fmt.Sprintf("\tbgcolor=\"%s\";", escapeDOTString(a.BgColor())))
 	}
 	if a.compound != nil {
 		attrs = append(attrs, fmt.Sprintf("\tcompound=\"%t\";", a.Compound()))
 	}
 	if a.fontName != nil {
-		attrs = append(attrs, fmt.Sprintf("\tfontname=\"%s\";", a.FontName()))
+		attrs = append(attrs, fmt.Sprintf("\tfontname=\"%s\";", escapeDOTString(a.FontName())))
 	}
 	if a.fontSize != nil {
 		attrs = append(attrs, fmt.Sprintf("\tfontsize=\"%g\";", a.FontSize()))
 	}
 	if a.label != nil {
-		attrs = append(attrs, fmt.Sprintf("\tlabel=\"%s\";", a.Label()))
+		attrs = append(attrs, fmt.Sprintf("\tlabel=\"%s\";", escapeDOTString(a.Label())))
 	}
 	if a.nodeSep != nil {
 		attrs = append(attrs, fmt.Sprintf("\tnodesep=\"%g\";", a.NodeSep()))
 	}
 	if a.rankDir != nil {
-		attrs = append(attrs, fmt.Sprintf("\trankdir=\"%s\";", a.RankDir()))
+		attrs = append(attrs, fmt.Sprintf("\trankdir=\"%s\";", escapeDOTString(string(a.RankDir()))))
 	}
 	if a.rankSep != nil {
 		attrs = append(attrs, fmt.Sprintf("\tranksep=\"%g\";", a.RankSep()))
 	}
 	if a.splines != nil {
-		attrs = append(attrs, fmt.Sprintf("\tsplines=\"%s\";", a.Splines()))
+		attrs = append(attrs, fmt.Sprintf("\tsplines=\"%s\";", escapeDOTString(string(a.Splines()))))
 	}
 
 	for k, v := range a.custom {
-		attrs = append(attrs, fmt.Sprintf("\t%s=\"%s\";", k, v))
+		attrs = append(attrs, fmt.Sprintf("\t%s=\"%s\";", k, escapeDOTString(v)))
 	}
 
 	return attrs

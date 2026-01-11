@@ -154,19 +154,19 @@ func (a NodeAttributes) List() []string {
 	attrs := make([]string, 0)
 
 	if a.label != nil {
-		attrs = append(attrs, fmt.Sprintf(`label="%s"`, a.Label()))
+		attrs = append(attrs, fmt.Sprintf(`label="%s"`, escapeDOTString(a.Label())))
 	}
 
 	if a.shape != nil {
-		attrs = append(attrs, fmt.Sprintf(`shape="%s"`, a.Shape()))
+		attrs = append(attrs, fmt.Sprintf(`shape="%s"`, escapeDOTString(string(a.Shape()))))
 	}
 
 	if a.color != nil {
-		attrs = append(attrs, fmt.Sprintf(`color="%s"`, a.Color()))
+		attrs = append(attrs, fmt.Sprintf(`color="%s"`, escapeDOTString(a.Color())))
 	}
 
 	if a.fillColor != nil {
-		attrs = append(attrs, fmt.Sprintf(`fillcolor="%s"`, a.FillColor()))
+		attrs = append(attrs, fmt.Sprintf(`fillcolor="%s"`, escapeDOTString(a.FillColor())))
 		// HACK: this is a temporary hack to ensure a set fillcolor appears as expected
 		// When we support the `style` attribute for nodes, we'll allow this to be set
 		// when the fillcolor is defined, but overridden later. For now, this.
@@ -175,7 +175,7 @@ func (a NodeAttributes) List() []string {
 	}
 
 	if a.fontName != nil {
-		attrs = append(attrs, fmt.Sprintf(`fontname="%s"`, a.FontName()))
+		attrs = append(attrs, fmt.Sprintf(`fontname="%s"`, escapeDOTString(a.FontName())))
 	}
 
 	if a.fontSize != nil {
@@ -183,7 +183,7 @@ func (a NodeAttributes) List() []string {
 	}
 
 	for k, v := range a.custom {
-		attrs = append(attrs, fmt.Sprintf(`%s="%s"`, k, v))
+		attrs = append(attrs, fmt.Sprintf(`%s="%s"`, k, escapeDOTString(v)))
 	}
 
 	return attrs

@@ -1,7 +1,6 @@
 package goraffe
 
 import (
-	"fmt"
 	"sort"
 	"strings"
 )
@@ -34,14 +33,14 @@ func (e *Edge) Attrs() *EdgeAttributes {
 
 func (e *Edge) ToString(directed bool) string {
 	builder := strings.Builder{}
-	builder.WriteString(fmt.Sprintf(`"%s"`, e.from.ID()))
+	builder.WriteString(quoteDOTID(e.from.ID()))
 
 	if directed {
 		builder.WriteString(" -> ")
 	} else {
 		builder.WriteString(" -- ")
 	}
-	builder.WriteString(fmt.Sprintf(`"%s"`, e.to.ID()))
+	builder.WriteString(quoteDOTID(e.to.ID()))
 
 	attrs := e.attrs.List()
 	var attrsStr string

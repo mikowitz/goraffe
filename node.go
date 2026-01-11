@@ -1,7 +1,6 @@
 package goraffe
 
 import (
-	"fmt"
 	"sort"
 	"strings"
 )
@@ -47,7 +46,7 @@ func (n *Node) Attrs() *NodeAttributes {
 // The output includes the node ID and any set attributes in DOT format.
 func (n *Node) String() string {
 	builder := strings.Builder{}
-	builder.WriteString(fmt.Sprintf(`"%s"`, n.ID()))
+	builder.WriteString(quoteDOTID(n.ID()))
 
 	attrs := n.attrs.List()
 	var attrsStr string

@@ -197,7 +197,7 @@ func (g *Graph) String() string {
 	}
 
 	if g.name != "" {
-		builder.WriteString(fmt.Sprintf(" %s", g.name))
+		builder.WriteString(fmt.Sprintf(" %s", quoteDOTID(g.name)))
 	}
 
 	builder.WriteString(" {\n")
