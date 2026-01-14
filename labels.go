@@ -10,44 +10,26 @@ const (
 )
 
 type HTMLCell struct {
-	content   string
-	port      string
-	bold      bool
-	italic    bool
-	underline bool
-	colSpan   int
-	rowSpan   int
-	bgColor   string
-	align     Alignment
+	contents []Content
+	port     string
+	colSpan  int
+	rowSpan  int
+	bgColor  string
+	align    Alignment
 }
 
 type HTMLRow struct {
 	cells []*HTMLCell
 }
 
-func Cell(content string) *HTMLCell {
+func Cell(contents ...Content) *HTMLCell {
 	return &HTMLCell{
-		content: content,
+		contents: contents,
 	}
 }
 
 func (c *HTMLCell) Port(port string) *HTMLCell {
 	c.port = port
-	return c
-}
-
-func (c *HTMLCell) Bold() *HTMLCell {
-	c.bold = true
-	return c
-}
-
-func (c *HTMLCell) Italic() *HTMLCell {
-	c.italic = true
-	return c
-}
-
-func (c *HTMLCell) Underline() *HTMLCell {
-	c.underline = true
 	return c
 }
 
