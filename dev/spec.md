@@ -251,7 +251,7 @@ type Port struct {
 Ports are not created directly; they are returned from HTML cells or record fields:
 
 ```go
-cell := goraffe.Cell("input").Port("in")
+cell := goraffe.Cell(goraffe.Text("input")).Port("in")
 port := cell.Port() // returns *Port
 
 // Used in edge connections
@@ -474,31 +474,71 @@ g.AddEdge(n1, n2, goraffe.WithLabel("relationship"))
 // Simple table
 label := goraffe.HTMLTable(
     goraffe.Row(
-        goraffe.Cell("Header 1").Bold(),
-        goraffe.Cell("Header 2").Bold(),
+        goraffe.Cell(goraffe.Text("Header 1").Bold()),
+        goraffe.Cell(goraffe.Text("Header 2").Bold()),
     ),
     goraffe.Row(
-        goraffe.Cell("Value 1"),
-        goraffe.Cell("Value 2"),
+        goraffe.Cell(goraffe.Text("Value 1")),
+        goraffe.Cell(goraffe.Text("Value 2")),
     ),
 )
 n := goraffe.NewNode("id", goraffe.WithHTMLLabel(label))
 
 // Building rows separately
 headerRow := goraffe.Row(
-    goraffe.Cell("Name").Bold().BgColor("lightgray"),
-    goraffe.Cell("Type").Bold().BgColor("lightgray"),
+    goraffe.Cell(goraffe.Text("Name").Bold()).BgColor("lightgray"),
+    goraffe.Cell(goraffe.Text("Type").Bold()).BgColor("lightgray"),
 )
 
 var dataRows []goraffe.HTMLRow
 for _, item := range items {
     dataRows = append(dataRows, goraffe.Row(
-        goraffe.Cell(item.Name),
-        goraffe.Cell(item.Type),
+        goraffe.Cell(goraffe.Text(item.Name)),
+        goraffe.Cell(goraffe.Text(item.Type)),
     ))
 }
 
 label := goraffe.HTMLTable(append([]goraffe.HTMLRow{headerRow}, dataRows...)...)
+
+// Multi-content cells with line breaks and horizontal rules
+label := goraffe.HTMLTable(
+    goraffe.Row(
+        goraffe.Cell(
+            goraffe.Text("Line 1"),
+            goraffe.BR(),
+            goraffe.Text("Line 2"),
+        ),
+    ),
+    goraffe.Row(
+        goraffe.Cell(
+            goraffe.Text("Title").Bold(),
+            goraffe.HR(),
+            goraffe.Text("Body text").Italic(),
+        ),
+    ),
+)
+```
+
+**Content Types**:
+
+```go
+// Content interface represents any content that can appear inside a cell
+type Content interface {
+    contentMarker()
+    toHTML() string
+}
+
+// Text content with optional formatting
+func Text(text string) *TextContent
+func (t *TextContent) Bold() *TextContent        // returns self for chaining
+func (t *TextContent) Italic() *TextContent      // returns self for chaining
+func (t *TextContent) Underline() *TextContent   // returns self for chaining
+
+// Line break
+func BR() *LineBreak  // renders as <BR/>
+
+// Horizontal rule
+func HR() *HorizontalRule  // renders as <HR/>
 ```
 
 **Cell Options**:
@@ -506,16 +546,16 @@ label := goraffe.HTMLTable(append([]goraffe.HTMLRow{headerRow}, dataRows...)...)
 ```go
 type HTMLCell struct { ... }
 
-func Cell(content string) *HTMLCell
-func (c *HTMLCell) Port(id string) *HTMLCell  // returns self for chaining
-func (c *HTMLCell) Bold() *HTMLCell
-func (c *HTMLCell) Italic() *HTMLCell
-func (c *HTMLCell) Underline() *HTMLCell
+// Cell accepts multiple Content pieces that will be rendered in sequence
+func Cell(contents ...Content) *HTMLCell
+
+// Cell-level properties (apply to entire cell)
+func (c *HTMLCell) Port(id string) *HTMLCell     // returns self for chaining
 func (c *HTMLCell) ColSpan(n int) *HTMLCell
 func (c *HTMLCell) RowSpan(n int) *HTMLCell
 func (c *HTMLCell) BgColor(color string) *HTMLCell
 func (c *HTMLCell) Align(a Alignment) *HTMLCell
-func (c *HTMLCell) Port() *Port  // get the port reference
+func (c *HTMLCell) Port() *Port                  // get the port reference
 ```
 
 **Table Options**:
@@ -1039,16 +1079,16 @@ func main() {
     
     // Create nodes with HTML labels
     clientLabel := goraffe.HTMLTable(
-        goraffe.Row(goraffe.Cell("Client").Bold()),
-        goraffe.Row(goraffe.Cell("Browser").Port("out")),
+        goraffe.Row(goraffe.Cell(goraffe.Text("Client").Bold())),
+        goraffe.Row(goraffe.Cell(goraffe.Text("Browser")).Port("out")),
     )
     client := goraffe.NewNode("client", goraffe.WithHTMLLabel(clientLabel))
-    
+
     serverLabel := goraffe.HTMLTable(
-        goraffe.Row(goraffe.Cell("Server").Bold()),
+        goraffe.Row(goraffe.Cell(goraffe.Text("Server").Bold())),
         goraffe.Row(
-            goraffe.Cell("HTTP").Port("http"),
-            goraffe.Cell("WS").Port("ws"),
+            goraffe.Cell(goraffe.Text("HTTP")).Port("http"),
+            goraffe.Cell(goraffe.Text("WS")).Port("ws"),
         ),
     )
     server := goraffe.NewNode("server", goraffe.WithHTMLLabel(serverLabel))
