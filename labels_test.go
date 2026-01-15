@@ -596,7 +596,7 @@ func TestText_ToHTML(t *testing.T) {
 		text := Text("Hello").Bold()
 		html := text.toHTML()
 
-		asrt.Equal("<B>Hello</B>", html, "expected bold text with B tags")
+		asrt.Equal("<b>Hello</b>", html, "expected bold text with B tags")
 	})
 
 	t.Run("italic text renders with I tag", func(t *testing.T) {
@@ -605,7 +605,7 @@ func TestText_ToHTML(t *testing.T) {
 		text := Text("Hello").Italic()
 		html := text.toHTML()
 
-		asrt.Equal("<I>Hello</I>", html, "expected italic text with I tags")
+		asrt.Equal("<i>Hello</i>", html, "expected italic text with I tags")
 	})
 
 	t.Run("underline text renders with U tag", func(t *testing.T) {
@@ -614,7 +614,7 @@ func TestText_ToHTML(t *testing.T) {
 		text := Text("Hello").Underline()
 		html := text.toHTML()
 
-		asrt.Equal("<U>Hello</U>", html, "expected underlined text with U tags")
+		asrt.Equal("<u>Hello</u>", html, "expected underlined text with U tags")
 	})
 
 	t.Run("bold and italic renders nested B>I", func(t *testing.T) {
@@ -623,7 +623,7 @@ func TestText_ToHTML(t *testing.T) {
 		text := Text("Hello").Bold().Italic()
 		html := text.toHTML()
 
-		asrt.Equal("<B><I>Hello</I></B>", html, "expected bold and italic with nested tags")
+		asrt.Equal("<b><i>Hello</i></b>", html, "expected bold and italic with nested tags")
 	})
 
 	t.Run("all three formats render nested B>I>U", func(t *testing.T) {
@@ -632,7 +632,7 @@ func TestText_ToHTML(t *testing.T) {
 		text := Text("Hello").Bold().Italic().Underline()
 		html := text.toHTML()
 
-		asrt.Equal("<B><I><U>Hello</U></I></B>", html, "expected all formats with nested tags")
+		asrt.Equal("<b><i><u>Hello</u></i></b>", html, "expected all formats with nested tags")
 	})
 }
 
@@ -655,7 +655,7 @@ func TestBR_ToHTML(t *testing.T) {
 		br := BR()
 		html := br.toHTML()
 
-		asrt.Equal("<BR/>", html, "expected BR to render as <BR/>")
+		asrt.Equal("<br/>", html, "expected BR to render as <br/>")
 	})
 }
 
@@ -678,7 +678,7 @@ func TestHR_ToHTML(t *testing.T) {
 		hr := HR()
 		html := hr.toHTML()
 
-		asrt.Equal("<HR/>", html, "expected HR to render as <HR/>")
+		asrt.Equal("<hr/>", html, "expected HR to render as <hr/>")
 	})
 }
 

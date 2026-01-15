@@ -50,13 +50,13 @@ func (t *TextContent) toHTML() string {
 
 	// Nest tags in order: U → I → B
 	if t.underline {
-		result = "<U>" + result + "</U>"
+		result = "<u>" + result + "</u>"
 	}
 	if t.italic {
-		result = "<I>" + result + "</I>"
+		result = "<i>" + result + "</i>"
 	}
 	if t.bold {
-		result = "<B>" + result + "</B>"
+		result = "<b>" + result + "</b>"
 	}
 
 	return result
@@ -73,7 +73,7 @@ func BR() *LineBreak {
 func (l *LineBreak) contentMarker() {}
 
 func (l *LineBreak) toHTML() string {
-	return "<BR/>"
+	return "<br/>"
 }
 
 // HorizontalRule represents a horizontal rule (<HR/>) in HTML.
@@ -87,5 +87,5 @@ func HR() *HorizontalRule {
 func (h *HorizontalRule) contentMarker() {}
 
 func (h *HorizontalRule) toHTML() string {
-	return "<HR/>"
+	return "<hr/>"
 }
