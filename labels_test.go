@@ -634,6 +634,51 @@ func TestText_ToHTML(t *testing.T) {
 
 		asrt.Equal("<b><i><u>Hello</u></i></b>", html, "expected all formats with nested tags")
 	})
+
+	t.Run("subscript text renders with sub tag", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		text := Text("Hello").Sub()
+		html := text.toHTML()
+
+		asrt.Equal("<sub>Hello</sub>", html, "expected subscript text with sub tags")
+	})
+
+	t.Run("superscript text renders with sup tag", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		text := Text("Hello").Sup()
+		html := text.toHTML()
+
+		asrt.Equal("<sup>Hello</sup>", html, "expected superscript text with sup tags")
+	})
+
+	t.Run("bold subscript renders nested sub>b", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		text := Text("Hello").Bold().Sub()
+		html := text.toHTML()
+
+		asrt.Equal("<sub><b>Hello</b></sub>", html, "expected bold subscript with nested tags")
+	})
+
+	t.Run("bold superscript renders nested sup>b", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		text := Text("Hello").Bold().Sup()
+		html := text.toHTML()
+
+		asrt.Equal("<sup><b>Hello</b></sup>", html, "expected bold superscript with nested tags")
+	})
+
+	t.Run("superscript takes precedence over subscript", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		text := Text("Hello").Sub().Sup()
+		html := text.toHTML()
+
+		asrt.Equal("<sup>Hello</sup>", html, "expected superscript to take precedence")
+	})
 }
 
 // TestBR_Creation verifies that BR creates LineBreak correctly

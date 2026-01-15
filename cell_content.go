@@ -10,12 +10,14 @@ type Content interface {
 	toHTML() string
 }
 
-// TextContent represents text with optional formatting (bold, italic, underline).
+// TextContent represents text with optional formatting (bold, italic, underline, subscript, superscript).
 type TextContent struct {
-	text      string
-	bold      bool
-	italic    bool
-	underline bool
+	text        string
+	bold        bool
+	italic      bool
+	underline   bool
+	subscript   bool
+	superscript bool
 }
 
 // Text creates a new TextContent with the given text.
@@ -43,12 +45,24 @@ func (t *TextContent) Underline() *TextContent {
 	return t
 }
 
+// Sub sets the text to be subscript and returns the TextContent for chaining.
+func (t *TextContent) Sub() *TextContent {
+	t.subscript = true
+	return t
+}
+
+// Sup sets the text to be superscript and returns the TextContent for chaining.
+func (t *TextContent) Sup() *TextContent {
+	t.superscript = true
+	return t
+}
+
 func (t *TextContent) contentMarker() {}
 
 func (t *TextContent) toHTML() string {
 	result := t.text
 
-	// Nest tags in order: U → I → B
+	// Nest tags in order: U → I → B → SUP/SUB
 	if t.underline {
 		result = "<u>" + result + "</u>"
 	}
@@ -57,6 +71,12 @@ func (t *TextContent) toHTML() string {
 	}
 	if t.bold {
 		result = "<b>" + result + "</b>"
+	}
+	// Superscript takes precedence over subscript if both are set
+	if t.superscript {
+		result = "<sup>" + result + "</sup>"
+	} else if t.subscript {
+		result = "<sub>" + result + "</sub>"
 	}
 
 	return result
