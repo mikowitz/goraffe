@@ -78,6 +78,9 @@ linters:
           - funlen
           - goconst
           - varnamelen
+      - path: 'example_test.go'
+        linters:
+          - lll
 
   settings:
     depguard:
