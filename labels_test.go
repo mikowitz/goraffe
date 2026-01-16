@@ -838,3 +838,369 @@ func TestCell_MixedFormatting(t *testing.T) {
 		asrt.NotNil(cell, "expected Cell with all content types to work")
 	})
 }
+
+// TestHTMLTable_SimpleTable verifies basic table creation and rendering
+func TestHTMLTable_SimpleTable(t *testing.T) {
+	t.Run("creates empty table", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable()
+
+		asrt.NotNil(table, "expected HTMLTable to return non-nil HTMLLabel")
+		html := table.String()
+		asrt.Equal("<<table></table>>", html, "expected empty table with no rows")
+	})
+
+	t.Run("creates table with single cell", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable(
+			Row(Cell(Text("A"))),
+		)
+
+		html := table.String()
+		asrt.Equal("<<table><tr><td>A</td></tr></table>>", html, "expected table with single cell")
+	})
+
+	t.Run("creates table with single row multiple cells", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable(
+			Row(Cell(Text("A")), Cell(Text("B")), Cell(Text("C"))),
+		)
+
+		html := table.String()
+		asrt.Equal("<<table><tr><td>A</td><td>B</td><td>C</td></tr></table>>", html, "expected table with single row")
+	})
+
+	t.Run("creates table with multiple rows", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable(
+			Row(Cell(Text("A")), Cell(Text("B"))),
+			Row(Cell(Text("C")), Cell(Text("D"))),
+		)
+
+		html := table.String()
+		asrt.Equal(
+			"<<table><tr><td>A</td><td>B</td></tr><tr><td>C</td><td>D</td></tr></table>>",
+			html, "expected table with two rows",
+		)
+	})
+}
+
+// TestHTMLTable_WithTableAttributes verifies table-level attributes
+func TestHTMLTable_WithTableAttributes(t *testing.T) {
+	t.Run("sets border attribute", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable(
+			Row(Cell(Text("A"))),
+		).Border(1)
+
+		html := table.String()
+		asrt.Contains(html, `border="1"`, "expected border attribute in table")
+	})
+
+	t.Run("sets cellborder attribute", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable(
+			Row(Cell(Text("A"))),
+		).CellBorder(2)
+
+		html := table.String()
+		asrt.Contains(html, `cellborder="2"`, "expected cellborder attribute in table")
+	})
+
+	t.Run("sets cellspacing attribute", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable(
+			Row(Cell(Text("A"))),
+		).CellSpacing(3)
+
+		html := table.String()
+		asrt.Contains(html, `cellspacing="3"`, "expected cellspacing attribute in table")
+	})
+
+	t.Run("sets cellpadding attribute", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable(
+			Row(Cell(Text("A"))),
+		).CellPadding(4)
+
+		html := table.String()
+		asrt.Contains(html, `cellpadding="4"`, "expected cellpadding attribute in table")
+	})
+
+	t.Run("sets bgcolor attribute", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable(
+			Row(Cell(Text("A"))),
+		).BgColor("lightblue")
+
+		html := table.String()
+		asrt.Contains(html, `bgcolor="lightblue"`, "expected bgcolor attribute in table")
+	})
+
+	t.Run("sets all table attributes", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable(
+			Row(Cell(Text("A"))),
+		).Border(1).CellBorder(2).CellSpacing(3).CellPadding(4).BgColor("red")
+
+		html := table.String()
+		asrt.Contains(html, `border="1"`, "expected border")
+		asrt.Contains(html, `cellborder="2"`, "expected cellborder")
+		asrt.Contains(html, `cellspacing="3"`, "expected cellspacing")
+		asrt.Contains(html, `cellpadding="4"`, "expected cellpadding")
+		asrt.Contains(html, `bgcolor="red"`, "expected bgcolor")
+	})
+
+	t.Run("chainable methods return same instance", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable()
+		result := table.Border(1).CellBorder(2).CellSpacing(3).CellPadding(4).BgColor("yellow")
+
+		asrt.Same(table, result, "expected chainable methods to return same instance")
+	})
+}
+
+// TestHTMLTable_CellWithPort verifies port attribute on cells
+func TestHTMLTable_CellWithPort(t *testing.T) {
+	t.Run("renders cell with port attribute", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable(
+			Row(Cell(Text("Header")).Port("p1")),
+		)
+
+		html := table.String()
+		asrt.Contains(html, `port="p1"`, "expected port attribute in cell")
+		asrt.Contains(html, `<td port="p1">Header</td>`, "expected port attribute before cell content")
+	})
+
+	t.Run("renders multiple cells with different ports", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable(
+			Row(
+				Cell(Text("Input")).Port("in"),
+				Cell(Text("Output")).Port("out"),
+			),
+		)
+
+		html := table.String()
+		asrt.Contains(html, `port="in"`, "expected 'in' port")
+		asrt.Contains(html, `port="out"`, "expected 'out' port")
+	})
+
+	t.Run("renders cell without port when not set", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable(
+			Row(Cell(Text("No Port"))),
+		)
+
+		html := table.String()
+		asrt.NotContains(html, `port=`, "expected no port attribute")
+		asrt.Contains(html, `<td>No Port</td>`, "expected simple td tag")
+	})
+}
+
+// TestHTMLTable_CellWithFormatting verifies formatted text in cells
+func TestHTMLTable_CellWithFormatting(t *testing.T) {
+	t.Run("renders bold text", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable(
+			Row(Cell(Text("Header").Bold())),
+		)
+
+		html := table.String()
+		asrt.Contains(html, `<b>Header</b>`, "expected bold tags around text")
+	})
+
+	t.Run("renders italic text", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable(
+			Row(Cell(Text("Emphasis").Italic())),
+		)
+
+		html := table.String()
+		asrt.Contains(html, `<i>Emphasis</i>`, "expected italic tags around text")
+	})
+
+	t.Run("renders underlined text", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable(
+			Row(Cell(Text("Important").Underline())),
+		)
+
+		html := table.String()
+		asrt.Contains(html, `<u>Important</u>`, "expected underline tags around text")
+	})
+
+	t.Run("renders combined formatting", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable(
+			Row(Cell(Text("Header").Bold().Italic().Underline())),
+		)
+
+		html := table.String()
+		asrt.Contains(html, `<b><i><u>Header</u></i></b>`, "expected nested formatting tags")
+	})
+
+	t.Run("renders cell with bold text and port", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable(
+			Row(Cell(Text("Header").Bold()).Port("p1")),
+		)
+
+		html := table.String()
+		expected := `<<table><tr><td port="p1"><b>Header</b></td></tr></table>>`
+		asrt.Equal(expected, html, "expected port and bold formatting together")
+	})
+}
+
+// TestHTMLTable_CellWithSpan verifies colspan and rowspan attributes
+func TestHTMLTable_CellWithSpan(t *testing.T) {
+	t.Run("renders cell with colspan", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable(
+			Row(Cell(Text("Wide")).ColSpan(2)),
+		)
+
+		html := table.String()
+		asrt.Contains(html, `colspan="2"`, "expected colspan attribute")
+	})
+
+	t.Run("renders cell with rowspan", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable(
+			Row(Cell(Text("Tall")).RowSpan(3)),
+		)
+
+		html := table.String()
+		asrt.Contains(html, `rowspan="3"`, "expected rowspan attribute")
+	})
+
+	t.Run("renders cell with both colspan and rowspan", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable(
+			Row(Cell(Text("Big")).ColSpan(2).RowSpan(3)),
+		)
+
+		html := table.String()
+		asrt.Contains(html, `colspan="2"`, "expected colspan")
+		asrt.Contains(html, `rowspan="3"`, "expected rowspan")
+	})
+
+	t.Run("does not render span attributes when zero", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable(
+			Row(Cell(Text("Normal"))),
+		)
+
+		html := table.String()
+		asrt.NotContains(html, `colspan=`, "expected no colspan when not set")
+		asrt.NotContains(html, `rowspan=`, "expected no rowspan when not set")
+	})
+}
+
+// TestHTMLTable_ComplexTable verifies complex table with multiple features
+func TestHTMLTable_ComplexTable(t *testing.T) {
+	t.Run("renders table with all features", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable(
+			Row(
+				Cell(Text("Header 1").Bold()).Port("h1").ColSpan(2).BgColor("lightgray"),
+				Cell(Text("Header 2").Bold()).Port("h2"),
+			),
+			Row(
+				Cell(Text("Data 1")),
+				Cell(Text("Data 2").Italic()),
+				Cell(Text("Data 3")),
+			),
+			Row(
+				Cell(Text("Footer").Underline()).ColSpan(3).Align(AlignCenter),
+			),
+		).Border(1).CellBorder(0).CellSpacing(2).CellPadding(4).BgColor("white")
+
+		html := table.String()
+
+		// Verify table attributes
+		asrt.Contains(html, `border="1"`, "expected border")
+		asrt.Contains(html, `cellborder="0"`, "expected cellborder")
+		asrt.Contains(html, `cellspacing="2"`, "expected cellspacing")
+		asrt.Contains(html, `cellpadding="4"`, "expected cellpadding")
+		asrt.Contains(html, `bgcolor="white"`, "expected table bgcolor")
+
+		// Verify cell attributes
+		asrt.Contains(html, `port="h1"`, "expected port h1")
+		asrt.Contains(html, `port="h2"`, "expected port h2")
+		asrt.Contains(html, `colspan="2"`, "expected colspan")
+		asrt.Contains(html, `colspan="3"`, "expected colspan in footer")
+		asrt.Contains(html, `align="center"`, "expected align center")
+
+		// Verify formatting
+		asrt.Contains(html, `<b>Header 1</b>`, "expected bold header")
+		asrt.Contains(html, `<i>Data 2</i>`, "expected italic data")
+		asrt.Contains(html, `<u>Footer</u>`, "expected underlined footer")
+
+		// Verify structure
+		asrt.Contains(html, `<tr>`, "expected row tags")
+		asrt.Contains(html, `<td`, "expected cell tags")
+	})
+
+	t.Run("renders table matching PRD example format", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable(
+			Row(Cell(Text("Header").Bold()).Port("p1")),
+		).Border(0)
+
+		html := table.String()
+		expected := `<<table border="0"><tr><td port="p1"><b>Header</b></td></tr></table>>`
+		asrt.Equal(expected, html, "expected output to match PRD example format")
+	})
+
+	t.Run("renders complex multi-row table with mixed content", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		table := HTMLTable(
+			Row(
+				Cell(Text("Title").Bold(), BR(), Text("Subtitle").Italic()),
+				Cell(Text("Value").Underline()),
+			),
+			Row(
+				Cell(Text("Section 1"), HR(), Text("Content")).RowSpan(2),
+				Cell(Text("Note")),
+			),
+		).Border(1).CellPadding(5)
+
+		html := table.String()
+
+		// Verify mixed content renders correctly
+		asrt.Contains(html, `<b>Title</b>`, "expected bold title")
+		asrt.Contains(html, `<br/>`, "expected line break")
+		asrt.Contains(html, `<i>Subtitle</i>`, "expected italic subtitle")
+		asrt.Contains(html, `<u>Value</u>`, "expected underlined value")
+		asrt.Contains(html, `<hr/>`, "expected horizontal rule")
+		asrt.Contains(html, `rowspan="2"`, "expected rowspan")
+	})
+}
