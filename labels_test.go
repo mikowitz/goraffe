@@ -1204,3 +1204,154 @@ func TestHTMLTable_ComplexTable(t *testing.T) {
 		asrt.Contains(html, `rowspan="2"`, "expected rowspan")
 	})
 }
+
+// TestCell_GetPort verifies that GetPort returns port references correctly
+func TestCell_GetPort(t *testing.T) {
+	t.Run("returns port when port is set", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		cell := Cell(Text("test")).Port("p1")
+		port := cell.GetPort()
+
+		asrt.NotNil(port, "expected GetPort to return non-nil port")
+		asrt.Equal("p1", port.ID(), "expected port ID to match")
+	})
+
+	t.Run("returns nil when port is not set", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		cell := Cell(Text("test"))
+		port := cell.GetPort()
+
+		asrt.Nil(port, "expected GetPort to return nil when no port is set")
+	})
+
+	t.Run("returns same port instance on multiple calls", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		cell := Cell(Text("test")).Port("p1")
+		port1 := cell.GetPort()
+		port2 := cell.GetPort()
+
+		asrt.Same(port1, port2, "expected GetPort to return the same port instance")
+	})
+
+	t.Run("returns updated port after port change", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		cell := Cell(Text("test")).Port("p1")
+		port1 := cell.GetPort()
+		asrt.Equal("p1", port1.ID(), "expected first port ID")
+
+		cell.Port("p2")
+		port2 := cell.GetPort()
+		asrt.Equal("p2", port2.ID(), "expected updated port ID")
+	})
+}
+
+// TestHTMLLabel_PortsKnowNodeID verifies that ports are associated with their node after label is attached
+func TestHTMLLabel_PortsKnowNodeID(t *testing.T) {
+	t.Run("sets nodeID on all ports when setNodeContext is called", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		// Create a label with multiple ports
+		cell1 := Cell(Text("Input")).Port("in")
+		cell2 := Cell(Text("Process")).Port("process")
+		cell3 := Cell(Text("Output")).Port("out")
+
+		label := HTMLTable(
+			Row(cell1, cell2, cell3),
+		)
+
+		// Get the ports before setting node context
+		port1 := cell1.GetPort()
+		port2 := cell2.GetPort()
+		port3 := cell3.GetPort()
+
+		asrt.NotNil(port1, "expected port1 to exist")
+		asrt.NotNil(port2, "expected port2 to exist")
+		asrt.NotNil(port3, "expected port3 to exist")
+
+		// Before setNodeContext, nodeID should be empty
+		asrt.Equal("", port1.nodeID, "expected nodeID to be empty before setNodeContext")
+		asrt.Equal("", port2.nodeID, "expected nodeID to be empty before setNodeContext")
+		asrt.Equal("", port3.nodeID, "expected nodeID to be empty before setNodeContext")
+
+		// Call setNodeContext
+		label.setNodeContext("test_node")
+
+		// After setNodeContext, all ports should have the nodeID set
+		asrt.Equal("test_node", port1.nodeID, "expected port1 nodeID to be set")
+		asrt.Equal("test_node", port2.nodeID, "expected port2 nodeID to be set")
+		asrt.Equal("test_node", port3.nodeID, "expected port3 nodeID to be set")
+	})
+
+	t.Run("handles label with no ports", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		label := HTMLTable(
+			Row(Cell(Text("No Port"))),
+		)
+
+		// This should not panic
+		label.setNodeContext("test_node")
+
+		asrt.NotNil(label, "expected label to remain valid")
+	})
+
+	t.Run("handles label with mixed cells (some with ports, some without)", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		cellWithPort := Cell(Text("Has Port")).Port("p1")
+		cellWithoutPort := Cell(Text("No Port"))
+
+		label := HTMLTable(
+			Row(cellWithPort, cellWithoutPort),
+		)
+
+		port := cellWithPort.GetPort()
+		asrt.NotNil(port, "expected port to exist")
+
+		label.setNodeContext("mixed_node")
+
+		asrt.Equal("mixed_node", port.nodeID, "expected port nodeID to be set")
+	})
+
+	t.Run("handles label with multiple rows", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		cell1 := Cell(Text("Top")).Port("top")
+		cell2 := Cell(Text("Middle")).Port("middle")
+		cell3 := Cell(Text("Bottom")).Port("bottom")
+
+		label := HTMLTable(
+			Row(cell1),
+			Row(cell2),
+			Row(cell3),
+		)
+
+		port1 := cell1.GetPort()
+		port2 := cell2.GetPort()
+		port3 := cell3.GetPort()
+
+		label.setNodeContext("multi_row_node")
+
+		asrt.Equal("multi_row_node", port1.nodeID, "expected port1 nodeID to be set")
+		asrt.Equal("multi_row_node", port2.nodeID, "expected port2 nodeID to be set")
+		asrt.Equal("multi_row_node", port3.nodeID, "expected port3 nodeID to be set")
+	})
+
+	t.Run("can update nodeID by calling setNodeContext again", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		cell := Cell(Text("Port")).Port("p1")
+		label := HTMLTable(Row(cell))
+		port := cell.GetPort()
+
+		label.setNodeContext("first_node")
+		asrt.Equal("first_node", port.nodeID, "expected first nodeID")
+
+		label.setNodeContext("second_node")
+		asrt.Equal("second_node", port.nodeID, "expected nodeID to be updated")
+	})
+}
