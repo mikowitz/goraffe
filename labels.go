@@ -14,6 +14,7 @@ const (
 type HTMLCell struct {
 	contents []Content
 	port     string
+	portRef  *Port
 	colSpan  int
 	rowSpan  int
 	bgColor  string
@@ -32,6 +33,7 @@ func Cell(contents ...Content) *HTMLCell {
 
 func (c *HTMLCell) Port(port string) *HTMLCell {
 	c.port = port
+	c.portRef = &Port{id: port}
 	return c
 }
 
@@ -53,6 +55,11 @@ func (c *HTMLCell) BgColor(color string) *HTMLCell {
 func (c *HTMLCell) Align(align Alignment) *HTMLCell {
 	c.align = align
 	return c
+}
+
+// GetPort returns the Port reference associated with this cell, or nil if no port was set.
+func (c *HTMLCell) GetPort() *Port {
+	return c.portRef
 }
 
 func Row(cells ...*HTMLCell) *HTMLRow {
@@ -105,6 +112,18 @@ func (l *HTMLLabel) CellPadding(n int) *HTMLLabel {
 func (l *HTMLLabel) BgColor(color string) *HTMLLabel {
 	l.bgColor = color
 	return l
+}
+
+// setNodeContext is an internal method that associates all ports in this label with a node ID.
+// This is called when the label is attached to a node.
+func (l *HTMLLabel) setNodeContext(nodeID string) {
+	for _, row := range l.rows {
+		for _, cell := range row.cells {
+			if cell.portRef != nil {
+				cell.portRef.nodeID = nodeID
+			}
+		}
+	}
 }
 
 func (l *HTMLLabel) String() string {

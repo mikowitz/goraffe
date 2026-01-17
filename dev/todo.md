@@ -394,136 +394,137 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
   - ✅ `TestDOT_MultipleEdges`
   - ✅ `TestDOT_CompleteGraph`
 
-### Step 18: Graph and Default Attributes in DOT Output
+### Step 18: Graph and Default Attributes in DOT Output ✅
 
-- ⬜ Output graph attributes after opening brace
-- ⬜ Output default node attributes (node [...];)
-- ⬜ Output default edge attributes (edge [...];)
-- ⬜ Only output if non-zero defaults exist
-- ⬜ Implement correct output order
-  1. ⬜ Graph declaration
-  2. ⬜ Graph attributes
-  3. ⬜ Default node attributes
-  4. ⬜ Default edge attributes
-  5. ⬜ Nodes
-  6. ⬜ Edges
-  7. ⬜ Closing brace
-- ⬜ Update `dot_test.go`
-  - ⬜ `TestDOT_GraphAttributes_RankDir`
-  - ⬜ `TestDOT_GraphAttributes_Label`
-  - ⬜ `TestDOT_GraphAttributes_Multiple`
-  - ⬜ `TestDOT_DefaultNodeAttrs`
-  - ⬜ `TestDOT_DefaultEdgeAttrs`
-  - ⬜ `TestDOT_FullGraph_WithAllSections`
+- ✅ Output graph attributes after opening brace
+- ✅ Output default node attributes (node [...];)
+- ✅ Output default edge attributes (edge [...];)
+- ✅ Only output if non-zero defaults exist
+- ✅ Implement correct output order
+  1. ✅ Graph declaration
+  2. ✅ Graph attributes
+  3. ✅ Default node attributes
+  4. ✅ Default edge attributes
+  5. ✅ Nodes
+  6. ✅ Edges
+  7. ✅ Closing brace
+- ✅ Update `dot_test.go`
+  - ✅ `TestDOT_GraphAttributes_RankDir`
+  - ✅ `TestDOT_GraphAttributes_Label`
+  - ✅ `TestDOT_GraphAttributes_Multiple`
+  - ✅ `TestDOT_GraphAttributes_AllTypes`
+  - ✅ `TestDOT_DefaultNodeAttrs`
+  - ✅ `TestDOT_DefaultEdgeAttrs`
+  - ✅ `TestDOT_DefaultAttrs_OnlyIfNonEmpty`
+  - ✅ `TestDOT_FullGraph_WithAllSections`
+  - ✅ `TestDOT_GraphAttributes_EmptyGraph`
+  - ✅ `TestDOT_CustomGraphAttribute`
+  - ✅ `TestDOT_DefaultNodeAttrs_WithCustom`
+  - ✅ `TestDOT_DefaultEdgeAttrs_WithCustom`
 
-### Step 19: String Escaping in DOT Output
+### Step 19: String Escaping in DOT Output ✅
 
-- ⬜ Create DOT string escaping helper
-  - ⬜ Escape backslashes
-  - ⬜ Escape double quotes
-  - ⬜ Escape newlines
-  - ⬜ Handle other special characters
-- ⬜ Create quoting decision helper
-- ⬜ Apply escaping to all DOT output
-  - ⬜ Node IDs
-  - ⬜ Attribute values
-  - ⬜ Graph names
-- ⬜ Update `dot_test.go`
-  - ⬜ `TestDOT_NodeID_WithSpaces`
-  - ⬜ `TestDOT_NodeID_WithSpecialChars`
-  - ⬜ `TestDOT_Label_WithQuotes`
-  - ⬜ `TestDOT_Label_WithNewlines`
-  - ⬜ `TestDOT_Label_WithBackslashes`
-  - ⬜ `TestDOT_ComplexStrings`
+- ✅ Create DOT string escaping helper (`escapeDOTString` in dot.go)
+  - ✅ Escape backslashes: \ → \\
+  - ✅ Escape double quotes: " → \"
+  - ✅ Escape newlines: \n → \n (literal)
+  - ✅ Handle other special characters
+- ✅ Create quoting decision helper (`quoteDOTID` in dot.go)
+- ✅ Apply escaping to all DOT output
+  - ✅ Node IDs (via `quoteDOTID`)
+  - ✅ Attribute values (via `escapeDOTString`)
+  - ✅ Graph names (via `quoteDOTID`)
+  - ✅ Edge node IDs (via `quoteDOTID`)
+- ✅ Update `dot_test.go`
+  - ✅ `TestDOT_NodeID_WithSpecialChars`
+  - ✅ `TestDOT_Escaping_Backslashes_NodeID`
+  - ✅ `TestDOT_Escaping_Quotes_NodeID`
+  - ✅ `TestDOT_Escaping_Newlines_NodeID`
+  - ✅ `TestDOT_Escaping_Backslashes_AttributeValue`
+  - ✅ `TestDOT_Escaping_Quotes_AttributeValue`
+  - ✅ `TestDOT_Escaping_Newlines_AttributeValue`
+  - ✅ `TestDOT_Escaping_Combined`
+  - ✅ `TestDOT_GraphName_Escaping`
+  - ✅ `TestDOT_ComplexStrings`
+  - ✅ `TestDOT_Escaping_EdgeCases`
+  - ✅ `TestDOT_AttributeValues_AlwaysQuoted`
+  - ✅ `TestDOT_Escaping_UndirectedEdges`
 
 ---
 
 ## Phase 4: Labels (Steps 20-26)
 
-### Step 20: HTMLCell and HTMLRow Types
+### Step 20: HTMLCell and HTMLRow Types ✅
 
-- ⬜ Create `labels.go`
-- ⬜ Define `HTMLCell` struct
-  - ⬜ `content` field
-  - ⬜ `port` field
-  - ⬜ `bold` field
-  - ⬜ `italic` field
-  - ⬜ `underline` field
-  - ⬜ `colSpan` field
-  - ⬜ `rowSpan` field
-  - ⬜ `bgColor` field
-  - ⬜ `align` field
-- ⬜ Implement `Cell(content string)` constructor
-- ⬜ Implement chainable methods
-  - ⬜ `Port(id string)`
-  - ⬜ `Bold()`
-  - ⬜ `Italic()`
-  - ⬜ `Underline()`
-  - ⬜ `ColSpan(n int)`
-  - ⬜ `RowSpan(n int)`
-  - ⬜ `BgColor(color string)`
-  - ⬜ `Align(a string)`
-- ⬜ Define `HTMLRow` struct
-- ⬜ Implement `Row(cells ...*HTMLCell)` constructor
-- ⬜ Implement `Cells()` method
-- ⬜ Create `labels_test.go`
-  - ⬜ `TestCell_Content`
-  - ⬜ `TestCell_Chaining`
-  - ⬜ `TestCell_AllOptions`
-  - ⬜ `TestRow_ContainsCells`
-  - ⬜ `TestRow_MultipleCells`
+- ✅ Create `labels.go`
+- ✅ Create `cell_content.go` for Content interface and implementations
+- ✅ Define `HTMLCell` struct
+  - ✅ `contents` field ([]Content)
+  - ✅ `port` field
+  - ✅ `colSpan` field
+  - ✅ `rowSpan` field
+  - ✅ `bgColor` field
+  - ✅ `align` field
+  - ✅ Note: Formatting (bold, italic, underline) implemented via Content/TextContent rather than cell-level fields
+- ✅ Implement `Cell(contents ...Content)` constructor
+- ✅ Implement chainable methods
+  - ✅ `Port(id string)`
+  - ✅ `ColSpan(n int)`
+  - ✅ `RowSpan(n int)`
+  - ✅ `BgColor(color string)`
+  - ✅ `Align(align Alignment)`
+- ✅ Define `HTMLRow` struct
+- ✅ Implement `Row(cells ...*HTMLCell)` constructor
+- ✅ Implement `Cells()` method
+- ✅ Create `labels_test.go`
+  - ✅ Comprehensive test coverage (see PR #22)
 
-### Step 21: HTMLTable Builder
+### Step 21: HTMLTable Builder ✅
 
-- ⬜ Define `HTMLLabel` struct
-  - ⬜ `rows` field
-  - ⬜ `border` field
-  - ⬜ `cellBorder` field
-  - ⬜ `cellSpacing` field
-  - ⬜ `cellPadding` field
-  - ⬜ `bgColor` field
-- ⬜ Implement `HTMLTable(rows ...*HTMLRow)` constructor
-- ⬜ Implement chainable methods
-  - ⬜ `Border(n int)`
-  - ⬜ `CellBorder(n int)`
-  - ⬜ `CellSpacing(n int)`
-  - ⬜ `CellPadding(n int)`
-  - ⬜ `BgColor(color string)`
-- ⬜ Implement `String()` method for HTML rendering
-  - ⬜ Output wrapped in < >
-  - ⬜ TABLE element with attributes
-  - ⬜ TR for each row
-  - ⬜ TD for each cell
-  - ⬜ Formatting tags (B, I, U)
-  - ⬜ PORT attribute
-- ⬜ Update `labels_test.go`
-  - ⬜ `TestHTMLTable_SimpleTable`
-  - ⬜ `TestHTMLTable_WithTableAttributes`
-  - ⬜ `TestHTMLTable_CellWithPort`
-  - ⬜ `TestHTMLTable_CellWithFormatting`
-  - ⬜ `TestHTMLTable_CellWithSpan`
-  - ⬜ `TestHTMLTable_ComplexTable`
+- ✅ Define `HTMLLabel` struct
+  - ✅ `rows` field
+  - ✅ `border` field (pointer for optionality)
+  - ✅ `cellBorder` field (pointer for optionality)
+  - ✅ `cellSpacing` field (pointer for optionality)
+  - ✅ `cellPadding` field (pointer for optionality)
+  - ✅ `bgColor` field
+- ✅ Implement `HTMLTable(rows ...*HTMLRow)` constructor
+- ✅ Implement chainable methods
+  - ✅ `Border(n int)`
+  - ✅ `CellBorder(n int)`
+  - ✅ `CellSpacing(n int)`
+  - ✅ `CellPadding(n int)`
+  - ✅ `BgColor(color string)`
+- ✅ Implement `String()` method for HTML rendering
+  - ✅ Output wrapped in < >
+  - ✅ TABLE element with attributes
+  - ✅ TR for each row
+  - ✅ TD for each cell
+  - ✅ Formatting tags (B, I, U, SUB, SUP) via Content
+  - ✅ PORT attribute
+- ✅ Update `labels_test.go`
+  - ✅ Comprehensive test coverage (see PR #22)
 
-### Step 22: Port Type and Cell Port Reference
+### Step 22: Port Type and Cell Port Reference ✅
 
-- ⬜ Create `port.go`
-- ⬜ Define `Port` struct
-  - ⬜ `id` field
-  - ⬜ `nodeID` field
-- ⬜ Implement `ID()` method
-- ⬜ Update `HTMLCell`
-  - ⬜ Add `portRef` field
-  - ⬜ Update `Port()` method to create Port
-  - ⬜ Add `GetPort()` method
-- ⬜ Add mechanism to associate ports with nodes
-  - ⬜ Internal method on HTMLLabel to set node context
-  - ⬜ Update Port.nodeID when label attached
-- ⬜ Create `port_test.go`
-  - ⬜ `TestPort_ID`
-  - ⬜ `TestCell_GetPort_ReturnsPort`
-  - ⬜ `TestCell_GetPort_NilIfNoPort`
-- ⬜ Update `labels_test.go`
-  - ⬜ `TestHTMLLabel_PortsKnowNodeID`
+- ✅ Create `port.go`
+- ✅ Define `Port` struct
+  - ✅ `id` field
+  - ✅ `nodeID` field
+- ✅ Implement `ID()` method
+- ✅ Update `HTMLCell`
+  - ✅ Add `portRef` field
+  - ✅ Update `Port()` method to create Port
+  - ✅ Add `GetPort()` method
+- ✅ Add mechanism to associate ports with nodes
+  - ✅ Internal method on HTMLLabel to set node context
+  - ✅ Update Port.nodeID when label attached
+- ✅ Create `port_test.go`
+  - ✅ `TestPort_ID`
+  - ✅ `TestCell_GetPort_ReturnsPort`
+  - ✅ `TestCell_GetPort_NilIfNoPort`
+- ✅ Update `labels_test.go`
+  - ✅ `TestHTMLLabel_PortsKnowNodeID`
 
 ### Step 23: FromPort/ToPort Edge Options
 
@@ -1079,9 +1080,10 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 - ✅ `graph_options.go`
 - ✅ `node_options.go`
 - ✅ `edge_options.go`
-- ⬜ `labels.go`
-- ⬜ `port.go`
-- ✅ `dot.go` (DOT methods implemented in graph.go, node.go, edge.go instead of separate file)
+- ✅ `labels.go`
+- ✅ `cell_content.go`
+- ✅ `port.go`
+- ✅ `dot.go` (String escaping and quoting helpers for DOT output)
 - ⬜ `parse.go`
 - ⬜ `render.go`
 - ⬜ `errors.go`
@@ -1096,9 +1098,9 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 - ✅ `edge_options_test.go`
 - ✅ `graph_default_attrs_test.go` (comprehensive tests for Step 13)
 - ✅ `custom_attributes_test.go` (comprehensive tests for Step 14)
-- ⬜ `labels_test.go`
+- ✅ `labels_test.go`
 - ⬜ `record_labels_test.go`
-- ⬜ `port_test.go`
+- ✅ `port_test.go`
 - ✅ `dot_test.go` (comprehensive coverage for Steps 15-17)
 - ⬜ `lexer_test.go`
 - ⬜ `parser_test.go`
@@ -1117,12 +1119,12 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 |-------|-------|-----------|------------|
 | Foundation | 1-5 | 5/5 | 100% |
 | Attributes | 6-14 | 9/9 | 100% |
-| DOT Generation | 15-19 | 3/5 | 60% |
-| Labels | 20-26 | 0/7 | 0% |
+| DOT Generation | 15-19 | 5/5 | 100% |
+| Labels | 20-26 | 3/7 | 43% |
 | Subgraphs | 27-32 | 0/6 | 0% |
 | Parsing | 33-37 | 0/5 | 0% |
 | Rendering | 38-43 | 0/6 | 0% |
-| **Total** | **1-43** | **17/43** | **40%** |
+| **Total** | **1-43** | **22/43** | **51%** |
 
 ---
 
@@ -1140,36 +1142,59 @@ _Use this section to track blockers, decisions, or deviations from the plan._
 
 ### Deviations from Plan
 
-- **DOT Generation Implementation**: Instead of creating a separate `dot.go` file, the DOT generation methods (`String()` and `WriteDOT()`) were implemented directly in `graph.go`, with Node and Edge having their own rendering methods (`Node.String()` and `Edge.ToString()`). This keeps the code organized by type rather than by feature.
-- **Current Branch (edge-to-dot)**: Steps 15-17 have been completed, implementing basic DOT output for graphs, nodes with attributes, and edges with attributes. Recent commits include:
-  - ab34ab4: Add DOT rendering for edges
-  - d9d4efc: Implement a basic pass at graph.String() method to output valid DOT syntax
-  - d4d7dfe: Basic empty graph DOT output
-  - Comprehensive test coverage added in `dot_test.go` with over 100 test cases covering all aspects of node and edge rendering
+- **DOT Generation Implementation**: The DOT generation methods (`String()` and `WriteDOT()`) were implemented directly in `graph.go`, with Node and Edge having their own rendering methods (`Node.String()` and `Edge.ToString()`). A separate `dot.go` file was created for escaping/quoting helpers. This keeps the code organized by type rather than by feature, while centralizing string handling utilities.
+- **HTML Label Content Design**: The original plan in Step 20 suggested having `bold`, `italic`, and `underline` as fields directly on `HTMLCell`. Instead, we implemented a cleaner `Content` interface pattern with `TextContent`, `LineBreak`, and `HorizontalRule` types. This allows cells to contain multiple pieces of content with independent formatting, which is more flexible and closer to how HTML actually works. The `HTMLCell.contents` field is now `[]Content` instead of a single `content string`.
+- **HTML Label Table Attributes**: Used pointer types (`*int`) for `border`, `cellBorder`, `cellSpacing`, and `cellPadding` in `HTMLLabel` to distinguish between "not set" vs "explicitly set to 0", consistent with the pattern established for `GraphAttributes`.
 
 ### Lessons Learned
 
 - **Test-Driven Development**: The comprehensive test suite (411 tests) has been instrumental in ensuring correctness while implementing features. Tests cover all edge cases and ensure DOT output matches Graphviz specifications.
 - **Attribute Organization**: Splitting attributes into separate files (node_attributes.go, edge_attributes.go, graph_attributes.go) improved code organization and maintainability.
 
-### Current Status (as of 2026-01-08)
+### Current Status (as of 2026-01-16)
 
 **Completed:**
 - ✅ **Phase 1 - Foundation (100%)**: All basic graph, node, and edge functionality complete
 - ✅ **Phase 2 - Attributes (100%)**: All attribute types, options, and custom attributes implemented
-- ✅ **Phase 3 - DOT Generation (60%)**: Basic DOT output working for graphs, nodes with full attributes, and edges with full attributes
+- ✅ **Phase 3 - DOT Generation (100%)**: Complete DOT output with graph/node/edge attributes, defaults, and string escaping
+  - Step 15: Graph.String() - Basic DOT output ✅
+  - Step 16: Node DOT rendering with attributes ✅
+  - Step 17: Edge DOT rendering with attributes ✅
+  - Step 18: Graph and default attributes in DOT output ✅
+  - Step 19: String escaping in DOT output ✅
+- ✅ **Phase 4 - Labels (43%)**: HTML table labels with ports (Steps 20-22 complete)
+  - Step 20: HTMLCell and HTMLRow types with Content interface ✅
+  - Step 21: HTMLTable builder with full rendering ✅
+  - Step 22: Type-safe Port references with node association ✅
 
 **In Progress:**
-- 🟡 **Phase 3 - DOT Generation (40% remaining)**: Need to implement:
-  - Step 18: Output graph attributes and default node/edge attributes in DOT format
-  - Step 19: String escaping in DOT output (handle quotes, newlines, special characters)
+- 🟡 **Phase 4 - Labels (57% remaining)**: Need to implement:
+  - Step 23: FromPort/ToPort edge options
+  - Step 24: HTML label DOT output integration
+  - Step 25: Record field and FieldGroup
+  - Step 26: WithRecordLabel and DOT output
 
 **Next Steps:**
-1. Complete Step 18: Add graph attributes and default attributes to DOT output
-2. Complete Step 19: Implement proper string escaping for DOT format
-3. Begin Phase 4: HTML and record labels (Steps 20-26)
+1. Complete Step 23: Implement FromPort/ToPort edge options for connecting to HTML label ports
+2. Complete Step 24: Integrate HTML labels into DOT output with node association
+3. Complete Steps 25-26: Implement record labels
+4. Begin Phase 5: Subgraphs (Steps 27-32)
+
+**Recent Work (ports-part-1 branch):**
+- Completed Phase 3 DOT Generation (Steps 18-19):
+  - Implemented graph attributes and default node/edge attributes in DOT output
+  - Created comprehensive string escaping system (escapeDOTString, quoteDOTID)
+  - Ensured all DOT output properly escapes backslashes, quotes, and newlines
+- Completed partial Phase 4 Labels (Steps 20-22):
+  - Implemented Content interface with TextContent, LineBreak, and HorizontalRule
+  - Built HTMLCell with port support and formatting via Content
+  - Created HTMLRow and HTMLLabel with full table builder API
+  - Added type-safe Port references that track both port ID and node ID
+  - Implemented setNodeContext mechanism to associate ports with nodes
+- Comprehensive test coverage for all functionality
 
 **Test Coverage:**
-- 411 total tests passing
+- 711 tests passing (including subtests)
 - Comprehensive coverage of all implemented features
 - Examples demonstrating all basic usage patterns
+- Extensive DOT output validation including escaping edge cases
