@@ -216,6 +216,10 @@ func (g *Graph) String() string {
 		builder.WriteString(fmt.Sprintf("\t%s;\n", edge.ToString(g.directed)))
 	}
 
+	for _, subgraph := range g.subgraphs {
+		builder.WriteString(fmt.Sprintf("\t%s\n", subgraph.String()))
+	}
+
 	builder.WriteString("}")
 
 	return builder.String()

@@ -2,16 +2,24 @@
 // ABOUTME: Subgraphs can group nodes and edges, with cluster support for visual grouping.
 package goraffe
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 // Subgraph represents a subgraph within a Graph.
 // Subgraphs can be used to group nodes and edges together.
 // If the name starts with "cluster", it will be rendered as a visual cluster in Graphviz.
+//
+// Cluster subgraphs (names starting with "cluster") support visual attributes like colors
+// and fill colors. Regular subgraphs may have these attributes set but they typically won't
+// be rendered by Graphviz.
 type Subgraph struct {
 	name   string
 	nodes  map[string]*Node
 	edges  []*Edge
 	parent *Graph
+	attrs  *SubgraphAttributes
 }
 
 // Name returns the name of the subgraph.
@@ -55,4 +63,77 @@ func (sg *Subgraph) AddEdge(from, to *Node, opts ...EdgeOption) (*Edge, error) {
 	}
 	sg.edges = append(sg.edges, edge)
 	return edge, nil
+}
+
+// Attrs returns the subgraph's attribute configuration.
+// If attributes haven't been initialized yet, this creates and returns a new SubgraphAttributes.
+func (sg *Subgraph) Attrs() *SubgraphAttributes {
+	if sg.attrs == nil {
+		sg.attrs = &SubgraphAttributes{}
+	}
+	return sg.attrs
+}
+
+// SetLabel sets the label for the subgraph.
+// The label is displayed as text associated with the subgraph (typically visible for clusters).
+func (sg *Subgraph) SetLabel(l string) {
+	sg.Attrs().label = &l
+}
+
+// SetStyle sets the style for the subgraph (e.g., "filled", "dashed", "bold").
+// Multiple styles can be comma-separated. Typically visible for cluster subgraphs.
+func (sg *Subgraph) SetStyle(s string) {
+	sg.Attrs().style = &s
+}
+
+// SetColor sets the border color for the subgraph.
+// Typically only visible for cluster subgraphs.
+func (sg *Subgraph) SetColor(c string) {
+	sg.Attrs().color = &c
+}
+
+// SetFillColor sets the fill/background color for the subgraph.
+// Typically only visible for cluster subgraphs.
+// When using fillcolor with a cluster, you may also want to set style to "filled".
+func (sg *Subgraph) SetFillColor(c string) {
+	sg.Attrs().fillColor = &c
+}
+
+// SetAttribute sets a custom DOT attribute on the subgraph.
+// This allows setting arbitrary Graphviz attributes not covered by dedicated setter methods.
+func (sg *Subgraph) SetAttribute(key, value string) {
+	sg.Attrs().setCustom(key, value)
+}
+
+// String returns the DOT representation of the subgraph.
+// The output includes the subgraph declaration, attributes, nodes, and edges.
+func (sg *Subgraph) String() string {
+	builder := strings.Builder{}
+
+	// Start subgraph declaration
+	builder.WriteString(fmt.Sprintf("subgraph %s {\n", quoteDOTID(sg.name)))
+
+	// Add subgraph attributes
+	if sg.attrs != nil {
+		attrs := sg.attrs.List()
+		if len(attrs) > 0 {
+			for _, attr := range attrs {
+				builder.WriteString(fmt.Sprintf("\t\t%s;\n", attr))
+			}
+		}
+	}
+
+	// Add nodes
+	for _, node := range sg.nodes {
+		builder.WriteString(fmt.Sprintf("\t\t%s;\n", node))
+	}
+
+	// Add edges
+	for _, edge := range sg.edges {
+		builder.WriteString(fmt.Sprintf("\t\t%s;\n", edge.ToString(sg.parent.IsDirected())))
+	}
+
+	builder.WriteString("\t}")
+
+	return builder.String()
 }
