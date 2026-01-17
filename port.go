@@ -14,3 +14,15 @@ type Port struct {
 func (p *Port) ID() string {
 	return p.id
 }
+
+// NodeID returns the ID of the node this port belongs to.
+// This is set automatically when a node is created with an HTML label.
+func (p *Port) NodeID() string {
+	return p.nodeID
+}
+
+// setNodeContext sets the node context for this port.
+// This is used internally when wiring ports to nodes.
+func (p *Port) setNodeContext(node *Node) {
+	p.nodeID = node.id
+}

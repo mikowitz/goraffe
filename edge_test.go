@@ -529,3 +529,101 @@ func TestGraph_AddEdge_OptionsAppliedInOrder(t *testing.T) {
 		asrt.Equal("blue", attrs.Color(), "expected Color from earlier option (template has nil value)")
 	})
 }
+
+func TestFromPort_SetsPort(t *testing.T) {
+	t.Run("sets fromPort on edge", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		cell := Cell(Text("output")).Port("out")
+		port := cell.GetPort()
+
+		e, err := g.AddEdge(n1, n2, FromPort(port))
+		asrt.NoError(err)
+
+		asrt.Same(port, e.Attrs().FromPort(), "expected FromPort to return the set port")
+	})
+}
+
+func TestToPort_SetsPort(t *testing.T) {
+	t.Run("sets toPort on edge", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph()
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+		cell := Cell(Text("input")).Port("in")
+		port := cell.GetPort()
+
+		e, err := g.AddEdge(n1, n2, ToPort(port))
+		asrt.NoError(err)
+
+		asrt.Same(port, e.Attrs().ToPort(), "expected ToPort to return the set port")
+	})
+}
+
+func TestDOT_Edge_WithFromPort(t *testing.T) {
+	t.Run("outputs edge with fromPort", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+
+		cell := Cell(Text("output")).Port("out")
+		port := cell.GetPort()
+		port.setNodeContext(n1)
+
+		_, err := g.AddEdge(n1, n2, FromPort(port))
+		asrt.NoError(err)
+
+		output := g.String()
+		asrt.Contains(output, "\"A\":\"out\" -> \"B\";", "expected edge with fromPort format")
+	})
+}
+
+func TestDOT_Edge_WithToPort(t *testing.T) {
+	t.Run("outputs edge with toPort", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+
+		cell := Cell(Text("input")).Port("in")
+		port := cell.GetPort()
+		port.setNodeContext(n2)
+
+		_, err := g.AddEdge(n1, n2, ToPort(port))
+		asrt.NoError(err)
+
+		output := g.String()
+		asrt.Contains(output, "\"A\" -> \"B\":\"in\";", "expected edge with toPort format")
+	})
+}
+
+func TestDOT_Edge_WithBothPorts(t *testing.T) {
+	t.Run("outputs edge with both fromPort and toPort", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		g := NewGraph(Directed)
+		n1 := NewNode("A")
+		n2 := NewNode("B")
+
+		outCell := Cell(Text("output")).Port("out")
+		outPort := outCell.GetPort()
+		outPort.setNodeContext(n1)
+
+		inCell := Cell(Text("input")).Port("in")
+		inPort := inCell.GetPort()
+		inPort.setNodeContext(n2)
+
+		_, err := g.AddEdge(n1, n2, FromPort(outPort), ToPort(inPort), WithEdgeLabel("data"))
+		asrt.NoError(err)
+
+		output := g.String()
+		asrt.Contains(output, "\"A\":\"out\" -> \"B\":\"in\" [label=\"data\"];", "expected edge with both ports and label")
+	})
+}
