@@ -254,10 +254,16 @@ func ExampleGraph_AddEdge() {
 	// Label: flow
 }
 
-// Example_htmlTableLabel demonstrates creating an HTML table label.
+// Example_htmlTableLabel demonstrates creating an HTML table label with ports.
 // HTML tables are used for complex node labels in Graphviz with structured data,
 // ports for edge connections, and rich formatting.
 func Example_htmlTableLabel() {
+	g := goraffe.NewGraph(goraffe.Directed)
+
+	// Create cells with ports for edge connections
+	idCell := goraffe.Cell(goraffe.Text("12345")).Port("id")
+	nameCell := goraffe.Cell(goraffe.Text("Alice")).Port("name")
+
 	// Create an HTML table label with a header and data rows
 	table := goraffe.HTMLTable(
 		goraffe.Row(
@@ -269,11 +275,11 @@ func Example_htmlTableLabel() {
 		),
 		goraffe.Row(
 			goraffe.Cell(goraffe.Text("ID:").Bold()),
-			goraffe.Cell(goraffe.Text("12345")).Port("id"),
+			idCell,
 		),
 		goraffe.Row(
 			goraffe.Cell(goraffe.Text("Name:").Bold()),
-			goraffe.Cell(goraffe.Text("Alice")).Port("name"),
+			nameCell,
 		),
 		goraffe.Row(
 			goraffe.Cell(goraffe.Text("Status:").Bold()),
@@ -281,8 +287,30 @@ func Example_htmlTableLabel() {
 		),
 	).Border(1).CellBorder(1).CellSpacing(0).CellPadding(4)
 
-	// The String() method outputs Graphviz HTML label format
-	fmt.Println(table.String())
+	// Create a node with the HTML table label
+	user := goraffe.NewNode("user", goraffe.WithHTMLLabel(table))
+
+	// Create other nodes
+	database := goraffe.NewNode("db", goraffe.WithLabel("Database"))
+	display := goraffe.NewNode("display", goraffe.WithLabel("Display"))
+
+	// Connect edges to specific ports on the HTML table
+	_, _ = g.AddEdge(database, user,
+		goraffe.ToPort(idCell.GetPort()),
+		goraffe.WithEdgeLabel("fetch"),
+	)
+	_, _ = g.AddEdge(user, display,
+		goraffe.FromPort(nameCell.GetPort()),
+		goraffe.WithEdgeLabel("show"),
+	)
+
+	fmt.Println(g.String())
 	// Output:
-	// <<table border="1" cellborder="1" cellspacing="0" cellpadding="4"><tr><td port="title" colspan="2" bgcolor="lightblue" align="center"><b>User Record</b></td></tr><tr><td><b>ID:</b></td><td port="id">12345</td></tr><tr><td><b>Name:</b></td><td port="name">Alice</td></tr><tr><td><b>Status:</b></td><td><i>Active</i></td></tr></table>>
+	// digraph {
+	// 	"db" [label="Database"];
+	// 	"user" [label=<<table border="1" cellborder="1" cellspacing="0" cellpadding="4"><tr><td port="title" colspan="2" bgcolor="lightblue" align="center"><b>User Record</b></td></tr><tr><td><b>ID:</b></td><td port="id">12345</td></tr><tr><td><b>Name:</b></td><td port="name">Alice</td></tr><tr><td><b>Status:</b></td><td><i>Active</i></td></tr></table>>];
+	// 	"display" [label="Display"];
+	// 	"db" -> "user":"id" [label="fetch"];
+	// 	"user":"name" -> "display" [label="show"];
+	// }
 }
