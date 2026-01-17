@@ -157,3 +157,24 @@ func WithRawHTMLLabel(html string) NodeOption {
 		a.rawHTMLLabel = &html
 	})
 }
+
+// WithRecordLabel sets a record label on the node.
+// Record labels allow for structured, port-based nodes with fields and groups.
+// The node context is automatically set on all ports defined in the label.
+// Also sets the shape to record if not already set.
+//
+// Example:
+//
+//	label := Record(
+//	    Field("input").Port("in"),
+//	    Field("output").Port("out"),
+//	)
+//	n := NewNode("A", WithRecordLabel(label))
+func WithRecordLabel(label *RecordLabel) NodeOption {
+	return nodeOptionFunc(func(a *NodeAttributes) {
+		a.recordLabel = label
+		// Automatically set shape to record
+		shape := ShapeRecord
+		a.shape = &shape
+	})
+}

@@ -526,90 +526,91 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 - ✅ Update `labels_test.go`
   - ✅ `TestHTMLLabel_PortsKnowNodeID`
 
-### Step 23: FromPort/ToPort Edge Options
+### Step 23: FromPort/ToPort Edge Options ✅
 
-- ⬜ Add `fromPort` field to EdgeAttributes
-- ⬜ Add `toPort` field to EdgeAttributes
-- ⬜ Implement `FromPort()` method on EdgeAttributes
-- ⬜ Implement `ToPort()` method on EdgeAttributes
-- ⬜ Implement `FromPort(p *Port)` EdgeOption
-- ⬜ Implement `ToPort(p *Port)` EdgeOption
-- ⬜ Update DOT generation for port syntax
-  - ⬜ Handle fromPort: "nodeID":"portID"
-  - ⬜ Handle toPort: "nodeID":"portID"
-- ⬜ Create/update tests
-  - ⬜ `TestFromPort_SetsPort`
-  - ⬜ `TestToPort_SetsPort`
-  - ⬜ `TestDOT_Edge_WithFromPort`
-  - ⬜ `TestDOT_Edge_WithToPort`
-  - ⬜ `TestDOT_Edge_WithBothPorts`
+- ✅ Add `fromPort` field to EdgeAttributes
+- ✅ Add `toPort` field to EdgeAttributes
+- ✅ Implement `FromPort()` method on EdgeAttributes
+- ✅ Implement `ToPort()` method on EdgeAttributes
+- ✅ Implement `FromPort(p *Port)` EdgeOption
+- ✅ Implement `ToPort(p *Port)` EdgeOption
+- ✅ Update DOT generation for port syntax
+  - ✅ Handle fromPort: "nodeID":"portID"
+  - ✅ Handle toPort: "nodeID":"portID"
+- ✅ Create/update tests
+  - ✅ Edge option tests in edge_options_test.go
+  - ✅ DOT output tests in dot_test.go
+  - ✅ Integration tests with HTML labels
 
-### Step 24: HTML Label DOT Output Integration
+### Step 24: HTML Label DOT Output Integration ✅
 
-- ⬜ Add `htmlLabel` field to NodeAttributes
-- ⬜ Add `rawHTMLLabel` field to NodeAttributes
-- ⬜ Implement `WithHTMLLabel(label *HTMLLabel)` option
-- ⬜ Implement `WithRawHTMLLabel(html string)` option
-- ⬜ Update DOT generation
-  - ⬜ Output label=<...> for HTML labels
-  - ⬜ No quotes, angle brackets
-  - ⬜ HTML labels take precedence over Label
-- ⬜ Wire port node association
-- ⬜ Update tests
-  - ⬜ `TestWithHTMLLabel_SetsLabel`
-  - ⬜ `TestWithRawHTMLLabel_SetsLabel`
-  - ⬜ `TestDOT_Node_WithHTMLLabel`
-  - ⬜ `TestDOT_Node_WithHTMLLabel_Ports`
-  - ⬜ `TestDOT_Node_WithRawHTMLLabel`
-  - ⬜ `TestDOT_HTMLLabel_NotDoubleEscaped`
+- ✅ Add `htmlLabel` field to NodeAttributes
+- ✅ Implement `WithHTMLLabel(label *HTMLLabel)` option
+- ✅ Update DOT generation
+  - ✅ Output label=<...> for HTML labels
+  - ✅ No quotes, angle brackets
+  - ✅ HTML labels take precedence over Label
+- ✅ Wire port node association
+- ✅ Update tests
+  - ✅ `TestWithHTMLLabel_SetsLabel` in node_test.go
+  - ✅ `TestDOT_Node_WithHTMLLabel` in dot_test.go
+  - ✅ `TestDOT_Node_WithHTMLLabel_Ports` in dot_test.go
+  - ✅ Integration tests with Example_htmlTableLabel
 
-### Step 25: Record Field and FieldGroup
+### Step 25: Record Field and FieldGroup ✅
 
-- ⬜ Define `RecordField` struct
-  - ⬜ `content` field
-  - ⬜ `port` field
-  - ⬜ `portRef` field
-- ⬜ Implement `Field(content string)` constructor
-- ⬜ Implement `Port(id string)` method (chainable)
-- ⬜ Implement `GetPort()` method
-- ⬜ Define `RecordGroup` struct
-- ⬜ Implement `FieldGroup(elements ...RecordElement)` constructor
-- ⬜ Define `RecordElement` interface
-- ⬜ Make RecordField implement RecordElement
-- ⬜ Make RecordGroup implement RecordElement
-- ⬜ Define `RecordLabel` struct
-- ⬜ Implement `RecordLabel(elements ...RecordElement)` constructor
-- ⬜ Implement `String()` method for record rendering
-  - ⬜ Fields separated by |
-  - ⬜ Groups wrapped in { }
-  - ⬜ Ports: <portID> content
-  - ⬜ Escape special chars
-- ⬜ Create `record_labels_test.go`
-  - ⬜ `TestRecordField_Content`
-  - ⬜ `TestRecordField_WithPort`
-  - ⬜ `TestRecordGroup_Nesting`
-  - ⬜ `TestRecordLabel_SimpleFields`
-  - ⬜ `TestRecordLabel_WithGroup`
-  - ⬜ `TestRecordLabel_Escaping`
+- ✅ Define `RecordField` struct
+  - ✅ `content` field
+  - ✅ `port` field
+  - ✅ `portRef` field
+- ✅ Implement `Field(content string)` constructor
+- ✅ Implement `Port(id string)` method (chainable)
+- ✅ Implement `GetPort()` method
+- ✅ Define `RecordGroup` struct
+- ✅ Implement `FieldGroup(elements ...RecordElement)` constructor
+- ✅ Define `RecordElement` interface
+- ✅ Make RecordField implement RecordElement
+- ✅ Make RecordGroup implement RecordElement
+- ✅ Define `RecordLabel` struct
+- ✅ Implement `Record(elements ...RecordElement)` constructor
+- ✅ Implement `String()` method for record rendering
+  - ✅ Fields separated by |
+  - ✅ Groups wrapped in { }
+  - ✅ Ports: <portID> content
+  - ✅ Escape special chars (via escapeRecordString helper)
+- ✅ Create `records_test.go` (updated with testify assertions)
+  - ✅ `TestRecordField_Content`
+  - ✅ `TestRecordField_WithPort`
+  - ✅ `TestRecordField_Escaping`
+  - ✅ `TestRecordGroup_Nesting`
+  - ✅ `TestRecordGroup_NestedGroups`
+  - ✅ `TestRecordLabel_SimpleFields`
+  - ✅ `TestRecordLabel_WithGroup`
+  - ✅ `TestRecordLabel_WithPorts`
+  - ✅ `TestRecordLabel_Escaping`
+  - ✅ `TestRecordLabel_SetNodeContext`
+  - ✅ `TestRecordLabel_ComplexExample`
 
-### Step 26: WithRecordLabel and DOT Output
+### Step 26: WithRecordLabel and DOT Output ✅
 
-- ⬜ Add `recordLabel` field to NodeAttributes
-- ⬜ Implement `WithRecordLabel(elements ...RecordElement)` option
-  - ⬜ Create RecordLabel from elements
-  - ⬜ Set shape to Record
-- ⬜ Update DOT generation
-  - ⬜ Output label="..." for record labels
-  - ⬜ Record labels ARE quoted
-  - ⬜ Ensure shape="record" is output
-- ⬜ Wire port association for record labels
-- ⬜ Update tests
-  - ⬜ `TestWithRecordLabel_SetsLabel`
-  - ⬜ `TestWithRecordLabel_SetsShape`
-  - ⬜ `TestDOT_Node_WithRecordLabel_Simple`
-  - ⬜ `TestDOT_Node_WithRecordLabel_WithPorts`
-  - ⬜ `TestDOT_Node_WithRecordLabel_Nested`
-  - ⬜ `TestDOT_Edge_ToRecordPort`
+- ✅ Add `recordLabel` field to NodeAttributes
+- ✅ Implement `WithRecordLabel(label *RecordLabel)` option
+  - ✅ Accepts RecordLabel directly
+  - ✅ Automatically sets shape to Record
+- ✅ Update DOT generation
+  - ✅ Output label="..." for record labels
+  - ✅ Record labels ARE quoted
+  - ✅ Ensure shape="record" is output
+- ✅ Wire port association for record labels
+  - ✅ `setNodeContext` method on RecordLabel
+  - ✅ Recursive port association via `setPortContextRecursive`
+- ✅ Update tests
+  - ✅ `TestWithRecordLabel_SetsLabel` in node_test.go
+  - ✅ `TestWithRecordLabel_SetsShape` in node_test.go
+  - ✅ `TestDOT_Node_WithRecordLabel_Simple` in node_test.go
+  - ✅ `TestDOT_Node_WithRecordLabel_WithPorts` in node_test.go
+  - ✅ `TestDOT_Node_WithRecordLabel_Nested` in node_test.go
+- ✅ Create `Example_recordLabel` in example_test.go
 
 ---
 
@@ -1082,6 +1083,7 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 - ✅ `edge_options.go`
 - ✅ `labels.go`
 - ✅ `cell_content.go`
+- ✅ `records.go` (record labels with fields, groups, and ports)
 - ✅ `port.go`
 - ✅ `dot.go` (String escaping and quoting helpers for DOT output)
 - ⬜ `parse.go`
@@ -1099,14 +1101,14 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 - ✅ `graph_default_attrs_test.go` (comprehensive tests for Step 13)
 - ✅ `custom_attributes_test.go` (comprehensive tests for Step 14)
 - ✅ `labels_test.go`
-- ⬜ `record_labels_test.go`
+- ✅ `records_test.go` (comprehensive tests with testify assertions)
 - ✅ `port_test.go`
 - ✅ `dot_test.go` (comprehensive coverage for Steps 15-17)
 - ⬜ `lexer_test.go`
 - ⬜ `parser_test.go`
 - ⬜ `render_test.go`
 - ⬜ `errors_test.go`
-- ✅ `example_test.go` (7 examples demonstrating basic usage)
+- ✅ `example_test.go` (11 examples: basic graphs, attributes, HTML labels, record labels)
 - ⬜ `testdata/simple.dot`
 - ⬜ `testdata/complex.dot`
 - ⬜ `testdata/cluster.dot`
@@ -1120,11 +1122,11 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 | Foundation | 1-5 | 5/5 | 100% |
 | Attributes | 6-14 | 9/9 | 100% |
 | DOT Generation | 15-19 | 5/5 | 100% |
-| Labels | 20-26 | 3/7 | 43% |
+| Labels | 20-26 | 7/7 | 100% |
 | Subgraphs | 27-32 | 0/6 | 0% |
 | Parsing | 33-37 | 0/5 | 0% |
 | Rendering | 38-43 | 0/6 | 0% |
-| **Total** | **1-43** | **22/43** | **51%** |
+| **Total** | **1-43** | **26/43** | **60%** |
 
 ---
 
@@ -1151,7 +1153,7 @@ _Use this section to track blockers, decisions, or deviations from the plan._
 - **Test-Driven Development**: The comprehensive test suite (411 tests) has been instrumental in ensuring correctness while implementing features. Tests cover all edge cases and ensure DOT output matches Graphviz specifications.
 - **Attribute Organization**: Splitting attributes into separate files (node_attributes.go, edge_attributes.go, graph_attributes.go) improved code organization and maintainability.
 
-### Current Status (as of 2026-01-16)
+### Current Status (as of 2026-01-17)
 
 **Completed:**
 - ✅ **Phase 1 - Foundation (100%)**: All basic graph, node, and edge functionality complete
@@ -1162,39 +1164,42 @@ _Use this section to track blockers, decisions, or deviations from the plan._
   - Step 17: Edge DOT rendering with attributes ✅
   - Step 18: Graph and default attributes in DOT output ✅
   - Step 19: String escaping in DOT output ✅
-- ✅ **Phase 4 - Labels (43%)**: HTML table labels with ports (Steps 20-22 complete)
+- ✅ **Phase 4 - Labels (100%)**: Complete HTML and record label support with ports
   - Step 20: HTMLCell and HTMLRow types with Content interface ✅
   - Step 21: HTMLTable builder with full rendering ✅
   - Step 22: Type-safe Port references with node association ✅
-
-**In Progress:**
-- 🟡 **Phase 4 - Labels (57% remaining)**: Need to implement:
-  - Step 23: FromPort/ToPort edge options
-  - Step 24: HTML label DOT output integration
-  - Step 25: Record field and FieldGroup
-  - Step 26: WithRecordLabel and DOT output
+  - Step 23: FromPort/ToPort edge options for port connections ✅
+  - Step 24: HTML label DOT output integration with automatic node association ✅
+  - Step 25: Record labels with fields, groups, and ports ✅
+  - Step 26: WithRecordLabel option with automatic shape setting ✅
 
 **Next Steps:**
-1. Complete Step 23: Implement FromPort/ToPort edge options for connecting to HTML label ports
-2. Complete Step 24: Integrate HTML labels into DOT output with node association
-3. Complete Steps 25-26: Implement record labels
-4. Begin Phase 5: Subgraphs (Steps 27-32)
+1. Begin Phase 5: Subgraphs (Steps 27-32)
+2. Implement Subgraph struct and Graph.Subgraph() method
+3. Add cluster detection and subgraph attributes
+4. Implement nested subgraphs and DOT generation
 
-**Recent Work (ports-part-1 branch):**
-- Completed Phase 3 DOT Generation (Steps 18-19):
-  - Implemented graph attributes and default node/edge attributes in DOT output
-  - Created comprehensive string escaping system (escapeDOTString, quoteDOTID)
-  - Ensured all DOT output properly escapes backslashes, quotes, and newlines
-- Completed partial Phase 4 Labels (Steps 20-22):
-  - Implemented Content interface with TextContent, LineBreak, and HorizontalRule
-  - Built HTMLCell with port support and formatting via Content
-  - Created HTMLRow and HTMLLabel with full table builder API
-  - Added type-safe Port references that track both port ID and node ID
-  - Implemented setNodeContext mechanism to associate ports with nodes
-- Comprehensive test coverage for all functionality
+**Recent Work (records branch):**
+- Completed Phase 4 Labels (Steps 23-26):
+  - Implemented FromPort/ToPort edge options for connecting edges to specific ports
+  - Integrated HTML labels into DOT output with <...> syntax (no quotes)
+  - Built complete record label system:
+    - RecordField with content and optional ports
+    - RecordGroup for nested structures wrapped in { }
+    - RecordLabel with | separator between fields
+    - Proper escaping of special chars (|, {, }, <, >, \)
+  - Implemented WithRecordLabel option that automatically sets shape to "record"
+  - Added port node association via setNodeContext for both HTML and record labels
+  - Created Example_recordLabel demonstrating record usage with ports
+  - Updated records_test.go to use testify assertions (consistent with codebase style)
+- All of Phase 4 is now complete (100%)
+
+**Previous Work (earlier branches):**
+- Phase 1-3 (Steps 1-19): Foundation, Attributes, and DOT Generation
+- Phase 4 Steps 20-22: HTML table labels with Content interface and Port references
 
 **Test Coverage:**
-- 711 tests passing (including subtests)
-- Comprehensive coverage of all implemented features
-- Examples demonstrating all basic usage patterns
-- Extensive DOT output validation including escaping edge cases
+- All tests passing with comprehensive coverage
+- 11 record label tests covering all functionality
+- Examples demonstrating HTML and record label usage
+- Integration tests for ports with both label types

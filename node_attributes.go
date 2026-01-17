@@ -32,6 +32,7 @@ type NodeAttributes struct {
 	fontSize     *float64
 	htmlLabel    *HTMLLabel
 	rawHTMLLabel *string
+	recordLabel  *RecordLabel
 	custom       map[string]string
 }
 
@@ -134,6 +135,11 @@ func (a *NodeAttributes) RawHTMLLabel() string {
 	return *a.rawHTMLLabel
 }
 
+// RecordLabel returns the record label. Returns nil if unset.
+func (a *NodeAttributes) RecordLabel() *RecordLabel {
+	return a.recordLabel
+}
+
 // applyNode implements the NodeOption interface, allowing NodeAttributes
 // to be used as a reusable template. Only non-nil pointer fields are copied.
 //
@@ -172,17 +178,23 @@ func (a NodeAttributes) applyNode(dst *NodeAttributes) {
 	if a.rawHTMLLabel != nil {
 		dst.rawHTMLLabel = a.rawHTMLLabel
 	}
+
+	if a.recordLabel != nil {
+		dst.recordLabel = a.recordLabel
+	}
 }
 
 func (a NodeAttributes) List() []string {
 	attrs := make([]string, 0)
 
-	// HTML labels take precedence over regular labels
+	// Label precedence: raw HTML > HTML > record > regular label
 	switch {
 	case a.rawHTMLLabel != nil:
 		attrs = append(attrs, fmt.Sprintf(`label=%s`, a.RawHTMLLabel()))
 	case a.htmlLabel != nil:
 		attrs = append(attrs, fmt.Sprintf(`label=%s`, a.htmlLabel.String()))
+	case a.recordLabel != nil:
+		attrs = append(attrs, fmt.Sprintf(`label="%s"`, escapeDOTString(a.recordLabel.String())))
 	case a.label != nil:
 		attrs = append(attrs, fmt.Sprintf(`label="%s"`, escapeDOTString(a.Label())))
 	}
