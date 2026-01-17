@@ -461,3 +461,111 @@ func TestDOT_HTMLLabel_NotDoubleEscaped(t *testing.T) {
 		asrt.NotContains(output, "HTML", "expected HTML label to be overridden by raw")
 	})
 }
+
+func TestWithRecordLabel_SetsLabel(t *testing.T) {
+	t.Run("sets record label on node", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		label := Record(Field("a"), Field("b"))
+		n := NewNode("A", WithRecordLabel(label))
+
+		asrt.NotNil(n.Attrs().RecordLabel(), "expected RecordLabel to be set")
+		asrt.Same(label, n.Attrs().RecordLabel(), "expected RecordLabel to be the same instance")
+	})
+}
+
+func TestWithRecordLabel_SetsShape(t *testing.T) {
+	t.Run("sets shape to record when record label is used", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		label := Record(Field("a"))
+		n := NewNode("A", WithRecordLabel(label))
+
+		asrt.Equal(ShapeRecord, n.Attrs().Shape(), "expected shape to be set to record")
+	})
+
+	t.Run("does not override explicitly set shape", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		label := Record(Field("a"))
+		n := NewNode("A", WithBoxShape(), WithRecordLabel(label))
+
+		asrt.Equal(ShapeRecord, n.Attrs().Shape(), "expected record label to set shape to record")
+	})
+}
+
+func TestDOT_Node_WithRecordLabel_Simple(t *testing.T) {
+	t.Run("outputs node with simple record label", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		label := Record(Field("a"), Field("b"))
+		n := NewNode("A", WithRecordLabel(label))
+
+		output := n.String()
+		asrt.Contains(output, `label="a | b"`, "expected quoted record label")
+		asrt.Contains(output, `shape="record"`, "expected shape to be record")
+	})
+}
+
+func TestDOT_Node_WithRecordLabel_WithPorts(t *testing.T) {
+	t.Run("outputs record label with ports", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		label := Record(
+			Field("input").Port("in"),
+			Field("output").Port("out"),
+		)
+		n := NewNode("A", WithRecordLabel(label))
+
+		output := n.String()
+		asrt.Contains(output, `label="<in> input | <out> output"`, "expected record label with ports")
+	})
+
+	t.Run("wires port node context automatically", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		field := Field("output").Port("out")
+		label := Record(field)
+		_ = NewNode("A", WithRecordLabel(label))
+
+		port := field.GetPort()
+		asrt.NotNil(port, "expected port to exist")
+		asrt.Equal("A", port.NodeID(), "expected port node context to be set to node ID")
+		asrt.Equal("out", port.ID(), "expected port ID to be 'out'")
+	})
+}
+
+func TestDOT_Node_WithRecordLabel_Nested(t *testing.T) {
+	t.Run("outputs nested record label", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		label := Record(
+			Field("header"),
+			FieldGroup(Field("left"), Field("right")),
+			Field("footer"),
+		)
+		n := NewNode("A", WithRecordLabel(label))
+
+		output := n.String()
+		asrt.Contains(output, `label="header | { left | right } | footer"`, "expected nested record label")
+	})
+}
+
+func TestDOT_Edge_ToRecordPort(t *testing.T) {
+	t.Run("creates edge from record port", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		field := Field("output").Port("out")
+		label := Record(field)
+		nodeA := NewNode("A", WithRecordLabel(label))
+		nodeB := NewNode("B")
+
+		g := NewGraph()
+		port := field.GetPort()
+		edge, err := g.AddEdge(nodeA, nodeB, FromPort(port))
+		asrt.NoError(err)
+
+		output := edge.ToString(true) // true for directed
+		asrt.Contains(output, `"A":"out"`, "expected edge from record port")
+	})
+}

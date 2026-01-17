@@ -254,6 +254,54 @@ func ExampleGraph_AddEdge() {
 	// Label: flow
 }
 
+// Example_recordLabel demonstrates creating a record label with ports.
+// Record labels provide a simpler alternative to HTML tables for structured nodes.
+// They support fields and nested groups with port connections.
+func Example_recordLabel() {
+	g := goraffe.NewGraph(goraffe.Directed)
+
+	// Create fields with ports for edge connections
+	inputPort := goraffe.Field("input").Port("in")
+	outputPort := goraffe.Field("output").Port("out")
+
+	// Create a record label with multiple fields and a nested group
+	processLabel := goraffe.Record(
+		goraffe.Field("Process Node"),
+		goraffe.FieldGroup(
+			inputPort,
+			goraffe.Field("data"),
+			outputPort,
+		),
+	)
+
+	// Create a node with the record label
+	processNode := goraffe.NewNode("process", goraffe.WithRecordLabel(processLabel))
+
+	// Create source and destination nodes
+	source := goraffe.NewNode("source", goraffe.WithLabel("Data Source"))
+	sink := goraffe.NewNode("sink", goraffe.WithLabel("Data Sink"))
+
+	// Connect edges to specific ports on the record node
+	_, _ = g.AddEdge(source, processNode,
+		goraffe.ToPort(inputPort.GetPort()),
+		goraffe.WithEdgeLabel("send"),
+	)
+	_, _ = g.AddEdge(processNode, sink,
+		goraffe.FromPort(outputPort.GetPort()),
+		goraffe.WithEdgeLabel("receive"),
+	)
+
+	fmt.Println(g.String())
+	// Output:
+	// digraph {
+	// 	"source" [label="Data Source"];
+	// 	"process" [label="Process Node | { <in> input | data | <out> output }", shape="record"];
+	// 	"sink" [label="Data Sink"];
+	// 	"source" -> "process":"in" [label="send"];
+	// 	"process":"out" -> "sink" [label="receive"];
+	// }
+}
+
 // Example_htmlTableLabel demonstrates creating an HTML table label with ports.
 // HTML tables are used for complex node labels in Graphviz with structured data,
 // ports for edge connections, and rich formatting.

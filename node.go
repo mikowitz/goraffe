@@ -30,6 +30,11 @@ func NewNode(id string, options ...NodeOption) *Node {
 		attrs.htmlLabel.setNodeContext(id)
 	}
 
+	// Wire port node association if record label is set
+	if attrs.recordLabel != nil {
+		attrs.recordLabel.setNodeContext(id)
+	}
+
 	return &Node{
 		id:    id,
 		attrs: attrs,
