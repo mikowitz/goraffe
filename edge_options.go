@@ -101,3 +101,29 @@ func WithEdgeAttribute(k, v string) EdgeOption {
 		a.setCustom(k, v)
 	})
 }
+
+// FromPort specifies which port on the source node this edge connects from.
+// The port must be defined in the source node's HTML label.
+//
+// Example:
+//
+//	outPort := Cell(Text("output")).Port("out").GetPort()
+//	e := g.AddEdge(n1, n2, FromPort(outPort))
+func FromPort(p *Port) EdgeOption {
+	return newEdgeOption(func(a *EdgeAttributes) {
+		a.fromPort = p
+	})
+}
+
+// ToPort specifies which port on the destination node this edge connects to.
+// The port must be defined in the destination node's HTML label.
+//
+// Example:
+//
+//	inPort := Cell(Text("input")).Port("in").GetPort()
+//	e := g.AddEdge(n1, n2, ToPort(inPort))
+func ToPort(p *Port) EdgeOption {
+	return newEdgeOption(func(a *EdgeAttributes) {
+		a.toPort = p
+	})
+}

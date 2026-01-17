@@ -335,3 +335,129 @@ func TestNewNode_OptionsAppliedInOrder(t *testing.T) {
 		asrt.Equal(0.0, n.Attrs().FontSize(), "expected FontSize to remain zero")
 	})
 }
+
+func TestWithHTMLLabel_SetsLabel(t *testing.T) {
+	t.Run("sets HTML label on node", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		label := HTMLTable(
+			Row(Cell(Text("Test Cell"))),
+		)
+		n := NewNode("A", WithHTMLLabel(label))
+
+		asrt.NotNil(n.Attrs().HTMLLabel(), "expected HTMLLabel to be set")
+		asrt.Same(label, n.Attrs().HTMLLabel(), "expected HTMLLabel to be the same instance")
+	})
+}
+
+func TestWithRawHTMLLabel_SetsLabel(t *testing.T) {
+	t.Run("sets raw HTML label on node", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		rawHTML := "<<table><tr><td>Cell</td></tr></table>>"
+		n := NewNode("A", WithRawHTMLLabel(rawHTML))
+
+		asrt.Equal(rawHTML, n.Attrs().RawHTMLLabel(), "expected RawHTMLLabel to be set")
+	})
+}
+
+func TestDOT_Node_WithHTMLLabel(t *testing.T) {
+	t.Run("outputs node with HTML label", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		label := HTMLTable(
+			Row(Cell(Text("cell"))),
+		)
+		n := NewNode("A", WithHTMLLabel(label))
+
+		output := n.String()
+		asrt.Contains(output, "label=<", "expected label to start with angle bracket")
+		asrt.Contains(output, "<table>", "expected table tag in output")
+		asrt.Contains(output, "<tr>", "expected tr tag in output")
+		asrt.Contains(output, "<td>", "expected td tag in output")
+		asrt.Contains(output, "cell", "expected cell text in output")
+	})
+}
+
+func TestDOT_Node_WithHTMLLabel_Ports(t *testing.T) {
+	t.Run("wires port node context automatically", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		cell := Cell(Text("output")).Port("out")
+		label := HTMLTable(Row(cell))
+		_ = NewNode("A", WithHTMLLabel(label))
+
+		port := cell.GetPort()
+		asrt.NotNil(port, "expected port to exist")
+		asrt.Equal("A", port.NodeID(), "expected port node context to be set to node ID")
+		asrt.Equal("out", port.ID(), "expected port ID to be 'out'")
+	})
+
+	t.Run("outputs HTML label with port", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		label := HTMLTable(
+			Row(Cell(Text("output")).Port("out")),
+		)
+		n := NewNode("A", WithHTMLLabel(label))
+
+		output := n.String()
+		asrt.Contains(output, "port=\"out\"", "expected port attribute in td tag")
+	})
+}
+
+func TestDOT_Node_WithRawHTMLLabel(t *testing.T) {
+	t.Run("outputs node with raw HTML label", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		rawHTML := "<<table><tr><td>Cell</td></tr></table>>"
+		n := NewNode("A", WithRawHTMLLabel(rawHTML))
+
+		output := n.String()
+		asrt.Contains(output, "label=<<table><tr><td>Cell</td></tr></table>>", "expected raw HTML in output")
+	})
+}
+
+func TestDOT_HTMLLabel_NotDoubleEscaped(t *testing.T) {
+	t.Run("HTML labels are not escaped", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		label := HTMLTable(
+			Row(Cell(Text("<special>"))),
+		)
+		n := NewNode("A", WithHTMLLabel(label))
+
+		output := n.String()
+		// The HTML label should contain angle brackets as-is, not escaped
+		asrt.Contains(output, "label=<", "expected label to start with unescaped angle bracket")
+		asrt.Contains(output, "<table>", "expected unescaped table tag")
+	})
+
+	t.Run("HTML labels take precedence over regular label", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		label := HTMLTable(
+			Row(Cell(Text("HTML"))),
+		)
+		n := NewNode("A", WithLabel("Regular"), WithHTMLLabel(label))
+
+		output := n.String()
+		asrt.Contains(output, "label=<", "expected HTML label format")
+		asrt.Contains(output, "HTML", "expected HTML label text")
+		asrt.NotContains(output, "Regular", "expected regular label to be overridden")
+	})
+
+	t.Run("raw HTML label takes precedence over HTML label", func(t *testing.T) {
+		asrt := assert.New(t)
+
+		label := HTMLTable(
+			Row(Cell(Text("HTML"))),
+		)
+		rawHTML := "<<table><tr><td>Raw</td></tr></table>>"
+		n := NewNode("A", WithHTMLLabel(label), WithRawHTMLLabel(rawHTML))
+
+		output := n.String()
+		asrt.Contains(output, "Raw", "expected raw HTML label text")
+		asrt.NotContains(output, "HTML", "expected HTML label to be overridden by raw")
+	})
+}

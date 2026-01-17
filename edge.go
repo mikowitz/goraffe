@@ -33,15 +33,29 @@ func (e *Edge) Attrs() *EdgeAttributes {
 
 func (e *Edge) ToString(directed bool) string {
 	builder := strings.Builder{}
-	builder.WriteString(quoteDOTID(e.from.ID()))
 
+	// Write source node (and optional port)
+	builder.WriteString(quoteDOTID(e.from.ID()))
+	if e.attrs.fromPort != nil {
+		builder.WriteString(":")
+		builder.WriteString(quoteDOTID(e.attrs.fromPort.ID()))
+	}
+
+	// Write edge operator
 	if directed {
 		builder.WriteString(" -> ")
 	} else {
 		builder.WriteString(" -- ")
 	}
-	builder.WriteString(quoteDOTID(e.to.ID()))
 
+	// Write destination node (and optional port)
+	builder.WriteString(quoteDOTID(e.to.ID()))
+	if e.attrs.toPort != nil {
+		builder.WriteString(":")
+		builder.WriteString(quoteDOTID(e.attrs.toPort.ID()))
+	}
+
+	// Write attributes
 	attrs := e.attrs.List()
 	var attrsStr string
 

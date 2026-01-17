@@ -40,6 +40,8 @@ type EdgeAttributes struct {
 	arrowHead *ArrowType
 	arrowTail *ArrowType
 	weight    *float64
+	fromPort  *Port
+	toPort    *Port
 	custom    map[string]string
 }
 
@@ -126,6 +128,18 @@ func (a *EdgeAttributes) Weight() float64 {
 	return *a.weight
 }
 
+// FromPort returns the port on the source node that this edge connects from.
+// Returns nil if no port is specified.
+func (a *EdgeAttributes) FromPort() *Port {
+	return a.fromPort
+}
+
+// ToPort returns the port on the destination node that this edge connects to.
+// Returns nil if no port is specified.
+func (a *EdgeAttributes) ToPort() *Port {
+	return a.toPort
+}
+
 // applyEdge implements the EdgeOption interface, allowing EdgeAttributes
 // to be used as a reusable template. Only non-nil pointer fields are copied.
 //
@@ -155,6 +169,14 @@ func (a EdgeAttributes) applyEdge(dst *EdgeAttributes) {
 
 	if a.weight != nil {
 		dst.weight = a.weight
+	}
+
+	if a.fromPort != nil {
+		dst.fromPort = a.fromPort
+	}
+
+	if a.toPort != nil {
+		dst.toPort = a.toPort
 	}
 }
 

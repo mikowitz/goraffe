@@ -24,13 +24,15 @@ const (
 // All fields use pointer types to distinguish between "not set" and "explicitly set to zero value".
 // Use the getter methods (Label(), Shape(), etc.) to access values safely.
 type NodeAttributes struct {
-	label     *string
-	shape     *Shape
-	color     *string
-	fillColor *string
-	fontName  *string
-	fontSize  *float64
-	custom    map[string]string
+	label        *string
+	shape        *Shape
+	color        *string
+	fillColor    *string
+	fontName     *string
+	fontSize     *float64
+	htmlLabel    *HTMLLabel
+	rawHTMLLabel *string
+	custom       map[string]string
 }
 
 // Custom returns a copy of all custom attributes set via WithNodeAttribute.
@@ -118,6 +120,20 @@ func (a *NodeAttributes) FontSize() float64 {
 	return *a.fontSize
 }
 
+// HTMLLabel returns the HTML label. Returns nil if unset.
+func (a *NodeAttributes) HTMLLabel() *HTMLLabel {
+	return a.htmlLabel
+}
+
+// RawHTMLLabel returns the raw HTML label string. Returns empty string if unset.
+func (a *NodeAttributes) RawHTMLLabel() string {
+	if a.rawHTMLLabel == nil {
+		return ""
+	}
+
+	return *a.rawHTMLLabel
+}
+
 // applyNode implements the NodeOption interface, allowing NodeAttributes
 // to be used as a reusable template. Only non-nil pointer fields are copied.
 //
@@ -148,12 +164,26 @@ func (a NodeAttributes) applyNode(dst *NodeAttributes) {
 	if a.fontSize != nil {
 		dst.fontSize = a.fontSize
 	}
+
+	if a.htmlLabel != nil {
+		dst.htmlLabel = a.htmlLabel
+	}
+
+	if a.rawHTMLLabel != nil {
+		dst.rawHTMLLabel = a.rawHTMLLabel
+	}
 }
 
 func (a NodeAttributes) List() []string {
 	attrs := make([]string, 0)
 
-	if a.label != nil {
+	// HTML labels take precedence over regular labels
+	switch {
+	case a.rawHTMLLabel != nil:
+		attrs = append(attrs, fmt.Sprintf(`label=%s`, a.RawHTMLLabel()))
+	case a.htmlLabel != nil:
+		attrs = append(attrs, fmt.Sprintf(`label=%s`, a.htmlLabel.String()))
+	case a.label != nil:
 		attrs = append(attrs, fmt.Sprintf(`label="%s"`, escapeDOTString(a.Label())))
 	}
 

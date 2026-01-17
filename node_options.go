@@ -127,3 +127,33 @@ func WithNodeAttribute(k, v string) NodeOption {
 		a.setCustom(k, v)
 	})
 }
+
+// WithHTMLLabel sets an HTML table label on the node.
+// HTML labels allow for rich formatting and port-based edge connections.
+// The node context is automatically set on all ports defined in the label.
+//
+// Example:
+//
+//	label := HTMLTable(
+//	    Row(Cell(Text("Input")).Port("in")),
+//	    Row(Cell(Text("Output")).Port("out")),
+//	)
+//	n := NewNode("A", WithHTMLLabel(label))
+func WithHTMLLabel(label *HTMLLabel) NodeOption {
+	return nodeOptionFunc(func(a *NodeAttributes) {
+		a.htmlLabel = label
+	})
+}
+
+// WithRawHTMLLabel sets a raw HTML label string on the node.
+// This is an escape hatch for cases where you want to provide the HTML directly.
+// The HTML should be in the format expected by Graphviz (angle bracket delimited).
+//
+// Example:
+//
+//	n := NewNode("A", WithRawHTMLLabel("<<table><tr><td>Cell</td></tr></table>>"))
+func WithRawHTMLLabel(html string) NodeOption {
+	return newNodeOption(func(a *NodeAttributes) {
+		a.rawHTMLLabel = &html
+	})
+}
