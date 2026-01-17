@@ -20,6 +20,7 @@ type Graph struct {
 	nodeOrder        []*Node
 	nodes            map[string]int
 	edges            []*Edge
+	subgraphs        []*Subgraph
 	attrs            *GraphAttributes
 	defaultNodeAttrs *NodeAttributes
 	defaultEdgeAttrs *EdgeAttributes
@@ -37,6 +38,7 @@ func NewGraph(options ...GraphOption) *Graph {
 		nodeOrder:        make([]*Node, 0),
 		nodes:            make(map[string]int),
 		edges:            make([]*Edge, 0),
+		subgraphs:        make([]*Subgraph, 0),
 		attrs:            &GraphAttributes{},
 		defaultNodeAttrs: &NodeAttributes{},
 		defaultEdgeAttrs: &EdgeAttributes{},
@@ -268,4 +270,35 @@ func (g *Graph) addDefaultEdgeAttrbiutes(builder *strings.Builder) {
 
 		fmt.Fprintf(builder, "\tedge %s;\n", attrsStr)
 	}
+}
+
+// Subgraph creates a new subgraph with the given name and executes the provided function.
+// The function receives the created subgraph as a parameter, allowing for subgraph configuration.
+// Returns the created subgraph for further use.
+//
+// Example:
+//
+//	sg := g.Subgraph("cluster_0", func(s *Subgraph) {
+//		s.AddNode(NewNode("A"))
+//		s.AddNode(NewNode("B"))
+//	})
+func (g *Graph) Subgraph(name string, fn func(*Subgraph)) *Subgraph {
+	sg := &Subgraph{
+		name:   name,
+		nodes:  make(map[string]*Node),
+		edges:  make([]*Edge, 0),
+		parent: g,
+	}
+
+	fn(sg)
+
+	g.subgraphs = append(g.subgraphs, sg)
+
+	return sg
+}
+
+// Subgraphs returns all subgraphs in the graph.
+// The returned slice should not be modified.
+func (g *Graph) Subgraphs() []*Subgraph {
+	return g.subgraphs
 }
