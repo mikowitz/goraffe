@@ -125,3 +125,84 @@ func TestGraph_Subgraphs_ReturnsAll(t *testing.T) {
 	asrt.True(names["sub2"], "expected subgraph 'sub2' to exist")
 	asrt.True(names["cluster_3"], "expected subgraph 'cluster_3' to exist")
 }
+
+func TestSubgraph_SetLabel(t *testing.T) {
+	asrt := assert.New(t)
+
+	g := NewGraph()
+	var sg *Subgraph
+	g.Subgraph("sub", func(s *Subgraph) {
+		sg = s
+	})
+
+	sg.SetLabel("My Label")
+
+	asrt.Equal("My Label", sg.Attrs().Label(), "expected label to be 'My Label'")
+}
+
+func TestSubgraph_SetStyle(t *testing.T) {
+	asrt := assert.New(t)
+
+	g := NewGraph()
+	var sg *Subgraph
+	g.Subgraph("sub", func(s *Subgraph) {
+		sg = s
+	})
+
+	sg.SetStyle("filled")
+
+	asrt.Equal("filled", sg.Attrs().Style(), "expected style to be 'filled'")
+}
+
+func TestSubgraph_SetAttribute(t *testing.T) {
+	asrt := assert.New(t)
+
+	g := NewGraph()
+	var sg *Subgraph
+	g.Subgraph("sub", func(s *Subgraph) {
+		sg = s
+	})
+
+	sg.SetAttribute("rank", "same")
+
+	custom := sg.Attrs().Custom()
+	asrt.Equal("same", custom["rank"], "expected custom attribute 'rank' to be 'same'")
+}
+
+func TestSubgraph_Attrs_ReturnsAttributes(t *testing.T) {
+	asrt := assert.New(t)
+
+	g := NewGraph()
+	var sg *Subgraph
+	g.Subgraph("sub", func(s *Subgraph) {
+		sg = s
+	})
+
+	attrs := sg.Attrs()
+
+	asrt.NotNil(attrs, "expected Attrs() to return non-nil attributes")
+	// Calling Attrs() again should return the same instance
+	attrs2 := sg.Attrs()
+	asrt.Equal(attrs, attrs2, "expected Attrs() to return the same instance")
+}
+
+func TestSubgraph_Cluster_CanHaveStyle(t *testing.T) {
+	asrt := assert.New(t)
+
+	g := NewGraph()
+	var sg *Subgraph
+	g.Subgraph("cluster_test", func(s *Subgraph) {
+		sg = s
+	})
+
+	sg.SetStyle("filled")
+	sg.SetFillColor("lightblue")
+	sg.SetColor("blue")
+	sg.SetLabel("Test Cluster")
+
+	asrt.True(sg.IsCluster(), "expected subgraph to be a cluster")
+	asrt.Equal("filled", sg.Attrs().Style(), "expected style to be 'filled'")
+	asrt.Equal("lightblue", sg.Attrs().FillColor(), "expected fill color to be 'lightblue'")
+	asrt.Equal("blue", sg.Attrs().Color(), "expected color to be 'blue'")
+	asrt.Equal("Test Cluster", sg.Attrs().Label(), "expected label to be 'Test Cluster'")
+}

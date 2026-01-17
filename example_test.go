@@ -362,3 +362,60 @@ func Example_htmlTableLabel() {
 	// 	"user":"name" -> "display" [label="show"];
 	// }
 }
+
+// Example_subgraphsAndClusters demonstrates using subgraphs to organize nodes.
+// Cluster subgraphs (names starting with "cluster") are rendered with visible borders,
+// while regular subgraphs provide logical grouping without visual separation.
+func Example_subgraphsAndClusters() {
+	g := goraffe.NewGraph(goraffe.Directed, goraffe.WithName("System"))
+
+	// Create a cluster subgraph for the database layer
+	// Clusters are visually grouped with a border in the rendered output
+	g.Subgraph("cluster_db", func(sg *goraffe.Subgraph) {
+		sg.SetLabel("Database")
+		sg.SetStyle("filled")
+		sg.SetFillColor("lightblue")
+		sg.SetColor("blue")
+
+		db := goraffe.NewNode("db", goraffe.WithLabel("PostgreSQL"))
+		_ = sg.AddNode(db)
+	})
+
+	// Create a cluster subgraph for the application layer
+	g.Subgraph("cluster_app", func(sg *goraffe.Subgraph) {
+		sg.SetLabel("Application")
+		sg.SetStyle("filled")
+		sg.SetFillColor("lightgreen")
+		sg.SetColor("green")
+
+		api := goraffe.NewNode("api", goraffe.WithLabel("API Server"))
+		_ = sg.AddNode(api)
+	})
+
+	// Connect nodes across clusters
+	api := g.GetNode("api")
+	db := g.GetNode("db")
+	_, _ = g.AddEdge(api, db, goraffe.WithEdgeLabel("queries"))
+
+	fmt.Println(g.String())
+	// Output:
+	// digraph "System" {
+	// 	"db" [label="PostgreSQL"];
+	// 	"api" [label="API Server"];
+	// 	"api" -> "db" [label="queries"];
+	// 	subgraph "cluster_db" {
+	// 		label="Database";
+	// 		style="filled";
+	// 		color="blue";
+	// 		fillcolor="lightblue";
+	// 		"db" [label="PostgreSQL"];
+	// 	}
+	// 	subgraph "cluster_app" {
+	// 		label="Application";
+	// 		style="filled";
+	// 		color="green";
+	// 		fillcolor="lightgreen";
+	// 		"api" [label="API Server"];
+	// 	}
+	// }
+}
