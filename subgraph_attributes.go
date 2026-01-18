@@ -153,7 +153,7 @@ func (a SubgraphAttributes) List() []string {
 	}
 
 	if a.rank != nil {
-		attrs = append(attrs, fmt.Sprintf(`rank=%s`, a.Rank()))
+		attrs = append(attrs, fmt.Sprintf(`rank="%s"`, a.Rank()))
 	}
 
 	for k, v := range a.custom {

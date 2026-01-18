@@ -3489,3 +3489,207 @@ func TestDOT_Graph_WithSubgraphsAndLooseNodes(t *testing.T) {
 	asrt.NotEqual(-1, edgeIdx, "expected edge in output")
 	asrt.Less(webIdx, edgeIdx, "expected loose nodes before edges")
 }
+
+// Test DOT subgraph output - with rank constraint
+func TestDOT_Subgraph_WithRank(t *testing.T) {
+	asrt := assert.New(t)
+	g := NewGraph(Directed)
+
+	n1 := NewNode("A")
+	n2 := NewNode("B")
+
+	g.Subgraph("sub1", func(sg *Subgraph) {
+		sg.SetLabel("Same Level")
+		sg.SetRank(RankSame)
+		_ = sg.AddNode(n1)
+		_ = sg.AddNode(n2)
+	})
+
+	output := g.String()
+
+	asrt.Contains(output, `subgraph "sub1" {`, "expected subgraph declaration")
+	asrt.Contains(output, `label="Same Level";`, "expected label attribute")
+	asrt.Contains(output, `rank="same";`, "expected rank attribute")
+
+	// Verify rank comes after other attributes
+	labelIdx := strings.Index(output, `label="Same Level"`)
+	rankIdx := strings.Index(output, `rank="same"`)
+	nodeIdx := strings.Index(output, `"A";`)
+
+	asrt.Less(labelIdx, rankIdx, "expected label before rank")
+	asrt.Less(rankIdx, nodeIdx, "expected rank before nodes in subgraph")
+}
+
+func TestDOT_SameRank_CreatesSubgraph(t *testing.T) {
+	asrt := assert.New(t)
+	g := NewGraph(Directed)
+
+	n1 := NewNode("A")
+	n2 := NewNode("B")
+	n3 := NewNode("C")
+
+	_, err := g.SameRank(n1, n2, n3)
+	asrt.NoError(err, "SameRank should not error with valid nodes")
+
+	output := g.String()
+
+	// Should create anonymous subgraph with shorthand syntax
+	asrt.Contains(output, `subgraph {`, "expected anonymous subgraph")
+	asrt.Contains(output, `rank="same";`, "expected rank=same attribute")
+	asrt.Contains(output, `"A";`, "expected node A in subgraph")
+	asrt.Contains(output, `"B";`, "expected node B in subgraph")
+	asrt.Contains(output, `"C";`, "expected node C in subgraph")
+
+	// Verify rank comes before nodes
+	rankIdx := strings.Index(output, `rank="same"`)
+	aIdx := strings.Index(output, `"A";`)
+	asrt.Less(rankIdx, aIdx, "expected rank before nodes")
+}
+
+func TestDOT_MinRank_Output(t *testing.T) {
+	asrt := assert.New(t)
+	g := NewGraph(Directed)
+
+	start := NewNode("start")
+	n1 := NewNode("A")
+
+	_, err := g.MinRank(start)
+	asrt.NoError(err, "MinRank should not error with valid node")
+
+	_ = g.AddNode(n1)
+	_, _ = g.AddEdge(start, n1)
+
+	output := g.String()
+
+	asrt.Contains(output, `subgraph {`, "expected anonymous subgraph")
+	asrt.Contains(output, `rank="min";`, "expected rank=min attribute")
+	asrt.Contains(output, `"start";`, "expected start node in subgraph")
+	asrt.Contains(output, `"start" -> "A";`, "expected edge from start to A")
+}
+
+func TestDOT_MaxRank_Output(t *testing.T) {
+	asrt := assert.New(t)
+	g := NewGraph(Directed)
+
+	end := NewNode("end")
+	n1 := NewNode("A")
+
+	_, err := g.MaxRank(end)
+	asrt.NoError(err, "MaxRank should not error with valid node")
+
+	_ = g.AddNode(n1)
+	_, _ = g.AddEdge(n1, end)
+
+	output := g.String()
+
+	asrt.Contains(output, `subgraph {`, "expected anonymous subgraph")
+	asrt.Contains(output, `rank="max";`, "expected rank=max attribute")
+	asrt.Contains(output, `"end";`, "expected end node in subgraph")
+	asrt.Contains(output, `"A" -> "end";`, "expected edge from A to end")
+}
+
+func TestDOT_MultipleRankConstraints(t *testing.T) {
+	asrt := assert.New(t)
+	g := NewGraph(Directed)
+
+	start := NewNode("start")
+	n1 := NewNode("A")
+	n2 := NewNode("B")
+	n3 := NewNode("C")
+	end := NewNode("end")
+
+	_, err := g.MinRank(start)
+	asrt.NoError(err)
+
+	_, err = g.SameRank(n1, n2)
+	asrt.NoError(err)
+
+	_, err = g.SameRank(n3)
+	asrt.NoError(err)
+
+	_, err = g.MaxRank(end)
+	asrt.NoError(err)
+
+	_, _ = g.AddEdge(start, n1)
+	_, _ = g.AddEdge(start, n2)
+	_, _ = g.AddEdge(n1, n3)
+	_, _ = g.AddEdge(n2, n3)
+	_, _ = g.AddEdge(n3, end)
+
+	output := g.String()
+
+	// Check for multiple rank subgraphs
+	asrt.Contains(output, `rank="min";`, "expected min rank")
+	asrt.Contains(output, `rank="max";`, "expected max rank")
+
+	// Count occurrences of rank="same" - should appear twice
+	sameCount := strings.Count(output, `rank="same"`)
+	asrt.Equal(2, sameCount, "expected two same rank subgraphs")
+
+	// Verify structure
+	asrt.Contains(output, `"start";`)
+	asrt.Contains(output, `"A";`)
+	asrt.Contains(output, `"B";`)
+	asrt.Contains(output, `"C";`)
+	asrt.Contains(output, `"end";`)
+}
+
+func TestDOT_ComplexGraph_WithRanks(t *testing.T) {
+	asrt := assert.New(t)
+	g := NewGraph(Directed)
+
+	// Create a complex graph with multiple rank constraints
+	start := NewNode("start")
+	p1 := NewNode("process1")
+	p2 := NewNode("process2")
+	p3 := NewNode("process3")
+	p4 := NewNode("process4")
+	end := NewNode("end")
+
+	// Set rank constraints
+	_, err := g.MinRank(start)
+	asrt.NoError(err)
+
+	_, err = g.SameRank(p1, p2)
+	asrt.NoError(err)
+
+	_, err = g.SameRank(p3, p4)
+	asrt.NoError(err)
+
+	_, err = g.MaxRank(end)
+	asrt.NoError(err)
+
+	// Add edges to create flow
+	_, _ = g.AddEdge(start, p1)
+	_, _ = g.AddEdge(start, p2)
+	_, _ = g.AddEdge(p1, p3)
+	_, _ = g.AddEdge(p2, p4)
+	_, _ = g.AddEdge(p3, end)
+	_, _ = g.AddEdge(p4, end)
+
+	output := g.String()
+
+	// Verify all rank constraints present
+	asrt.Contains(output, `rank="min";`, "expected min rank for start")
+	asrt.Contains(output, `rank="max";`, "expected max rank for end")
+
+	// Should have two same rank subgraphs
+	sameCount := strings.Count(output, `rank="same"`)
+	asrt.Equal(2, sameCount, "expected two same rank constraints")
+
+	// Verify all nodes present
+	asrt.Contains(output, `"start";`)
+	asrt.Contains(output, `"process1";`)
+	asrt.Contains(output, `"process2";`)
+	asrt.Contains(output, `"process3";`)
+	asrt.Contains(output, `"process4";`)
+	asrt.Contains(output, `"end";`)
+
+	// Verify edges
+	asrt.Contains(output, `"start" -> "process1";`)
+	asrt.Contains(output, `"start" -> "process2";`)
+	asrt.Contains(output, `"process1" -> "process3";`)
+	asrt.Contains(output, `"process2" -> "process4";`)
+	asrt.Contains(output, `"process3" -> "end";`)
+	asrt.Contains(output, `"process4" -> "end";`)
+}

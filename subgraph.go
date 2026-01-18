@@ -160,7 +160,12 @@ func (sg *Subgraph) String() string {
 	builder := strings.Builder{}
 
 	// Start subgraph declaration
-	builder.WriteString(fmt.Sprintf("subgraph %s {\n", quoteDOTID(sg.name)))
+	// Anonymous subgraphs (empty name) don't include a quoted name
+	if sg.name == "" {
+		builder.WriteString("subgraph {\n")
+	} else {
+		builder.WriteString(fmt.Sprintf("subgraph %s {\n", quoteDOTID(sg.name)))
+	}
 
 	// Add subgraph attributes
 	if sg.attrs != nil {

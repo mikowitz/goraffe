@@ -616,144 +616,145 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 
 ## Phase 5: Subgraphs (Steps 27-32)
 
-### Step 27: Subgraph Struct and Graph.Subgraph()
+### Step 27: Subgraph Struct and Graph.Subgraph() ✅
 
-- ⬜ Create `subgraph.go`
-- ⬜ Define `Subgraph` struct
-  - ⬜ `name` field
-  - ⬜ `nodes` field
-  - ⬜ `edges` field
-  - ⬜ `isCluster` field
-  - ⬜ `parent` field
-- ⬜ Implement `Name()` method
-- ⬜ Implement `IsCluster()` method
-- ⬜ Implement `AddNode(n *Node)` method
-  - ⬜ Add to subgraph's nodes
-  - ⬜ Add to parent graph
-- ⬜ Implement `Nodes()` method
-- ⬜ Implement `AddEdge()` method (delegates to parent)
-- ⬜ Add `subgraphs` field to Graph
-- ⬜ Implement `Subgraph(name string, fn func(*Subgraph))` method
-- ⬜ Implement `Subgraphs()` method
-- ⬜ Create `subgraph_test.go`
-  - ⬜ `TestSubgraph_Name`
-  - ⬜ `TestSubgraph_IsCluster_True`
-  - ⬜ `TestSubgraph_IsCluster_False`
-  - ⬜ `TestSubgraph_AddNode`
-  - ⬜ `TestSubgraph_AddNode_AlsoAddsToParent`
-  - ⬜ `TestGraph_Subgraph_CallsFunction`
-  - ⬜ `TestGraph_Subgraph_ReturnsSubgraph`
-  - ⬜ `TestGraph_Subgraphs_ReturnsAll`
+- ✅ Create `subgraph.go`
+- ✅ Define `Subgraph` struct
+  - ✅ `name` field
+  - ✅ `nodes` field
+  - ✅ `edges` field
+  - ✅ `isCluster` field (implemented via IsCluster() method checking name prefix)
+  - ✅ `parent` field
+- ✅ Implement `Name()` method
+- ✅ Implement `IsCluster()` method
+- ✅ Implement `AddNode(n *Node)` method
+  - ✅ Add to subgraph's nodes
+  - ✅ Add to parent graph
+- ✅ Implement `Nodes()` method
+- ✅ Implement `AddEdge()` method (delegates to parent)
+- ✅ Add `subgraphs` field to Graph
+- ✅ Implement `Subgraph(name string, fn func(*Subgraph))` method
+- ✅ Implement `Subgraphs()` method
+- ✅ Create `subgraph_test.go`
+  - ✅ `TestSubgraph_Name`
+  - ✅ `TestSubgraph_IsCluster_True`
+  - ✅ `TestSubgraph_IsCluster_False`
+  - ✅ `TestSubgraph_AddNode`
+  - ✅ `TestSubgraph_AddNode_AlsoAddsToParent`
+  - ✅ `TestGraph_Subgraph_CallsFunction`
+  - ✅ `TestGraph_Subgraph_ReturnsSubgraph`
+  - ✅ `TestGraph_Subgraphs_ReturnsAll`
 
-### Step 28: Cluster Detection and Subgraph Attributes
+### Step 28: Cluster Detection and Subgraph Attributes ✅
 
-- ⬜ Define `SubgraphAttributes` struct
-  - ⬜ `Label` field
-  - ⬜ `Style` field
-  - ⬜ `Color` field
-  - ⬜ `FillColor` field
-  - ⬜ `FontName` field
-  - ⬜ `FontSize` field
-  - ⬜ `custom` field
-- ⬜ Add `attrs` field to Subgraph
-- ⬜ Implement `Attrs()` method
-- ⬜ Implement setter methods
-  - ⬜ `SetLabel(l string)`
-  - ⬜ `SetStyle(s string)`
-  - ⬜ `SetColor(c string)`
-  - ⬜ `SetFillColor(c string)`
-  - ⬜ `SetAttribute(key, value string)`
-- ⬜ Document cluster-specific behavior
-- ⬜ Update tests
-  - ⬜ `TestSubgraph_SetLabel`
-  - ⬜ `TestSubgraph_SetStyle`
-  - ⬜ `TestSubgraph_SetAttribute`
-  - ⬜ `TestSubgraph_Attrs_ReturnsAttributes`
-  - ⬜ `TestSubgraph_Cluster_CanHaveStyle`
+- ✅ Define `SubgraphAttributes` struct (in subgraph_attributes.go)
+  - ✅ `label` field (pointer type)
+  - ✅ `style` field (pointer type)
+  - ✅ `color` field (pointer type)
+  - ✅ `fillColor` field (pointer type)
+  - ✅ `fontName` field (pointer type)
+  - ✅ `fontSize` field (pointer type)
+  - ✅ `rank` field (pointer type)
+  - ✅ `custom` field
+- ✅ Add `attrs` field to Subgraph
+- ✅ Implement `Attrs()` method
+- ✅ Implement setter methods
+  - ✅ `SetLabel(l string)`
+  - ✅ `SetStyle(s string)`
+  - ✅ `SetColor(c string)`
+  - ✅ `SetFillColor(c string)`
+  - ✅ `SetAttribute(key, value string)`
+- ✅ Document cluster-specific behavior
+- ✅ Update tests
+  - ✅ `TestSubgraph_SetLabel`
+  - ✅ `TestSubgraph_SetStyle`
+  - ✅ `TestSubgraph_SetAttribute`
+  - ✅ `TestSubgraph_Attrs_ReturnsAttributes`
+  - ✅ `TestSubgraph_Cluster_CanHaveStyle`
 
-### Step 29: Nested Subgraphs
+### Step 29: Nested Subgraphs ✅
 
-- ⬜ Add `subgraphs` field to Subgraph
-- ⬜ Implement `Subgraph(name string, fn func(*Subgraph))` on Subgraph
-  - ⬜ Create nested subgraph
-  - ⬜ Set parent appropriately
-  - ⬜ Call fn
-  - ⬜ Return subgraph
-- ⬜ Implement `Subgraphs()` method on Subgraph
-- ⬜ Ensure node tracking works (nodes in root graph)
-- ⬜ Update tests
-  - ⬜ `TestSubgraph_NestedSubgraph`
-  - ⬜ `TestSubgraph_NestedSubgraph_NodesInRoot`
-  - ⬜ `TestSubgraph_DeeplyNested`
-  - ⬜ `TestSubgraph_NestedCluster`
+- ✅ Add `subgraphs` field to Subgraph
+- ✅ Implement `Subgraph(name string, fn func(*Subgraph))` on Subgraph
+  - ✅ Create nested subgraph
+  - ✅ Set parent appropriately (references root graph for node tracking)
+  - ✅ Call fn
+  - ✅ Return subgraph
+- ✅ Implement `Subgraphs()` method on Subgraph
+- ✅ Ensure node tracking works (nodes in root graph)
+- ✅ Update tests
+  - ✅ `TestSubgraph_NestedSubgraph`
+  - ✅ `TestSubgraph_NestedSubgraph_NodesInRoot`
+  - ✅ `TestSubgraph_DeeplyNested`
+  - ✅ `TestSubgraph_NestedCluster`
 
-### Step 30: Subgraph DOT Generation
+### Step 30: Subgraph DOT Generation ✅
 
-- ⬜ Add internal subgraph rendering method
-- ⬜ Implement subgraph DOT format
-  - ⬜ subgraph name { ... }
-  - ⬜ Subgraph attributes
-  - ⬜ Nodes in subgraph
-  - ⬜ Nested subgraphs (recursive)
-- ⬜ Update main DOT output order
-  1. ⬜ Graph declaration
-  2. ⬜ Graph attributes
-  3. ⬜ Default node/edge attributes
-  4. ⬜ Subgraphs
-  5. ⬜ Loose nodes
-  6. ⬜ Edges
-  7. ⬜ Closing brace
-- ⬜ Handle empty subgraph names (anonymous)
-- ⬜ Update `dot_test.go`
-  - ⬜ `TestDOT_Subgraph_Simple`
-  - ⬜ `TestDOT_Subgraph_WithAttributes`
-  - ⬜ `TestDOT_Subgraph_Cluster`
-  - ⬜ `TestDOT_Subgraph_Nested`
-  - ⬜ `TestDOT_Subgraph_Anonymous`
-  - ⬜ `TestDOT_Graph_WithSubgraphsAndLooseNodes`
+- ✅ Add internal subgraph rendering method (Subgraph.String())
+- ✅ Implement subgraph DOT format
+  - ✅ subgraph name { ... }
+  - ✅ Subgraph attributes
+  - ✅ Nodes in subgraph
+  - ✅ Nested subgraphs (recursive)
+- ✅ Update main DOT output order
+  1. ✅ Graph declaration
+  2. ✅ Graph attributes
+  3. ✅ Default node/edge attributes
+  4. ✅ Subgraphs
+  5. ✅ Loose nodes
+  6. ✅ Edges
+  7. ✅ Closing brace
+- ✅ Handle empty subgraph names (anonymous) - outputs "subgraph {" without quoted name
+- ✅ Update `dot_test.go`
+  - ✅ `TestDOT_Subgraph_Simple`
+  - ✅ `TestDOT_Subgraph_WithAttributes`
+  - ✅ `TestDOT_Subgraph_Cluster`
+  - ✅ `TestDOT_Subgraph_Nested`
+  - ✅ `TestDOT_Subgraph_Anonymous`
+  - ✅ `TestDOT_Graph_WithSubgraphsAndLooseNodes`
 
-### Step 31: SameRank, MinRank, MaxRank Convenience Methods
+### Step 31: SameRank, MinRank, MaxRank Convenience Methods ✅
 
-- ⬜ Define `Rank` type
-- ⬜ Add Rank constants
-  - ⬜ `RankSame`
-  - ⬜ `RankMin`
-  - ⬜ `RankMax`
-  - ⬜ `RankSource`
-  - ⬜ `RankSink`
-- ⬜ Add `rank` field to Subgraph
-- ⬜ Implement `SetRank(r Rank)` method
-- ⬜ Implement `Rank()` getter
-- ⬜ Add internal helper for anonymous rank subgraph
-- ⬜ Implement convenience methods on Graph
-  - ⬜ `SameRank(nodes ...*Node)`
-  - ⬜ `MinRank(nodes ...*Node)`
-  - ⬜ `MaxRank(nodes ...*Node)`
-  - ⬜ `SourceRank(nodes ...*Node)`
-  - ⬜ `SinkRank(nodes ...*Node)`
-- ⬜ Update tests
-  - ⬜ `TestGraph_SameRank`
-  - ⬜ `TestGraph_MinRank`
-  - ⬜ `TestGraph_MaxRank`
-  - ⬜ `TestGraph_SourceRank`
-  - ⬜ `TestGraph_SinkRank`
-  - ⬜ `TestSubgraph_SetRank`
+- ✅ Define `Rank` type
+- ✅ Add Rank constants
+  - ✅ `RankSame`
+  - ✅ `RankMin`
+  - ✅ `RankMax`
+  - ✅ `RankSource`
+  - ✅ `RankSink`
+- ✅ Add `rank` field to SubgraphAttributes (pointer type)
+- ✅ Implement `SetRank(r Rank)` method on Subgraph
+- ✅ Implement `Rank()` getter on Subgraph
+- ✅ Add internal helper for anonymous rank subgraph (createRankSubgraph)
+- ✅ Implement convenience methods on Graph
+  - ✅ `SameRank(nodes ...*Node)`
+  - ✅ `MinRank(nodes ...*Node)`
+  - ✅ `MaxRank(nodes ...*Node)`
+  - ✅ `SourceRank(nodes ...*Node)`
+  - ✅ `SinkRank(nodes ...*Node)`
+- ✅ Update tests
+  - ✅ `TestGraph_SameRank`
+  - ✅ `TestGraph_MinRank`
+  - ✅ `TestGraph_MaxRank`
+  - ✅ `TestGraph_SourceRank`
+  - ✅ `TestGraph_SinkRank`
+  - ✅ `TestSubgraph_SetRank`
 
-### Step 32: Rank Constraint DOT Output
+### Step 32: Rank Constraint DOT Output ✅
 
-- ⬜ Update subgraph DOT generation for rank
-  - ⬜ Output rank="value";
-  - ⬜ Place after other subgraph attributes
-- ⬜ Handle rank subgraphs from convenience methods
-  - ⬜ Anonymous subgraphs
-  - ⬜ Only rank attribute and nodes
-- ⬜ Update `dot_test.go`
-  - ⬜ `TestDOT_Subgraph_WithRank`
-  - ⬜ `TestDOT_SameRank_CreatesSubgraph`
-  - ⬜ `TestDOT_MinRank_Output`
-  - ⬜ `TestDOT_MaxRank_Output`
-  - ⬜ `TestDOT_MultipleRankConstraints`
-  - ⬜ `TestDOT_ComplexGraph_WithRanks`
+- ✅ Update subgraph DOT generation for rank
+  - ✅ Output rank="value"; (with proper quoting)
+  - ✅ Place after other subgraph attributes
+- ✅ Handle rank subgraphs from convenience methods
+  - ✅ Anonymous subgraphs (empty name outputs "subgraph {")
+  - ✅ Only rank attribute and nodes
+- ✅ Update `dot_test.go`
+  - ✅ `TestDOT_Subgraph_WithRank`
+  - ✅ `TestDOT_SameRank_CreatesSubgraph`
+  - ✅ `TestDOT_MinRank_Output`
+  - ✅ `TestDOT_MaxRank_Output`
+  - ✅ `TestDOT_MultipleRankConstraints`
+  - ✅ `TestDOT_ComplexGraph_WithRanks`
 
 ---
 
@@ -1074,7 +1075,8 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 - ✅ `graph.go`
 - ✅ `node.go`
 - ✅ `edge.go`
-- ⬜ `subgraph.go`
+- ✅ `subgraph.go`
+- ✅ `subgraph_attributes.go`
 - ✅ `node_attributes.go` (split from original attributes.go)
 - ✅ `edge_attributes.go` (split from original attributes.go)
 - ✅ `graph_attributes.go`
@@ -1092,7 +1094,7 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 - ✅ `graph_test.go`
 - ✅ `node_test.go`
 - ✅ `edge_test.go`
-- ⬜ `subgraph_test.go`
+- ✅ `subgraph_test.go`
 - ✅ `node_attributes_test.go` (split from original attributes_test.go)
 - ✅ `graph_attributes_test.go`
 - ✅ `graph_options_test.go`
@@ -1123,10 +1125,10 @@ This checklist tracks the implementation progress of the Goraffe library. Each i
 | Attributes | 6-14 | 9/9 | 100% |
 | DOT Generation | 15-19 | 5/5 | 100% |
 | Labels | 20-26 | 7/7 | 100% |
-| Subgraphs | 27-32 | 0/6 | 0% |
+| Subgraphs | 27-32 | 6/6 | 100% |
 | Parsing | 33-37 | 0/5 | 0% |
 | Rendering | 38-43 | 0/6 | 0% |
-| **Total** | **1-43** | **26/43** | **60%** |
+| **Total** | **1-43** | **32/43** | **74%** |
 
 ---
 
@@ -1153,7 +1155,7 @@ _Use this section to track blockers, decisions, or deviations from the plan._
 - **Test-Driven Development**: The comprehensive test suite (411 tests) has been instrumental in ensuring correctness while implementing features. Tests cover all edge cases and ensure DOT output matches Graphviz specifications.
 - **Attribute Organization**: Splitting attributes into separate files (node_attributes.go, edge_attributes.go, graph_attributes.go) improved code organization and maintainability.
 
-### Current Status (as of 2026-01-17)
+### Current Status (as of 2026-01-18)
 
 **Completed:**
 - ✅ **Phase 1 - Foundation (100%)**: All basic graph, node, and edge functionality complete
@@ -1172,34 +1174,35 @@ _Use this section to track blockers, decisions, or deviations from the plan._
   - Step 24: HTML label DOT output integration with automatic node association ✅
   - Step 25: Record labels with fields, groups, and ports ✅
   - Step 26: WithRecordLabel option with automatic shape setting ✅
+- ✅ **Phase 5 - Subgraphs (100%)**: Complete subgraph support with clusters, nesting, and rank constraints
+  - Step 27: Subgraph struct with name, nodes, edges, and parent reference ✅
+  - Step 28: SubgraphAttributes with cluster detection (names starting with "cluster") ✅
+  - Step 29: Nested subgraphs with proper node tracking in root graph ✅
+  - Step 30: Subgraph DOT generation with anonymous subgraph support ✅
+  - Step 31: Rank convenience methods (SameRank, MinRank, MaxRank, SourceRank, SinkRank) ✅
+  - Step 32: Rank constraint DOT output with proper quoting ✅
 
 **Next Steps:**
-1. Begin Phase 5: Subgraphs (Steps 27-32)
-2. Implement Subgraph struct and Graph.Subgraph() method
-3. Add cluster detection and subgraph attributes
-4. Implement nested subgraphs and DOT generation
+1. Begin Phase 6: Parsing (Steps 33-37)
+2. Implement DOT lexer for tokenization
+3. Build DOT parser for graph structure parsing
+4. Add support for parsing nodes, edges, and subgraphs
 
-**Recent Work (records branch):**
-- Completed Phase 4 Labels (Steps 23-26):
-  - Implemented FromPort/ToPort edge options for connecting edges to specific ports
-  - Integrated HTML labels into DOT output with <...> syntax (no quotes)
-  - Built complete record label system:
-    - RecordField with content and optional ports
-    - RecordGroup for nested structures wrapped in { }
-    - RecordLabel with | separator between fields
-    - Proper escaping of special chars (|, {, }, <, >, \)
-  - Implemented WithRecordLabel option that automatically sets shape to "record"
-  - Added port node association via setNodeContext for both HTML and record labels
-  - Created Example_recordLabel demonstrating record usage with ports
-  - Updated records_test.go to use testify assertions (consistent with codebase style)
-- All of Phase 4 is now complete (100%)
+**Recent Work (rank-part-2 branch):**
+- Completed Phase 5 Subgraphs (Steps 27-32):
+  - Step 32 (latest): Fixed rank attribute DOT output with proper quoting (rank="same" not rank=same)
+  - Step 32: Added support for anonymous subgraphs (empty name) outputting "subgraph {"
+  - Step 32: Implemented all 6 comprehensive tests for rank constraint DOT output
+  - All rank convenience methods (SameRank, MinRank, MaxRank, etc.) create proper anonymous subgraphs
+  - Full support for nested subgraphs with independent hierarchies
+  - Cluster subgraphs (names with "cluster" prefix) support visual attributes
 
-**Previous Work (earlier branches):**
+**Previous Work:**
 - Phase 1-3 (Steps 1-19): Foundation, Attributes, and DOT Generation
-- Phase 4 Steps 20-22: HTML table labels with Content interface and Port references
+- Phase 4 (Steps 20-26): HTML table labels and record labels with port support
 
 **Test Coverage:**
 - All tests passing with comprehensive coverage
-- 11 record label tests covering all functionality
-- Examples demonstrating HTML and record label usage
-- Integration tests for ports with both label types
+- Complete subgraph test suite covering all Phase 5 functionality
+- 6 rank constraint DOT output tests (TestDOT_Subgraph_WithRank, TestDOT_SameRank_CreatesSubgraph, etc.)
+- Integration tests for nested subgraphs and clusters
