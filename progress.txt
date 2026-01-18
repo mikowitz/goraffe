@@ -1,0 +1,12 @@
+All PRD tasks completed:
+1. ✅ Subgraph DOT generation outputs rank attribute when set (subgraph.go, subgraph_attributes.go)
+2. ✅ Convenience methods (SameRank, MinRank, MaxRank, SourceRank, SinkRank) create anonymous rank subgraphs (graph.go)
+3. ✅ All 6 required tests implemented and passing (dot_test.go):
+   - TestDOT_Subgraph_WithRank
+   - TestDOT_SameRank_CreatesSubgraph
+   - TestDOT_MinRank_Output
+   - TestDOT_MaxRank_Output
+   - TestDOT_MultipleRankConstraints
+   - TestDOT_ComplexGraph_WithRanks
+
+Implementation verified - all tests pass, DOT output format is correct.
