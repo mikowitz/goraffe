@@ -3290,3 +3290,202 @@ func TestDOT_Escaping_UndirectedEdges(t *testing.T) {
 		asrt.Contains(output, `label="Link\n\"Active\""`, "expected escaped edge label in undirected graph")
 	})
 }
+
+// Test DOT subgraph output - simple subgraph
+func TestDOT_Subgraph_Simple(t *testing.T) {
+	asrt := assert.New(t)
+	g := NewGraph(Directed)
+
+	n1 := NewNode("A")
+	n2 := NewNode("B")
+
+	g.Subgraph("sub1", func(sg *Subgraph) {
+		_ = sg.AddNode(n1)
+		_ = sg.AddNode(n2)
+	})
+
+	output := g.String()
+
+	asrt.Contains(output, `subgraph "sub1" {`, "expected subgraph declaration")
+	asrt.Contains(output, `"A";`, "expected node A in output")
+	asrt.Contains(output, `"B";`, "expected node B in output")
+
+	// Verify nodes appear in subgraph section, not loose
+	subgraphIdx := strings.Index(output, `subgraph "sub1"`)
+	nodeAIdx := strings.Index(output, `"A";`)
+	nodeBIdx := strings.Index(output, `"B";`)
+	closingBraceIdx := strings.Index(output[subgraphIdx:], "}")
+
+	asrt.Greater(nodeAIdx, subgraphIdx, "expected node A after subgraph declaration")
+	asrt.Greater(nodeBIdx, subgraphIdx, "expected node B after subgraph declaration")
+	asrt.Less(nodeAIdx, subgraphIdx+closingBraceIdx, "expected node A before subgraph closing")
+	asrt.Less(nodeBIdx, subgraphIdx+closingBraceIdx, "expected node B before subgraph closing")
+}
+
+// Test DOT subgraph output - with attributes
+func TestDOT_Subgraph_WithAttributes(t *testing.T) {
+	asrt := assert.New(t)
+	g := NewGraph(Directed)
+
+	n1 := NewNode("A")
+
+	g.Subgraph("sub1", func(sg *Subgraph) {
+		sg.SetLabel("My Subgraph")
+		sg.SetStyle("filled")
+		_ = sg.AddNode(n1)
+	})
+
+	output := g.String()
+
+	asrt.Contains(output, `subgraph "sub1" {`, "expected subgraph declaration")
+	asrt.Contains(output, `label="My Subgraph";`, "expected label attribute")
+	asrt.Contains(output, `style="filled";`, "expected style attribute")
+
+	// Verify attributes come before nodes in subgraph
+	labelIdx := strings.Index(output, `label="My Subgraph"`)
+	nodeIdx := strings.Index(output, `"A";`)
+	asrt.Less(labelIdx, nodeIdx, "expected attributes before nodes in subgraph")
+}
+
+// Test DOT subgraph output - cluster
+func TestDOT_Subgraph_Cluster(t *testing.T) {
+	asrt := assert.New(t)
+	g := NewGraph(Directed)
+
+	db1 := NewNode("db1")
+	db2 := NewNode("db2")
+
+	g.Subgraph("cluster_db", func(sg *Subgraph) {
+		sg.SetLabel("Database")
+		_ = sg.AddNode(db1)
+		_ = sg.AddNode(db2)
+	})
+
+	output := g.String()
+
+	asrt.Contains(output, `subgraph "cluster_db" {`, "expected cluster subgraph declaration")
+	asrt.Contains(output, `label="Database";`, "expected label")
+	asrt.Contains(output, `"db1";`, "expected db1 node")
+	asrt.Contains(output, `"db2";`, "expected db2 node")
+}
+
+// Test DOT subgraph output - nested subgraphs
+func TestDOT_Subgraph_Nested(t *testing.T) {
+	asrt := assert.New(t)
+	g := NewGraph(Directed)
+
+	n1 := NewNode("A")
+	n2 := NewNode("B")
+
+	g.Subgraph("cluster_outer", func(outer *Subgraph) {
+		outer.SetLabel("Outer")
+		_ = outer.AddNode(n1)
+
+		outer.Subgraph("cluster_inner", func(inner *Subgraph) {
+			inner.SetLabel("Inner")
+			_ = inner.AddNode(n2)
+		})
+	})
+
+	output := g.String()
+
+	asrt.Contains(output, `subgraph "cluster_outer" {`, "expected outer subgraph")
+	asrt.Contains(output, `label="Outer";`, "expected outer label")
+	asrt.Contains(output, `subgraph "cluster_inner" {`, "expected inner subgraph")
+	asrt.Contains(output, `label="Inner";`, "expected inner label")
+
+	// Verify nesting structure - inner should be between outer's braces
+	outerIdx := strings.Index(output, `subgraph "cluster_outer"`)
+	innerIdx := strings.Index(output, `subgraph "cluster_inner"`)
+	asrt.Greater(innerIdx, outerIdx, "expected inner subgraph after outer declaration")
+
+	// Node B should be in inner subgraph, not outer
+	innerStart := strings.Index(output, `subgraph "cluster_inner"`)
+	if innerStart < 0 {
+		t.Fatal("expected output to contain `subgraph \"cluster_inner\"`")
+	}
+	innerSection := output[innerStart:]
+	innerEnd := strings.Index(innerSection, "\n\t}")
+	if innerStart < 0 {
+		t.Fatal("expected innerSection to contain `\n\t}`")
+	}
+	innerContent := innerSection[:innerEnd]
+	asrt.Contains(innerContent, `"B";`, "expected node B in inner subgraph")
+
+	// Node A should be in outer but not in inner
+	outerStart := strings.Index(output, `subgraph "cluster_outer"`)
+	if outerStart < 0 {
+		t.Fatalf("expected output to include `subgraph \"cluster_outer\"")
+	}
+	outerSection := output[outerStart:]
+	outerEnd := strings.LastIndex(outerSection, "\n\t}")
+	outerContent := outerSection[:outerEnd]
+	asrt.Contains(outerContent, `"A";`, "expected node A in outer subgraph")
+}
+
+// Test DOT subgraph output - anonymous subgraph
+func TestDOT_Subgraph_Anonymous(t *testing.T) {
+	asrt := assert.New(t)
+	g := NewGraph(Directed)
+
+	n1 := NewNode("A")
+	n2 := NewNode("B")
+
+	g.Subgraph("", func(sg *Subgraph) {
+		sg.SetAttribute("rank", "same")
+		_ = sg.AddNode(n1)
+		_ = sg.AddNode(n2)
+	})
+
+	output := g.String()
+
+	// Anonymous subgraph should not have a name after "subgraph"
+	asrt.Contains(output, "subgraph {", "expected anonymous subgraph declaration")
+	asrt.Contains(output, `rank="same";`, "expected rank attribute")
+	asrt.Contains(output, `"A";`, "expected node A")
+	asrt.Contains(output, `"B";`, "expected node B")
+}
+
+// Test DOT output - graph with both subgraphs and loose nodes
+func TestDOT_Graph_WithSubgraphsAndLooseNodes(t *testing.T) {
+	asrt := assert.New(t)
+	g := NewGraph(Directed)
+
+	db1 := NewNode("db1")
+	db2 := NewNode("db2")
+	web := NewNode("web")
+
+	g.Subgraph("cluster_db", func(sg *Subgraph) {
+		sg.SetLabel("Database")
+		_ = sg.AddNode(db1)
+		_ = sg.AddNode(db2)
+	})
+
+	_ = g.AddNode(web)
+	_, _ = g.AddEdge(web, db1)
+
+	output := g.String()
+
+	// Verify output structure
+	asrt.Contains(output, `subgraph "cluster_db" {`, "expected subgraph")
+	asrt.Contains(output, `label="Database";`, "expected subgraph label")
+
+	// Find positions
+	subgraphIdx := strings.Index(output, `subgraph "cluster_db"`)
+	subgraphEnd := strings.Index(output[subgraphIdx:], "\n\t}")
+	subgraphSection := output[subgraphIdx : subgraphIdx+subgraphEnd]
+
+	// db1 and db2 should be in subgraph
+	asrt.Contains(subgraphSection, `"db1";`, "expected db1 in subgraph")
+	asrt.Contains(subgraphSection, `"db2";`, "expected db2 in subgraph")
+	asrt.NotContains(subgraphSection, `"web";`, "expected web NOT in subgraph")
+
+	// web should appear as loose node after subgraph
+	afterSubgraph := output[subgraphIdx+subgraphEnd:]
+	webIdx := strings.Index(afterSubgraph, `"web";`)
+	edgeIdx := strings.Index(afterSubgraph, `"web" -> "db1";`)
+
+	asrt.NotEqual(-1, webIdx, "expected web node after subgraph")
+	asrt.NotEqual(-1, edgeIdx, "expected edge in output")
+	asrt.Less(webIdx, edgeIdx, "expected loose nodes before edges")
+}

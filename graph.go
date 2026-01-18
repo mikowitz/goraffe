@@ -184,7 +184,14 @@ func (g *Graph) DefaultEdgeAttrs() *EdgeAttributes {
 
 // String returns the DOT representation of the graph.
 // The output is valid Graphviz DOT format that can be rendered with dot, neato, etc.
-// Note: Currently only outputs nodes; edge output is not yet implemented.
+// Output order follows DOT conventions:
+// 1. Graph declaration
+// 2. Graph attributes
+// 3. Default node/edge attributes
+// 4. Subgraphs (each contains their nodes)
+// 5. Nodes not in any subgraph
+// 6. All edges
+// 7. Closing brace
 func (g *Graph) String() string {
 	builder := strings.Builder{}
 
@@ -208,16 +215,22 @@ func (g *Graph) String() string {
 	g.addDefaultNodeAttributes(&builder)
 	g.addDefaultEdgeAttrbiutes(&builder)
 
-	for _, node := range g.nodeOrder {
-		builder.WriteString(fmt.Sprintf("\t%s;\n", node))
+	// Output subgraphs with their nodes
+	for _, subgraph := range g.subgraphs {
+		g.renderSubgraph(&builder, subgraph, 1)
 	}
 
+	// Output nodes not in any subgraph
+	nodesInSubgraphs := g.collectNodesInSubgraphs()
+	for _, node := range g.nodeOrder {
+		if !nodesInSubgraphs[node.ID()] {
+			builder.WriteString(fmt.Sprintf("\t%s;\n", node))
+		}
+	}
+
+	// Output all edges
 	for _, edge := range g.edges {
 		builder.WriteString(fmt.Sprintf("\t%s;\n", edge.ToString(g.directed)))
-	}
-
-	for _, subgraph := range g.subgraphs {
-		builder.WriteString(fmt.Sprintf("\t%s\n", subgraph.String()))
 	}
 
 	builder.WriteString("}")
@@ -276,6 +289,73 @@ func (g *Graph) addDefaultEdgeAttrbiutes(builder *strings.Builder) {
 	}
 }
 
+// collectNodesInSubgraphs returns a set of all node IDs that are in any subgraph.
+// This is used to determine which nodes should be output as "loose" nodes.
+func (g *Graph) collectNodesInSubgraphs() map[string]bool {
+	nodesInSubgraphs := make(map[string]bool)
+
+	var collectFromSubgraph func(*Subgraph)
+	collectFromSubgraph = func(sg *Subgraph) {
+		for id := range sg.nodes {
+			nodesInSubgraphs[id] = true
+		}
+		// Recursively collect from nested subgraphs
+		for _, nested := range sg.subgraphs {
+			collectFromSubgraph(nested)
+		}
+	}
+
+	for _, sg := range g.subgraphs {
+		collectFromSubgraph(sg)
+	}
+
+	return nodesInSubgraphs
+}
+
+// renderSubgraph renders a subgraph and its nested subgraphs to DOT format.
+// The depth parameter controls indentation level.
+func (g *Graph) renderSubgraph(builder *strings.Builder, sg *Subgraph, depth int) {
+	indent := strings.Repeat("\t", depth)
+
+	// Start subgraph declaration
+	if sg.name == "" {
+		fmt.Fprintf(builder, "%ssubgraph {\n", indent)
+	} else {
+		fmt.Fprintf(builder, "%ssubgraph %s {\n", indent, quoteDOTID(sg.name))
+	}
+
+	// Add subgraph attributes
+	if sg.attrs != nil {
+		attrs := sg.attrs.List()
+		if len(attrs) > 0 {
+			for _, attr := range attrs {
+				fmt.Fprintf(builder, "%s\t%s;\n", indent, attr)
+			}
+		}
+	}
+
+	// Recursively render nested subgraphs first
+	for _, nested := range sg.subgraphs {
+		g.renderSubgraph(builder, nested, depth+1)
+	}
+
+	// Add nodes that belong directly to this subgraph (not in nested subgraphs)
+	nodesInNested := make(map[string]bool)
+	for _, nested := range sg.subgraphs {
+		for id := range nested.nodes {
+			nodesInNested[id] = true
+		}
+	}
+
+	for _, node := range sg.nodes {
+		if !nodesInNested[node.ID()] {
+			fmt.Fprintf(builder, "%s\t%s;\n", indent, node)
+		}
+	}
+
+	fmt.Fprintf(builder, "%s}\n", indent)
+}
+
 // Subgraph creates a new subgraph with the given name and executes the provided function.
 // The function receives the created subgraph as a parameter, allowing for subgraph configuration.
 // Returns the created subgraph for further use.
@@ -288,10 +368,11 @@ func (g *Graph) addDefaultEdgeAttrbiutes(builder *strings.Builder) {
 //	})
 func (g *Graph) Subgraph(name string, fn func(*Subgraph)) *Subgraph {
 	sg := &Subgraph{
-		name:   name,
-		nodes:  make(map[string]*Node),
-		edges:  make([]*Edge, 0),
-		parent: g,
+		name:      name,
+		nodes:     make(map[string]*Node),
+		edges:     make([]*Edge, 0),
+		parent:    g,
+		subgraphs: make([]*Subgraph, 0),
 	}
 
 	fn(sg)
