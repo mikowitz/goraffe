@@ -387,3 +387,66 @@ func (g *Graph) Subgraph(name string, fn func(*Subgraph)) *Subgraph {
 func (g *Graph) Subgraphs() []*Subgraph {
 	return g.subgraphs
 }
+
+// SameRank creates an anonymous subgraph with rank=same for the given nodes.
+// This is a convenience method equivalent to creating a subgraph with SetRank(RankSame).
+// All nodes will be placed at the same horizontal level in the graph layout.
+// Returns an error if any node is nil.
+//
+// Example:
+//
+//	g.SameRank(n1, n2, n3)
+func (g *Graph) SameRank(nodes ...*Node) (*Subgraph, error) {
+	return g.createRankSubgraph(RankSame, nodes...)
+}
+
+// MinRank creates an anonymous subgraph with rank=min for the given nodes.
+// This is a convenience method equivalent to creating a subgraph with SetRank(RankMin).
+// All nodes will be placed at the minimum rank.
+// Returns an error if any node is nil.
+func (g *Graph) MinRank(nodes ...*Node) (*Subgraph, error) {
+	return g.createRankSubgraph(RankMin, nodes...)
+}
+
+// MaxRank creates an anonymous subgraph with rank=max for the given nodes.
+// This is a convenience method equivalent to creating a subgraph with SetRank(RankMax).
+// All nodes will be placed at the maximum rank.
+// Returns an error if any node is nil.
+func (g *Graph) MaxRank(nodes ...*Node) (*Subgraph, error) {
+	return g.createRankSubgraph(RankMax, nodes...)
+}
+
+// SourceRank creates an anonymous subgraph with rank=source for the given nodes.
+// This is a convenience method equivalent to creating a subgraph with SetRank(RankSource).
+// All nodes will be placed at the source rank (top of graph).
+// Returns an error if any node is nil.
+func (g *Graph) SourceRank(nodes ...*Node) (*Subgraph, error) {
+	return g.createRankSubgraph(RankSource, nodes...)
+}
+
+// SinkRank creates an anonymous subgraph with rank=sink for the given nodes.
+// This is a convenience method equivalent to creating a subgraph with SetRank(RankSink).
+// All nodes will be placed at the sink rank (bottom of graph).
+// Returns an error if any node is nil.
+func (g *Graph) SinkRank(nodes ...*Node) (*Subgraph, error) {
+	return g.createRankSubgraph(RankSink, nodes...)
+}
+
+// createRankSubgraph is an internal helper that creates an anonymous subgraph with a rank constraint.
+func (g *Graph) createRankSubgraph(rank Rank, nodes ...*Node) (*Subgraph, error) {
+	// Validate all nodes upfront
+	for _, n := range nodes {
+		if n == nil {
+			return nil, fmt.Errorf("rank subgraph requires valid nodes: %w", ErrNilNode)
+		}
+	}
+
+	sg := g.Subgraph("", func(s *Subgraph) {
+		s.SetRank(rank)
+		for _, n := range nodes {
+			_ = s.AddNode(n) // Safe to ignore - already validated
+		}
+	})
+
+	return sg, nil
+}
