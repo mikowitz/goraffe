@@ -400,9 +400,6 @@ func Example_subgraphsAndClusters() {
 	fmt.Println(g.String())
 	// Output:
 	// digraph "System" {
-	// 	"db" [label="PostgreSQL"];
-	// 	"api" [label="API Server"];
-	// 	"api" -> "db" [label="queries"];
 	// 	subgraph "cluster_db" {
 	// 		label="Database";
 	// 		style="filled";
@@ -417,5 +414,6 @@ func Example_subgraphsAndClusters() {
 	// 		fillcolor="lightgreen";
 	// 		"api" [label="API Server"];
 	// 	}
+	// 	"api" -> "db" [label="queries"];
 	// }
 }

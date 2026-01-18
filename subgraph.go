@@ -15,11 +15,12 @@ import (
 // and fill colors. Regular subgraphs may have these attributes set but they typically won't
 // be rendered by Graphviz.
 type Subgraph struct {
-	name   string
-	nodes  map[string]*Node
-	edges  []*Edge
-	parent *Graph
-	attrs  *SubgraphAttributes
+	name      string
+	nodes     map[string]*Node
+	edges     []*Edge
+	parent    *Graph
+	attrs     *SubgraphAttributes
+	subgraphs []*Subgraph
 }
 
 // Name returns the name of the subgraph.
@@ -103,6 +104,41 @@ func (sg *Subgraph) SetFillColor(c string) {
 // This allows setting arbitrary Graphviz attributes not covered by dedicated setter methods.
 func (sg *Subgraph) SetAttribute(key, value string) {
 	sg.Attrs().setCustom(key, value)
+}
+
+// Subgraph creates a nested subgraph within this subgraph.
+// The nested subgraph will reference the root graph for node tracking, ensuring all nodes
+// are registered at the graph level while maintaining the subgraph hierarchy for DOT output.
+//
+// Example:
+//
+//	outer := g.Subgraph("cluster_outer", func(o *Subgraph) {
+//		o.SetLabel("Outer")
+//		o.Subgraph("cluster_inner", func(i *Subgraph) {
+//			i.SetLabel("Inner")
+//			i.AddNode(NewNode("A"))
+//		})
+//	})
+func (sg *Subgraph) Subgraph(name string, fn func(*Subgraph)) *Subgraph {
+	nested := &Subgraph{
+		name:      name,
+		nodes:     make(map[string]*Node),
+		edges:     make([]*Edge, 0),
+		parent:    sg.parent, // Reference root graph for node tracking
+		subgraphs: make([]*Subgraph, 0),
+	}
+
+	fn(nested)
+
+	sg.subgraphs = append(sg.subgraphs, nested)
+
+	return nested
+}
+
+// Subgraphs returns all nested subgraphs within this subgraph.
+// The returned slice should not be modified.
+func (sg *Subgraph) Subgraphs() []*Subgraph {
+	return sg.subgraphs
 }
 
 // String returns the DOT representation of the subgraph.
