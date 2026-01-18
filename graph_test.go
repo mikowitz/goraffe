@@ -438,3 +438,191 @@ func TestGraph_AddEdge_NilValidation_WithImplicitNodeAddition(t *testing.T) {
 		asrt.NotNil(g.GetNode("B"), "expected to node to be added")
 	})
 }
+
+func TestGraph_SameRank(t *testing.T) {
+	asrt := assert.New(t)
+
+	g := NewGraph()
+	n1 := NewNode("A")
+	n2 := NewNode("B")
+	n3 := NewNode("C")
+
+	sg, err := g.SameRank(n1, n2, n3)
+
+	asrt.NoError(err, "expected no error")
+	asrt.NotNil(sg, "expected subgraph to be created")
+	asrt.Equal(RankSame, sg.Rank(), "expected rank to be 'same'")
+	asrt.Len(sg.Nodes(), 3, "expected 3 nodes in subgraph")
+
+	// Verify all nodes were added
+	nodeIDs := make(map[string]bool)
+	for _, n := range sg.Nodes() {
+		nodeIDs[n.ID()] = true
+	}
+	asrt.True(nodeIDs["A"], "expected node A in subgraph")
+	asrt.True(nodeIDs["B"], "expected node B in subgraph")
+	asrt.True(nodeIDs["C"], "expected node C in subgraph")
+}
+
+func TestGraph_MinRank(t *testing.T) {
+	asrt := assert.New(t)
+
+	g := NewGraph()
+	n1 := NewNode("A")
+	n2 := NewNode("B")
+
+	sg, err := g.MinRank(n1, n2)
+
+	asrt.NoError(err, "expected no error")
+	asrt.NotNil(sg, "expected subgraph to be created")
+	asrt.Equal(RankMin, sg.Rank(), "expected rank to be 'min'")
+	asrt.Len(sg.Nodes(), 2, "expected 2 nodes in subgraph")
+}
+
+func TestGraph_MaxRank(t *testing.T) {
+	asrt := assert.New(t)
+
+	g := NewGraph()
+	n1 := NewNode("A")
+	n2 := NewNode("B")
+
+	sg, err := g.MaxRank(n1, n2)
+
+	asrt.NoError(err, "expected no error")
+	asrt.NotNil(sg, "expected subgraph to be created")
+	asrt.Equal(RankMax, sg.Rank(), "expected rank to be 'max'")
+	asrt.Len(sg.Nodes(), 2, "expected 2 nodes in subgraph")
+}
+
+func TestGraph_SourceRank(t *testing.T) {
+	asrt := assert.New(t)
+
+	g := NewGraph()
+	n1 := NewNode("A")
+
+	sg, err := g.SourceRank(n1)
+
+	asrt.NoError(err, "expected no error")
+	asrt.NotNil(sg, "expected subgraph to be created")
+	asrt.Equal(RankSource, sg.Rank(), "expected rank to be 'source'")
+	asrt.Len(sg.Nodes(), 1, "expected 1 node in subgraph")
+}
+
+func TestGraph_SinkRank(t *testing.T) {
+	asrt := assert.New(t)
+
+	g := NewGraph()
+	n1 := NewNode("A")
+	n2 := NewNode("B")
+	n3 := NewNode("C")
+
+	sg, err := g.SinkRank(n1, n2, n3)
+
+	asrt.NoError(err, "expected no error")
+	asrt.NotNil(sg, "expected subgraph to be created")
+	asrt.Equal(RankSink, sg.Rank(), "expected rank to be 'sink'")
+	asrt.Len(sg.Nodes(), 3, "expected 3 nodes in subgraph")
+}
+
+func TestGraph_RankMethods_AnonymousSubgraphs(t *testing.T) {
+	asrt := assert.New(t)
+
+	g := NewGraph()
+	n1 := NewNode("A")
+
+	sg, err := g.SameRank(n1)
+
+	asrt.NoError(err, "expected no error")
+	asrt.Equal("", sg.Name(), "expected anonymous subgraph to have empty name")
+	asrt.Equal(RankSame, sg.Rank(), "expected rank to be set")
+}
+
+func TestGraph_RankMethods_NodesAddedToGraph(t *testing.T) {
+	asrt := assert.New(t)
+
+	g := NewGraph()
+	n1 := NewNode("A")
+	n2 := NewNode("B")
+
+	_, err := g.SameRank(n1, n2)
+
+	asrt.NoError(err, "expected no error")
+	// Verify nodes were added to parent graph
+	asrt.Len(g.Nodes(), 2, "expected nodes to be added to parent graph")
+	asrt.NotNil(g.GetNode("A"), "expected node A in parent graph")
+	asrt.NotNil(g.GetNode("B"), "expected node B in parent graph")
+}
+
+func TestGraph_RankMethods_ErrorOnNilNode(t *testing.T) {
+	t.Run("SameRank returns error with nil node", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph()
+
+		sg, err := g.SameRank(NewNode("A"), nil, NewNode("B"))
+		asrt.Error(err, "expected error when nil node passed")
+		asrt.Nil(sg, "expected nil subgraph when error occurs")
+		asrt.ErrorIs(err, ErrNilNode, "expected ErrNilNode sentinel error")
+	})
+
+	t.Run("SameRank returns error with only nil node", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph()
+
+		sg, err := g.SameRank(nil)
+		asrt.Error(err, "expected error when nil node passed")
+		asrt.Nil(sg, "expected nil subgraph when error occurs")
+		asrt.ErrorIs(err, ErrNilNode, "expected ErrNilNode sentinel error")
+	})
+
+	t.Run("MinRank returns error with nil node", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph()
+
+		sg, err := g.MinRank(nil)
+		asrt.Error(err, "expected error when nil node passed")
+		asrt.Nil(sg, "expected nil subgraph when error occurs")
+		asrt.ErrorIs(err, ErrNilNode, "expected ErrNilNode sentinel error")
+	})
+
+	t.Run("MaxRank returns error with nil node", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph()
+
+		sg, err := g.MaxRank(NewNode("A"), nil)
+		asrt.Error(err, "expected error when nil node passed")
+		asrt.Nil(sg, "expected nil subgraph when error occurs")
+		asrt.ErrorIs(err, ErrNilNode, "expected ErrNilNode sentinel error")
+	})
+
+	t.Run("SourceRank returns error with nil node", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph()
+
+		sg, err := g.SourceRank(nil, NewNode("A"))
+		asrt.Error(err, "expected error when nil node passed")
+		asrt.Nil(sg, "expected nil subgraph when error occurs")
+		asrt.ErrorIs(err, ErrNilNode, "expected ErrNilNode sentinel error")
+	})
+
+	t.Run("SinkRank returns error with nil node", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph()
+
+		sg, err := g.SinkRank(nil, nil, NewNode("A"))
+		asrt.Error(err, "expected error when nil node passed")
+		asrt.Nil(sg, "expected nil subgraph when error occurs")
+		asrt.ErrorIs(err, ErrNilNode, "expected ErrNilNode sentinel error")
+	})
+
+	t.Run("rank methods do not add nodes when error occurs", func(t *testing.T) {
+		asrt := assert.New(t)
+		g := NewGraph()
+		n1 := NewNode("A")
+
+		sg, err := g.SameRank(n1, nil)
+		asrt.Error(err, "expected error when nil node passed")
+		asrt.Nil(sg, "expected nil subgraph when error occurs")
+		// The valid node should not be added when the operation fails
+		asrt.Len(g.Nodes(), 0, "expected no nodes added when rank method fails")
+	})
+}

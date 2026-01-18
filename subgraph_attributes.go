@@ -20,6 +20,7 @@ type SubgraphAttributes struct {
 	fillColor *string
 	fontName  *string
 	fontSize  *float64
+	rank      *Rank
 	custom    map[string]string
 }
 
@@ -111,6 +112,17 @@ func (a *SubgraphAttributes) FontSize() float64 {
 	return *a.fontSize
 }
 
+// Rank returns the rank constraint. Returns empty string if unset.
+// Note: An empty string return value may indicate either an unset rank or a rank
+// explicitly set to empty string.
+func (a *SubgraphAttributes) Rank() Rank {
+	if a.rank == nil {
+		return ""
+	}
+
+	return *a.rank
+}
+
 // List returns a slice of DOT attribute strings for rendering.
 // Only attributes that have been explicitly set are included.
 func (a SubgraphAttributes) List() []string {
@@ -138,6 +150,10 @@ func (a SubgraphAttributes) List() []string {
 
 	if a.fontSize != nil {
 		attrs = append(attrs, fmt.Sprintf(`fontsize="%g"`, a.FontSize()))
+	}
+
+	if a.rank != nil {
+		attrs = append(attrs, fmt.Sprintf(`rank=%s`, a.Rank()))
 	}
 
 	for k, v := range a.custom {

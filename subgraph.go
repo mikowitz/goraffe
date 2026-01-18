@@ -100,6 +100,19 @@ func (sg *Subgraph) SetFillColor(c string) {
 	sg.Attrs().fillColor = &c
 }
 
+// SetRank sets the rank constraint for the subgraph.
+// Rank constraints control how nodes are positioned vertically in the graph layout.
+// Common values are RankSame, RankMin, RankMax, RankSource, and RankSink.
+func (sg *Subgraph) SetRank(r Rank) {
+	sg.Attrs().rank = &r
+}
+
+// Rank returns the rank constraint for the subgraph.
+// Returns empty string if no rank constraint is set.
+func (sg *Subgraph) Rank() Rank {
+	return sg.Attrs().Rank()
+}
+
 // SetAttribute sets a custom DOT attribute on the subgraph.
 // This allows setting arbitrary Graphviz attributes not covered by dedicated setter methods.
 func (sg *Subgraph) SetAttribute(key, value string) {

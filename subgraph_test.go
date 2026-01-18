@@ -345,3 +345,47 @@ func TestSubgraph_NestedCluster(t *testing.T) {
 	rootNodes := g.Nodes()
 	asrt.Len(rootNodes, 2, "expected 2 nodes in root graph")
 }
+
+func TestSubgraph_SetRank(t *testing.T) {
+	asrt := assert.New(t)
+
+	g := NewGraph()
+	var sg *Subgraph
+	g.Subgraph("sub", func(s *Subgraph) {
+		sg = s
+	})
+
+	sg.SetRank(RankSame)
+
+	asrt.Equal(RankSame, sg.Rank(), "expected rank to be 'same'")
+	asrt.Equal(RankSame, sg.Attrs().Rank(), "expected attrs rank to be 'same'")
+}
+
+func TestSubgraph_SetRank_AllValues(t *testing.T) {
+	asrt := assert.New(t)
+
+	testCases := []struct {
+		name string
+		rank Rank
+	}{
+		{"same", RankSame},
+		{"min", RankMin},
+		{"max", RankMax},
+		{"source", RankSource},
+		{"sink", RankSink},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			g := NewGraph()
+			var sg *Subgraph
+			g.Subgraph("sub", func(s *Subgraph) {
+				sg = s
+			})
+
+			sg.SetRank(tc.rank)
+
+			asrt.Equal(tc.rank, sg.Rank(), "expected rank to be '%s'", tc.rank)
+		})
+	}
+}

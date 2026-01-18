@@ -32,6 +32,23 @@ const (
 	SplineNone     SplineType = "none"     // No edges drawn (affects layout only)
 )
 
+// Rank represents the rank constraint type for subgraphs.
+// Rank constraints control how nodes are positioned vertically in the graph layout.
+type Rank string
+
+const (
+	// RankSame places all nodes in the subgraph at the same rank (horizontal level).
+	RankSame Rank = "same"
+	// RankMin places all nodes in the subgraph at the minimum rank.
+	RankMin Rank = "min"
+	// RankMax places all nodes in the subgraph at the maximum rank.
+	RankMax Rank = "max"
+	// RankSource places all nodes in the subgraph at the source rank (top of graph).
+	RankSource Rank = "source"
+	// RankSink places all nodes in the subgraph at the sink rank (bottom of graph).
+	RankSink Rank = "sink"
+)
+
 // GraphAttributes holds the visual and structural properties of a graph.
 // All fields use pointer types to distinguish between "not set" and "explicitly set to zero value".
 // Use the getter methods (Label(), RankDir(), etc.) to access values safely.
