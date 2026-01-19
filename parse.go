@@ -514,15 +514,25 @@ func (p *Parser) parseStmt(g *Graph) error {
 		return nil
 	}
 
-	if p.matchKeyword("subgraph") {
-		_, err := p.parseSubgraph(g)
-		return err
-	}
+	if p.matchKeyword("subgraph") || p.match(TokenLBrace) {
+		// Parse the subgraph
+		sg, err := p.parseSubgraph(g)
+		if err != nil {
+			return err
+		}
 
-	// Check for bare '{' (anonymous subgraph)
-	if p.match(TokenLBrace) {
-		_, err := p.parseSubgraph(g)
-		return err
+		// Check if this subgraph is followed by an arrow (edge statement)
+		if p.match(TokenArrow) {
+			// Subgraph is used as edge endpoint
+			nodeIDs := make([]string, 0)
+			for _, node := range sg.Nodes() {
+				nodeIDs = append(nodeIDs, node.ID())
+			}
+			return p.parseEdgeStmtWithNodes(g, nodeIDs)
+		}
+
+		// Just a standalone subgraph declaration
+		return nil
 	}
 
 	// Try to parse as node or edge statement
@@ -588,6 +598,22 @@ func (p *Parser) parseAttrList() (map[string]string, error) {
 // parseNodeOrEdgeStmt parses either a node or edge statement.
 // This is tricky because we need lookahead to distinguish them.
 func (p *Parser) parseNodeOrEdgeStmt(g *Graph) error {
+	// Check if this starts with a subgraph (for edge endpoints)
+	if p.matchKeyword("subgraph") || p.match(TokenLBrace) {
+		// This must be an edge with subgraph as endpoint
+		nodeIDs, err := p.parseEdgeEndpoint(g)
+		if err != nil {
+			return err
+		}
+
+		// Subgraphs can only appear in edge statements
+		if !p.match(TokenArrow) {
+			return fmt.Errorf("subgraph must be followed by edge operator at %d:%d", p.current.Line, p.current.Col)
+		}
+
+		return p.parseEdgeStmtWithNodes(g, nodeIDs)
+	}
+
 	// Parse first ID
 	id, err := p.parseID()
 	if err != nil {
@@ -596,11 +622,42 @@ func (p *Parser) parseNodeOrEdgeStmt(g *Graph) error {
 
 	// Check if this is an edge statement (next token is arrow)
 	if p.match(TokenArrow) {
-		return p.parseEdgeStmt(g, id)
+		return p.parseEdgeStmtWithNodes(g, []string{id})
 	}
 
 	// Otherwise, it's a node statement
 	return p.parseNodeStmt(g, id)
+}
+
+// parseEdgeEndpoint parses an edge endpoint, which can be either:
+// - A node ID (returns single-element list)
+// - A subgraph (returns all node IDs in the subgraph)
+func (p *Parser) parseEdgeEndpoint(g *Graph) ([]string, error) {
+	// Check if this is a subgraph
+	if p.matchKeyword("subgraph") || p.match(TokenLBrace) {
+		// Parse the subgraph
+		sg, err := p.parseSubgraph(g)
+		if err != nil {
+			return nil, err
+		}
+
+		// Collect all node IDs from the subgraph
+		nodes := sg.Nodes()
+		nodeIDs := make([]string, len(nodes))
+		for i, node := range nodes {
+			nodeIDs[i] = node.ID()
+		}
+
+		return nodeIDs, nil
+	}
+
+	// Otherwise, parse a single node ID
+	id, err := p.parseID()
+	if err != nil {
+		return nil, err
+	}
+
+	return []string{id}, nil
 }
 
 // parseNodeStmt parses a node statement: nodeID [attributes].
@@ -623,19 +680,28 @@ func (p *Parser) parseNodeStmt(g *Graph, id string) error {
 
 // parseEdgeStmt parses an edge statement: nodeID arrow nodeID ... [attributes].
 // Handles edge chains: A -> B -> C creates edges A->B and B->C.
+// Deprecated: Use parseEdgeStmtWithNodes instead.
 func (p *Parser) parseEdgeStmt(g *Graph, firstID string) error {
-	nodes := []string{firstID}
+	return p.parseEdgeStmtWithNodes(g, []string{firstID})
+}
+
+// parseEdgeStmtWithNodes parses an edge statement where endpoints can be subgraphs.
+// Each endpoint is a list of node IDs (single node or all nodes from a subgraph).
+// Creates edges between all combinations of nodes at adjacent endpoints.
+func (p *Parser) parseEdgeStmtWithNodes(g *Graph, firstNodes []string) error {
+	// Store all endpoints as lists of node IDs
+	endpoints := [][]string{firstNodes}
 
 	// Parse edge chain
 	for p.match(TokenArrow) {
 		p.advance() // consume arrow
 
-		// Parse next node ID
-		id, err := p.parseID()
+		// Parse next endpoint (node or subgraph)
+		nodeIDs, err := p.parseEdgeEndpoint(g)
 		if err != nil {
 			return err
 		}
-		nodes = append(nodes, id)
+		endpoints = append(endpoints, nodeIDs)
 	}
 
 	// Parse optional edge attributes
@@ -648,13 +714,21 @@ func (p *Parser) parseEdgeStmt(g *Graph, firstID string) error {
 		}
 	}
 
-	// Create edges for the chain
+	// Create edges between each pair of adjacent endpoints
 	edgeOpts := p.mapEdgeAttributes(attrs)
-	for i := 0; i < len(nodes)-1; i++ {
-		from := NewNode(nodes[i])
-		to := NewNode(nodes[i+1])
-		if _, err := g.AddEdge(from, to, edgeOpts...); err != nil {
-			return err
+	for i := 0; i < len(endpoints)-1; i++ {
+		fromNodes := endpoints[i]
+		toNodes := endpoints[i+1]
+
+		// Create edges from all nodes in fromNodes to all nodes in toNodes
+		for _, fromID := range fromNodes {
+			for _, toID := range toNodes {
+				from := NewNode(fromID)
+				to := NewNode(toID)
+				if _, err := g.AddEdge(from, to, edgeOpts...); err != nil {
+					return err
+				}
+			}
 		}
 	}
 

@@ -658,3 +658,173 @@ func TestParse_Subgraph_DefaultAttributes(t *testing.T) {
 	asrt.Equal("circle", string(g.DefaultNodeAttrs().Shape()), "Default node shape should be circle")
 	asrt.Equal("blue", g.DefaultEdgeAttrs().Color(), "Default edge color should be blue")
 }
+
+func TestParse_SubgraphAsEdgeEndpoint_SubgraphToNode(t *testing.T) {
+	asrt := assert.New(t)
+
+	input := `digraph {
+		subgraph cluster_0 {
+			A;
+			B;
+		} -> C;
+	}`
+
+	parser := newParser(input)
+	g, err := parser.parseGraph()
+
+	asrt.NoError(err, "Should parse subgraph as edge source without error")
+	asrt.NotNil(g, "Graph should not be nil")
+	asrt.Equal(3, len(g.Nodes()), "Graph should have 3 nodes (A, B, C)")
+	asrt.Equal(2, len(g.Edges()), "Graph should have 2 edges (A->C, B->C)")
+
+	// Check edges
+	edges := g.Edges()
+	edgeMap := make(map[string]bool)
+	for _, edge := range edges {
+		edgeMap[edge.From().ID()+"->"+edge.To().ID()] = true
+	}
+
+	asrt.True(edgeMap["A->C"], "Should have edge A->C")
+	asrt.True(edgeMap["B->C"], "Should have edge B->C")
+}
+
+func TestParse_SubgraphAsEdgeEndpoint_NodeToSubgraph(t *testing.T) {
+	asrt := assert.New(t)
+
+	input := `digraph {
+		A -> subgraph cluster_0 {
+			B;
+			C;
+		};
+	}`
+
+	parser := newParser(input)
+	g, err := parser.parseGraph()
+
+	asrt.NoError(err, "Should parse subgraph as edge target without error")
+	asrt.NotNil(g, "Graph should not be nil")
+	asrt.Equal(3, len(g.Nodes()), "Graph should have 3 nodes (A, B, C)")
+	asrt.Equal(2, len(g.Edges()), "Graph should have 2 edges (A->B, A->C)")
+
+	// Check edges
+	edges := g.Edges()
+	edgeMap := make(map[string]bool)
+	for _, edge := range edges {
+		edgeMap[edge.From().ID()+"->"+edge.To().ID()] = true
+	}
+
+	asrt.True(edgeMap["A->B"], "Should have edge A->B")
+	asrt.True(edgeMap["A->C"], "Should have edge A->C")
+}
+
+func TestParse_SubgraphAsEdgeEndpoint_SubgraphToSubgraph(t *testing.T) {
+	asrt := assert.New(t)
+
+	input := `digraph {
+		subgraph cluster_0 {
+			A;
+			B;
+		} -> subgraph cluster_1 {
+			C;
+			D;
+		};
+	}`
+
+	parser := newParser(input)
+	g, err := parser.parseGraph()
+
+	asrt.NoError(err, "Should parse subgraph to subgraph without error")
+	asrt.NotNil(g, "Graph should not be nil")
+	asrt.Equal(4, len(g.Nodes()), "Graph should have 4 nodes")
+	asrt.Equal(4, len(g.Edges()), "Graph should have 4 edges (A->C, A->D, B->C, B->D)")
+
+	// Check edges (cartesian product)
+	edges := g.Edges()
+	edgeMap := make(map[string]bool)
+	for _, edge := range edges {
+		edgeMap[edge.From().ID()+"->"+edge.To().ID()] = true
+	}
+
+	asrt.True(edgeMap["A->C"], "Should have edge A->C")
+	asrt.True(edgeMap["A->D"], "Should have edge A->D")
+	asrt.True(edgeMap["B->C"], "Should have edge B->C")
+	asrt.True(edgeMap["B->D"], "Should have edge B->D")
+}
+
+func TestParse_SubgraphAsEdgeEndpoint_ChainedWithNode(t *testing.T) {
+	asrt := assert.New(t)
+
+	input := `digraph {
+		subgraph { A; B; } -> C -> subgraph { D; E; };
+	}`
+
+	parser := newParser(input)
+	g, err := parser.parseGraph()
+
+	asrt.NoError(err, "Should parse chained edges with subgraphs without error")
+	asrt.NotNil(g, "Graph should not be nil")
+	asrt.Equal(5, len(g.Nodes()), "Graph should have 5 nodes")
+	asrt.Equal(4, len(g.Edges()), "Graph should have 4 edges")
+
+	// Check edges
+	edges := g.Edges()
+	edgeMap := make(map[string]bool)
+	for _, edge := range edges {
+		edgeMap[edge.From().ID()+"->"+edge.To().ID()] = true
+	}
+
+	// First segment: subgraph {A, B} -> C
+	asrt.True(edgeMap["A->C"], "Should have edge A->C")
+	asrt.True(edgeMap["B->C"], "Should have edge B->C")
+
+	// Second segment: C -> subgraph {D, E}
+	asrt.True(edgeMap["C->D"], "Should have edge C->D")
+	asrt.True(edgeMap["C->E"], "Should have edge C->E")
+}
+
+func TestParse_SubgraphAsEdgeEndpoint_AnonymousSubgraph(t *testing.T) {
+	asrt := assert.New(t)
+
+	input := `digraph {
+		{ A; B; } -> C;
+	}`
+
+	parser := newParser(input)
+	g, err := parser.parseGraph()
+
+	asrt.NoError(err, "Should parse anonymous subgraph as edge endpoint without error")
+	asrt.NotNil(g, "Graph should not be nil")
+	asrt.Equal(3, len(g.Nodes()), "Graph should have 3 nodes")
+	asrt.Equal(2, len(g.Edges()), "Graph should have 2 edges")
+
+	// Check edges
+	edges := g.Edges()
+	edgeMap := make(map[string]bool)
+	for _, edge := range edges {
+		edgeMap[edge.From().ID()+"->"+edge.To().ID()] = true
+	}
+
+	asrt.True(edgeMap["A->C"], "Should have edge A->C")
+	asrt.True(edgeMap["B->C"], "Should have edge B->C")
+}
+
+func TestParse_SubgraphAsEdgeEndpoint_WithAttributes(t *testing.T) {
+	asrt := assert.New(t)
+
+	input := `digraph {
+		subgraph { A; B; } -> C [label="edges", color=red];
+	}`
+
+	parser := newParser(input)
+	g, err := parser.parseGraph()
+
+	asrt.NoError(err, "Should parse subgraph edges with attributes without error")
+	asrt.NotNil(g, "Graph should not be nil")
+	asrt.Equal(2, len(g.Edges()), "Graph should have 2 edges")
+
+	// Check that all edges have the same attributes
+	for _, edge := range g.Edges() {
+		asrt.Equal("edges", edge.Attrs().Label(), "All edges should have label='edges'")
+		asrt.Equal("red", edge.Attrs().Color(), "All edges should have color=red")
+	}
+}
