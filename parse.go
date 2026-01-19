@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"unicode"
 )
@@ -141,57 +142,14 @@ func (l *Lexer) Next() Token {
 	startCol := l.col
 	ch := l.input[l.pos]
 
-	// Single character tokens
-	switch ch {
-	case '{':
-		l.advance()
-		return Token{Type: TokenLBrace, Value: "{", Line: startLine, Col: startCol}
-	case '}':
-		l.advance()
-		return Token{Type: TokenRBrace, Value: "}", Line: startLine, Col: startCol}
-	case '[':
-		l.advance()
-		return Token{Type: TokenLBracket, Value: "[", Line: startLine, Col: startCol}
-	case ']':
-		l.advance()
-		return Token{Type: TokenRBracket, Value: "]", Line: startLine, Col: startCol}
-	case '(':
-		l.advance()
-		return Token{Type: TokenLParen, Value: "(", Line: startLine, Col: startCol}
-	case ')':
-		l.advance()
-		return Token{Type: TokenRParen, Value: ")", Line: startLine, Col: startCol}
-	case ';':
-		l.advance()
-		return Token{Type: TokenSemi, Value: ";", Line: startLine, Col: startCol}
-	case ',':
-		l.advance()
-		return Token{Type: TokenComma, Value: ",", Line: startLine, Col: startCol}
-	case ':':
-		l.advance()
-		return Token{Type: TokenColon, Value: ":", Line: startLine, Col: startCol}
-	case '=':
-		l.advance()
-		return Token{Type: TokenEqual, Value: "=", Line: startLine, Col: startCol}
+	// Try to scan single character token
+	if tok, ok := l.scanSingleCharToken(ch, startLine, startCol); ok {
+		return tok
 	}
 
-	// Arrow tokens (-> or --)
-	if ch == '-' {
-		l.advance()
-		if l.pos < len(l.input) {
-			next := l.input[l.pos]
-			switch next {
-			case '>':
-				l.advance()
-				return Token{Type: TokenArrow, Value: "->", Line: startLine, Col: startCol}
-			case '-':
-				l.advance()
-				return Token{Type: TokenArrow, Value: "--", Line: startLine, Col: startCol}
-			}
-		}
-		// Just a minus sign, treat as part of number or identifier
-		l.pos--
-		l.col--
+	// Try to scan arrow token
+	if tok, ok := l.scanArrowToken(ch, startLine, startCol); ok {
+		return tok
 	}
 
 	// HTML strings
@@ -217,6 +175,67 @@ func (l *Lexer) Next() Token {
 	// Unknown character
 	l.advance()
 	return Token{Type: TokenEOF, Value: string(ch), Line: startLine, Col: startCol}
+}
+
+// scanSingleCharToken scans single-character tokens.
+// Returns the token and true if a match was found, or zero token and false otherwise.
+func (l *Lexer) scanSingleCharToken(ch byte, line, col int) (Token, bool) {
+	var tokenType TokenType
+	var value string
+
+	switch ch {
+	case '{':
+		tokenType, value = TokenLBrace, "{"
+	case '}':
+		tokenType, value = TokenRBrace, "}"
+	case '[':
+		tokenType, value = TokenLBracket, "["
+	case ']':
+		tokenType, value = TokenRBracket, "]"
+	case '(':
+		tokenType, value = TokenLParen, "("
+	case ')':
+		tokenType, value = TokenRParen, ")"
+	case ';':
+		tokenType, value = TokenSemi, ";"
+	case ',':
+		tokenType, value = TokenComma, ","
+	case ':':
+		tokenType, value = TokenColon, ":"
+	case '=':
+		tokenType, value = TokenEqual, "="
+	default:
+		return Token{}, false
+	}
+
+	l.advance()
+	return Token{Type: tokenType, Value: value, Line: line, Col: col}, true
+}
+
+// scanArrowToken scans arrow tokens (-> or --).
+// Returns the token and true if a match was found, or zero token and false otherwise.
+func (l *Lexer) scanArrowToken(ch byte, line, col int) (Token, bool) {
+	if ch != '-' {
+		return Token{}, false
+	}
+
+	l.advance()
+	if l.pos < len(l.input) {
+		next := l.input[l.pos]
+		switch next {
+		case '>':
+			l.advance()
+			return Token{Type: TokenArrow, Value: "->", Line: line, Col: col}, true
+		case '-':
+			l.advance()
+			return Token{Type: TokenArrow, Value: "--", Line: line, Col: col}, true
+		}
+	}
+
+	// Just a minus sign, treat as part of number or identifier
+	l.pos--
+	l.col--
+	return Token{}, false
 }
 
 // Peek returns the next token without consuming it.
@@ -682,13 +701,6 @@ func (p *Parser) parseNodeStmt(g *Graph, id string) error {
 	return g.AddNode(node)
 }
 
-// parseEdgeStmt parses an edge statement: nodeID arrow nodeID ... [attributes].
-// Handles edge chains: A -> B -> C creates edges A->B and B->C.
-// Deprecated: Use parseEdgeStmtWithNodes instead.
-func (p *Parser) parseEdgeStmt(g *Graph, firstID string) error {
-	return p.parseEdgeStmtWithNodes(g, []string{firstID})
-}
-
 // parseEdgeStmtWithNodes parses an edge statement where endpoints can be subgraphs.
 // Each endpoint is a list of node IDs (single node or all nodes from a subgraph).
 // Creates edges between all combinations of nodes at adjacent endpoints.
@@ -764,10 +776,9 @@ func (p *Parser) mapNodeAttributes(attrs map[string]string) []NodeOption {
 		opts = append(opts, WithFontName(fontname))
 	}
 	if fontsize, ok := attrs["fontsize"]; ok {
-		// Parse fontsize as float - ignore errors for now
+		// Parse fontsize as float
 		var size float64
-		fmt.Sscanf(fontsize, "%f", &size)
-		if size > 0 {
+		if _, err := fmt.Sscanf(fontsize, "%f", &size); err == nil && size > 0 {
 			opts = append(opts, WithFontSize(size))
 		}
 	}
@@ -812,8 +823,7 @@ func (p *Parser) mapEdgeAttributes(attrs map[string]string) []EdgeOption {
 	}
 	if weight, ok := attrs["weight"]; ok {
 		var w float64
-		fmt.Sscanf(weight, "%f", &w)
-		if w > 0 {
+		if _, err := fmt.Sscanf(weight, "%f", &w); err == nil && w > 0 {
 			opts = append(opts, WithWeight(w))
 		}
 	}
@@ -853,25 +863,6 @@ func (p *Parser) applyDefaultAttrs(g *Graph, keyword string, attrs map[string]st
 			g.Attrs().setCustom(key, value)
 		}
 	}
-	return nil
-}
-
-// skipAttrList skips over an attribute list [...].
-func (p *Parser) skipAttrList() error {
-	if err := p.expect(TokenLBracket); err != nil {
-		return err
-	}
-
-	depth := 1
-	for depth > 0 && !p.match(TokenEOF) {
-		if p.match(TokenLBracket) {
-			depth++
-		} else if p.match(TokenRBracket) {
-			depth--
-		}
-		p.advance()
-	}
-
 	return nil
 }
 
@@ -958,14 +949,12 @@ func (p *Parser) parseSubgraphStmt(sg *Subgraph, g *Graph) error {
 
 	// Check for nested subgraph
 	if p.matchKeyword("subgraph") {
-		_, err := p.parseNestedSubgraph(sg)
-		return err
+		return p.parseNestedSubgraph(sg)
 	}
 
 	// Check for bare '{' (anonymous nested subgraph)
 	if p.match(TokenLBrace) {
-		_, err := p.parseNestedSubgraph(sg)
-		return err
+		return p.parseNestedSubgraph(sg)
 	}
 
 	// Parse node or edge statement into this subgraph
@@ -973,7 +962,7 @@ func (p *Parser) parseSubgraphStmt(sg *Subgraph, g *Graph) error {
 }
 
 // parseNestedSubgraph parses a nested subgraph within a parent subgraph.
-func (p *Parser) parseNestedSubgraph(parent *Subgraph) (*Subgraph, error) {
+func (p *Parser) parseNestedSubgraph(parent *Subgraph) error {
 	// Parse 'subgraph' keyword if present
 	if p.matchKeyword("subgraph") {
 		p.advance()
@@ -988,25 +977,25 @@ func (p *Parser) parseNestedSubgraph(parent *Subgraph) (*Subgraph, error) {
 
 	// Expect opening brace
 	if err := p.expect(TokenLBrace); err != nil {
-		return nil, err
+		return err
 	}
 
 	// Parse nested subgraph contents
 	var parseErr error
-	sg := parent.Subgraph(name, func(s *Subgraph) {
+	parent.Subgraph(name, func(s *Subgraph) {
 		parseErr = p.parseSubgraphStmts(s, parent.parent)
 	})
 
 	if parseErr != nil {
-		return nil, parseErr
+		return parseErr
 	}
 
 	// Expect closing brace
 	if err := p.expect(TokenRBrace); err != nil {
-		return nil, err
+		return err
 	}
 
-	return sg, nil
+	return nil
 }
 
 // parseNodeOrEdgeStmtInSubgraph parses a node or edge statement and adds it to the subgraph.
@@ -1078,53 +1067,6 @@ func (p *Parser) parseEdgeStmtInSubgraph(sg *Subgraph, firstID string) error {
 		if _, err := sg.AddEdge(from, to, edgeOpts...); err != nil {
 			return err
 		}
-	}
-
-	return nil
-}
-
-// skipStatement skips tokens until we hit a semicolon or statement boundary.
-func (p *Parser) skipStatement() error {
-	// Skip tokens until semicolon, closing brace, or EOF
-	for !p.match(TokenSemi) && !p.match(TokenRBrace) && !p.match(TokenEOF) {
-		// Handle nested braces and brackets
-		if p.match(TokenLBrace) {
-			if err := p.skipBraceBlock(); err != nil {
-				return err
-			}
-			continue
-		}
-		if p.match(TokenLBracket) {
-			if err := p.skipAttrList(); err != nil {
-				return err
-			}
-			continue
-		}
-		p.advance()
-	}
-	return nil
-}
-
-// skipBraceBlock skips over a block enclosed in braces { ... }.
-func (p *Parser) skipBraceBlock() error {
-	if err := p.expect(TokenLBrace); err != nil {
-		return err
-	}
-
-	depth := 1
-	for depth > 0 && !p.match(TokenEOF) {
-		if p.match(TokenLBrace) {
-			depth++
-		} else if p.match(TokenRBrace) {
-			depth--
-		}
-		if depth > 0 {
-			p.advance()
-		}
-	}
-
-	if err := p.expect(TokenRBrace); err != nil {
-		return err
 	}
 
 	return nil
@@ -1238,13 +1180,14 @@ func Parse(r io.Reader) (*Graph, error) {
 //	    log.Fatal(err)
 //	}
 func ParseFile(path string) (*Graph, error) {
-	file, err := os.Open(path)
+	cleanPath := filepath.Clean(path)
+	file, err := os.Open(cleanPath)
 	if err != nil {
 		return nil, &ParseError{
 			Message: fmt.Sprintf("failed to open file: %v", err),
 		}
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	return Parse(file)
 }

@@ -89,7 +89,7 @@ func TestParseFile_ValidFile(t *testing.T) {
 	testFile := filepath.Join(tmpDir, "test.dot")
 
 	content := "digraph TestGraph { A -> B; B -> C; }"
-	err := os.WriteFile(testFile, []byte(content), 0644)
+	err := os.WriteFile(testFile, []byte(content), 0o600)
 	asrt.NoError(err, "Should write test file without error")
 
 	// Parse the file
@@ -183,9 +183,9 @@ func TestParse_RoundTrip_SimpleGraph(t *testing.T) {
 	g1 := NewGraph(Directed, WithName("TestGraph"))
 	nodeA := NewNode("A", WithLabel("Start"))
 	nodeB := NewNode("B", WithLabel("End"))
-	g1.AddNode(nodeA)
-	g1.AddNode(nodeB)
-	g1.AddEdge(nodeA, nodeB, WithEdgeLabel("connects"))
+	_ = g1.AddNode(nodeA)
+	_ = g1.AddNode(nodeB)
+	_, _ = g1.AddEdge(nodeA, nodeB, WithEdgeLabel("connects"))
 
 	// Convert to DOT
 	dot := g1.String()
@@ -228,21 +228,21 @@ func TestParse_RoundTrip_ComplexGraph(t *testing.T) {
 	nodeA := NewNode("A")
 	nodeB := NewNode("B")
 	nodeC := NewNode("C")
-	g1.AddNode(nodeA)
-	g1.AddNode(nodeB)
-	g1.AddNode(nodeC)
+	_ = g1.AddNode(nodeA)
+	_ = g1.AddNode(nodeB)
+	_ = g1.AddNode(nodeC)
 
 	// Add edges
-	g1.AddEdge(nodeA, nodeB)
-	g1.AddEdge(nodeB, nodeC)
+	_, _ = g1.AddEdge(nodeA, nodeB)
+	_, _ = g1.AddEdge(nodeB, nodeC)
 
 	// Add a subgraph
 	g1.Subgraph("cluster_0", func(sg *Subgraph) {
 		nodeD := NewNode("D")
 		nodeE := NewNode("E")
-		sg.AddNode(nodeD)
-		sg.AddNode(nodeE)
-		sg.AddEdge(nodeD, nodeE)
+		_ = sg.AddNode(nodeD)
+		_ = sg.AddNode(nodeE)
+		_, _ = sg.AddEdge(nodeD, nodeE)
 	})
 
 	// Convert to DOT
@@ -280,9 +280,9 @@ func TestParse_RoundTrip_UndirectedGraph(t *testing.T) {
 	g1 := NewGraph(Undirected, WithName("UndirectedGraph"))
 	nodeA := NewNode("A")
 	nodeB := NewNode("B")
-	g1.AddNode(nodeA)
-	g1.AddNode(nodeB)
-	g1.AddEdge(nodeA, nodeB)
+	_ = g1.AddNode(nodeA)
+	_ = g1.AddNode(nodeB)
+	_, _ = g1.AddEdge(nodeA, nodeB)
 
 	// Convert to DOT
 	dot := g1.String()
@@ -307,9 +307,9 @@ func TestParse_RoundTrip_StrictGraph(t *testing.T) {
 	g1 := NewGraph(Directed, Strict, WithName("StrictGraph"))
 	nodeA := NewNode("A")
 	nodeB := NewNode("B")
-	g1.AddNode(nodeA)
-	g1.AddNode(nodeB)
-	g1.AddEdge(nodeA, nodeB)
+	_ = g1.AddNode(nodeA)
+	_ = g1.AddNode(nodeB)
+	_, _ = g1.AddEdge(nodeA, nodeB)
 
 	// Convert to DOT
 	dot := g1.String()
