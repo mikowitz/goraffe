@@ -445,3 +445,216 @@ func TestParse_CompleteExample(t *testing.T) {
 	asrt.Equal("box", string(g.DefaultNodeAttrs().Shape()), "Default node shape should be box")
 	asrt.Equal("red", g.DefaultEdgeAttrs().Color(), "Default edge color should be red")
 }
+
+func TestParse_Subgraph_Named(t *testing.T) {
+	asrt := assert.New(t)
+
+	input := `digraph {
+		subgraph cluster_0 {
+			A;
+			B;
+		}
+	}`
+
+	parser := newParser(input)
+	g, err := parser.parseGraph()
+
+	asrt.NoError(err, "Should parse named subgraph without error")
+	asrt.NotNil(g, "Graph should not be nil")
+	asrt.Equal(1, len(g.Subgraphs()), "Graph should have 1 subgraph")
+
+	sg := g.Subgraphs()[0]
+	asrt.Equal("cluster_0", sg.Name(), "Subgraph name should be cluster_0")
+	asrt.True(sg.IsCluster(), "Subgraph should be a cluster")
+	asrt.Equal(2, len(sg.Nodes()), "Subgraph should have 2 nodes")
+
+	// Nodes should also be in the parent graph
+	asrt.NotNil(g.GetNode("A"), "Node A should exist in parent graph")
+	asrt.NotNil(g.GetNode("B"), "Node B should exist in parent graph")
+}
+
+func TestParse_Subgraph_Anonymous(t *testing.T) {
+	asrt := assert.New(t)
+
+	input := `digraph {
+		{
+			A;
+			B;
+		}
+	}`
+
+	parser := newParser(input)
+	g, err := parser.parseGraph()
+
+	asrt.NoError(err, "Should parse anonymous subgraph without error")
+	asrt.NotNil(g, "Graph should not be nil")
+	asrt.Equal(1, len(g.Subgraphs()), "Graph should have 1 subgraph")
+
+	sg := g.Subgraphs()[0]
+	asrt.Equal("", sg.Name(), "Anonymous subgraph should have empty name")
+	asrt.False(sg.IsCluster(), "Anonymous subgraph should not be a cluster")
+	asrt.Equal(2, len(sg.Nodes()), "Subgraph should have 2 nodes")
+}
+
+func TestParse_Subgraph_Cluster(t *testing.T) {
+	asrt := assert.New(t)
+
+	input := `digraph {
+		subgraph cluster_main {
+			A;
+			B;
+		}
+	}`
+
+	parser := newParser(input)
+	g, err := parser.parseGraph()
+
+	asrt.NoError(err, "Should parse cluster subgraph without error")
+	asrt.NotNil(g, "Graph should not be nil")
+
+	sg := g.Subgraphs()[0]
+	asrt.True(sg.IsCluster(), "Subgraph should be identified as a cluster")
+	asrt.Equal("cluster_main", sg.Name(), "Cluster name should be cluster_main")
+}
+
+func TestParse_Subgraph_Nested(t *testing.T) {
+	asrt := assert.New(t)
+
+	input := `digraph {
+		subgraph cluster_outer {
+			A;
+			subgraph cluster_inner {
+				B;
+				C;
+			}
+		}
+	}`
+
+	parser := newParser(input)
+	g, err := parser.parseGraph()
+
+	asrt.NoError(err, "Should parse nested subgraphs without error")
+	asrt.NotNil(g, "Graph should not be nil")
+	asrt.Equal(1, len(g.Subgraphs()), "Graph should have 1 top-level subgraph")
+
+	outer := g.Subgraphs()[0]
+	asrt.Equal("cluster_outer", outer.Name(), "Outer subgraph name should be cluster_outer")
+	asrt.Equal(1, len(outer.Nodes()), "Outer subgraph should have 1 node")
+
+	// Check nested subgraph
+	asrt.Equal(1, len(outer.Subgraphs()), "Outer subgraph should have 1 nested subgraph")
+	inner := outer.Subgraphs()[0]
+	asrt.Equal("cluster_inner", inner.Name(), "Inner subgraph name should be cluster_inner")
+	asrt.Equal(2, len(inner.Nodes()), "Inner subgraph should have 2 nodes")
+
+	// All nodes should be in parent graph
+	asrt.Equal(3, len(g.Nodes()), "Graph should have 3 nodes total")
+}
+
+func TestParse_Subgraph_WithAttributes(t *testing.T) {
+	asrt := assert.New(t)
+
+	input := `digraph {
+		subgraph cluster_styled {
+			A [shape=box];
+			B [color=red];
+			A -> B [label="edge"];
+		}
+	}`
+
+	parser := newParser(input)
+	g, err := parser.parseGraph()
+
+	asrt.NoError(err, "Should parse subgraph with attributes without error")
+	asrt.NotNil(g, "Graph should not be nil")
+
+	sg := g.Subgraphs()[0]
+	asrt.Equal(2, len(sg.Nodes()), "Subgraph should have 2 nodes")
+	asrt.Equal(1, len(sg.Edges()), "Subgraph should have 1 edge")
+
+	// Check node attributes
+	nodeA := g.GetNode("A")
+	asrt.NotNil(nodeA, "Node A should exist")
+	asrt.Equal("box", string(nodeA.Attrs().Shape()), "Node A should have shape=box")
+
+	nodeB := g.GetNode("B")
+	asrt.NotNil(nodeB, "Node B should exist")
+	asrt.Equal("red", nodeB.Attrs().Color(), "Node B should have color=red")
+
+	// Check edge attributes
+	edge := sg.Edges()[0]
+	asrt.Equal("edge", edge.Attrs().Label(), "Edge should have label")
+}
+
+func TestParse_Subgraph_MultipleSubgraphs(t *testing.T) {
+	asrt := assert.New(t)
+
+	input := `digraph {
+		subgraph cluster_1 {
+			A;
+		}
+		subgraph cluster_2 {
+			B;
+		}
+	}`
+
+	parser := newParser(input)
+	g, err := parser.parseGraph()
+
+	asrt.NoError(err, "Should parse multiple subgraphs without error")
+	asrt.NotNil(g, "Graph should not be nil")
+	asrt.Equal(2, len(g.Subgraphs()), "Graph should have 2 subgraphs")
+
+	asrt.Equal("cluster_1", g.Subgraphs()[0].Name(), "First subgraph name")
+	asrt.Equal("cluster_2", g.Subgraphs()[1].Name(), "Second subgraph name")
+}
+
+func TestParse_Subgraph_WithEdges(t *testing.T) {
+	asrt := assert.New(t)
+
+	input := `digraph {
+		subgraph cluster_0 {
+			A -> B -> C;
+		}
+	}`
+
+	parser := newParser(input)
+	g, err := parser.parseGraph()
+
+	asrt.NoError(err, "Should parse subgraph with edge chain without error")
+	asrt.NotNil(g, "Graph should not be nil")
+
+	sg := g.Subgraphs()[0]
+	asrt.Equal(3, len(sg.Nodes()), "Subgraph should have 3 nodes")
+	asrt.Equal(2, len(sg.Edges()), "Subgraph should have 2 edges")
+
+	// Check edges are in correct order
+	edges := sg.Edges()
+	asrt.Equal("A", edges[0].From().ID(), "First edge should be from A")
+	asrt.Equal("B", edges[0].To().ID(), "First edge should be to B")
+	asrt.Equal("B", edges[1].From().ID(), "Second edge should be from B")
+	asrt.Equal("C", edges[1].To().ID(), "Second edge should be to C")
+}
+
+func TestParse_Subgraph_DefaultAttributes(t *testing.T) {
+	asrt := assert.New(t)
+
+	input := `digraph {
+		subgraph cluster_0 {
+			node [shape=circle];
+			edge [color=blue];
+			A;
+			A -> B;
+		}
+	}`
+
+	parser := newParser(input)
+	g, err := parser.parseGraph()
+
+	asrt.NoError(err, "Should parse subgraph with default attributes without error")
+	asrt.NotNil(g, "Graph should not be nil")
+
+	// Default attributes set in subgraph should affect parent graph
+	asrt.Equal("circle", string(g.DefaultNodeAttrs().Shape()), "Default node shape should be circle")
+	asrt.Equal("blue", g.DefaultEdgeAttrs().Color(), "Default edge color should be blue")
+}

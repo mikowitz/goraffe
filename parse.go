@@ -515,13 +515,14 @@ func (p *Parser) parseStmt(g *Graph) error {
 	}
 
 	if p.matchKeyword("subgraph") {
-		// Skip subgraph (will implement later)
-		return p.skipSubgraph()
+		_, err := p.parseSubgraph(g)
+		return err
 	}
 
 	// Check for bare '{' (anonymous subgraph)
 	if p.match(TokenLBrace) {
-		return p.skipSubgraph()
+		_, err := p.parseSubgraph(g)
+		return err
 	}
 
 	// Try to parse as node or edge statement
@@ -796,31 +797,209 @@ func (p *Parser) skipAttrList() error {
 	return nil
 }
 
-// skipSubgraph skips over a subgraph statement.
-func (p *Parser) skipSubgraph() error {
-	// Skip 'subgraph' keyword if present
+// parseSubgraph parses a subgraph statement.
+// Syntax: [subgraph [ID]] { stmt_list }
+// Returns the created subgraph.
+func (p *Parser) parseSubgraph(g *Graph) (*Subgraph, error) {
+	// Parse 'subgraph' keyword if present
 	if p.matchKeyword("subgraph") {
 		p.advance()
-		// Skip optional name
-		if p.current.Type == TokenIdent || p.current.Type == TokenString {
-			p.advance()
-		}
+	}
+
+	// Parse optional subgraph name
+	var name string
+	if p.current.Type == TokenIdent || p.current.Type == TokenString {
+		name = p.current.Value
+		p.advance()
 	}
 
 	// Expect opening brace
 	if err := p.expect(TokenLBrace); err != nil {
+		return nil, err
+	}
+
+	// Parse subgraph contents and create subgraph
+	var parseErr error
+	sg := g.Subgraph(name, func(s *Subgraph) {
+		// Parse statements into this subgraph
+		parseErr = p.parseSubgraphStmts(s, g)
+	})
+
+	if parseErr != nil {
+		return nil, parseErr
+	}
+
+	// Expect closing brace
+	if err := p.expect(TokenRBrace); err != nil {
+		return nil, err
+	}
+
+	return sg, nil
+}
+
+// parseSubgraphStmts parses a list of statements within a subgraph.
+// Nodes and edges are added to the subgraph, while default attributes affect the parent graph.
+func (p *Parser) parseSubgraphStmts(sg *Subgraph, g *Graph) error {
+	for !p.match(TokenRBrace) && !p.match(TokenEOF) {
+		// Skip optional semicolons
+		if p.match(TokenSemi) {
+			p.advance()
+			continue
+		}
+
+		// Parse statement in subgraph context
+		if err := p.parseSubgraphStmt(sg, g); err != nil {
+			return err
+		}
+
+		// Skip optional trailing semicolon
+		if p.match(TokenSemi) {
+			p.advance()
+		}
+	}
+	return nil
+}
+
+// parseSubgraphStmt parses a single statement within a subgraph context.
+func (p *Parser) parseSubgraphStmt(sg *Subgraph, g *Graph) error {
+	// Check for keywords: node, edge, graph
+	if p.matchKeyword("node") || p.matchKeyword("edge") || p.matchKeyword("graph") {
+		// Default attribute statements - these affect the parent graph
+		keyword := p.current.Value
+		p.advance()
+		if p.match(TokenLBracket) {
+			attrs, err := p.parseAttrList()
+			if err != nil {
+				return err
+			}
+			// Apply default attributes to parent graph
+			return p.applyDefaultAttrs(g, keyword, attrs)
+		}
+		return nil
+	}
+
+	// Check for nested subgraph
+	if p.matchKeyword("subgraph") {
+		_, err := p.parseNestedSubgraph(sg)
 		return err
 	}
 
-	// Skip until closing brace
-	depth := 1
-	for depth > 0 && !p.match(TokenEOF) {
-		if p.match(TokenLBrace) {
-			depth++
-		} else if p.match(TokenRBrace) {
-			depth--
-		}
+	// Check for bare '{' (anonymous nested subgraph)
+	if p.match(TokenLBrace) {
+		_, err := p.parseNestedSubgraph(sg)
+		return err
+	}
+
+	// Parse node or edge statement into this subgraph
+	return p.parseNodeOrEdgeStmtInSubgraph(sg)
+}
+
+// parseNestedSubgraph parses a nested subgraph within a parent subgraph.
+func (p *Parser) parseNestedSubgraph(parent *Subgraph) (*Subgraph, error) {
+	// Parse 'subgraph' keyword if present
+	if p.matchKeyword("subgraph") {
 		p.advance()
+	}
+
+	// Parse optional subgraph name
+	var name string
+	if p.current.Type == TokenIdent || p.current.Type == TokenString {
+		name = p.current.Value
+		p.advance()
+	}
+
+	// Expect opening brace
+	if err := p.expect(TokenLBrace); err != nil {
+		return nil, err
+	}
+
+	// Parse nested subgraph contents
+	var parseErr error
+	sg := parent.Subgraph(name, func(s *Subgraph) {
+		parseErr = p.parseSubgraphStmts(s, parent.parent)
+	})
+
+	if parseErr != nil {
+		return nil, parseErr
+	}
+
+	// Expect closing brace
+	if err := p.expect(TokenRBrace); err != nil {
+		return nil, err
+	}
+
+	return sg, nil
+}
+
+// parseNodeOrEdgeStmtInSubgraph parses a node or edge statement and adds it to the subgraph.
+func (p *Parser) parseNodeOrEdgeStmtInSubgraph(sg *Subgraph) error {
+	// Parse first ID
+	id, err := p.parseID()
+	if err != nil {
+		return err
+	}
+
+	// Check if this is an edge statement (next token is arrow)
+	if p.match(TokenArrow) {
+		return p.parseEdgeStmtInSubgraph(sg, id)
+	}
+
+	// Otherwise, it's a node statement
+	return p.parseNodeStmtInSubgraph(sg, id)
+}
+
+// parseNodeStmtInSubgraph parses a node statement and adds it to the subgraph.
+func (p *Parser) parseNodeStmtInSubgraph(sg *Subgraph, id string) error {
+	// Parse optional attributes
+	var attrs map[string]string
+	if p.match(TokenLBracket) {
+		var err error
+		attrs, err = p.parseAttrList()
+		if err != nil {
+			return err
+		}
+	}
+
+	// Create node with attributes
+	nodeOpts := p.mapNodeAttributes(attrs)
+	node := NewNode(id, nodeOpts...)
+	return sg.AddNode(node)
+}
+
+// parseEdgeStmtInSubgraph parses an edge statement and adds it to the subgraph.
+func (p *Parser) parseEdgeStmtInSubgraph(sg *Subgraph, firstID string) error {
+	nodes := []string{firstID}
+
+	// Parse edge chain
+	for p.match(TokenArrow) {
+		p.advance() // consume arrow
+
+		// Parse next node ID
+		id, err := p.parseID()
+		if err != nil {
+			return err
+		}
+		nodes = append(nodes, id)
+	}
+
+	// Parse optional edge attributes
+	var attrs map[string]string
+	if p.match(TokenLBracket) {
+		var err error
+		attrs, err = p.parseAttrList()
+		if err != nil {
+			return err
+		}
+	}
+
+	// Create edges for the chain
+	edgeOpts := p.mapEdgeAttributes(attrs)
+	for i := 0; i < len(nodes)-1; i++ {
+		from := NewNode(nodes[i])
+		to := NewNode(nodes[i+1])
+		if _, err := sg.AddEdge(from, to, edgeOpts...); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -832,7 +1011,7 @@ func (p *Parser) skipStatement() error {
 	for !p.match(TokenSemi) && !p.match(TokenRBrace) && !p.match(TokenEOF) {
 		// Handle nested braces and brackets
 		if p.match(TokenLBrace) {
-			if err := p.skipSubgraph(); err != nil {
+			if err := p.skipBraceBlock(); err != nil {
 				return err
 			}
 			continue
@@ -845,5 +1024,30 @@ func (p *Parser) skipStatement() error {
 		}
 		p.advance()
 	}
+	return nil
+}
+
+// skipBraceBlock skips over a block enclosed in braces { ... }.
+func (p *Parser) skipBraceBlock() error {
+	if err := p.expect(TokenLBrace); err != nil {
+		return err
+	}
+
+	depth := 1
+	for depth > 0 && !p.match(TokenEOF) {
+		if p.match(TokenLBrace) {
+			depth++
+		} else if p.match(TokenRBrace) {
+			depth--
+		}
+		if depth > 0 {
+			p.advance()
+		}
+	}
+
+	if err := p.expect(TokenRBrace); err != nil {
+		return err
+	}
+
 	return nil
 }
