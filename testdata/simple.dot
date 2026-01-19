@@ -1,0 +1,5 @@
+digraph SimpleGraph {
+	A -> B;
+	B -> C;
+	C -> A;
+}

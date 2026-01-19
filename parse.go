@@ -4,6 +4,8 @@ package goraffe
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"strings"
 	"unicode"
 )
@@ -1124,4 +1126,123 @@ func (p *Parser) skipBraceBlock() error {
 	}
 
 	return nil
+}
+
+// ParseError represents an error that occurred during parsing with location information.
+type ParseError struct {
+	Message string // Error message
+	Line    int    // Line number where error occurred (1-based)
+	Col     int    // Column number where error occurred (1-based)
+	Snippet string // Surrounding context from the input
+}
+
+// Error implements the error interface.
+func (e *ParseError) Error() string {
+	if e.Line > 0 && e.Col > 0 {
+		return fmt.Sprintf("parse error at %d:%d: %s", e.Line, e.Col, e.Message)
+	}
+	return fmt.Sprintf("parse error: %s", e.Message)
+}
+
+// wrapParseError wraps an error with location information from the current token.
+func (p *Parser) wrapParseError(err error) *ParseError {
+	if err == nil {
+		return nil
+	}
+
+	// If it's already a ParseError, return it as-is
+	if perr, ok := err.(*ParseError); ok {
+		return perr
+	}
+
+	// Extract a snippet from the input around the error location
+	snippet := p.extractSnippet()
+
+	return &ParseError{
+		Message: err.Error(),
+		Line:    p.current.Line,
+		Col:     p.current.Col,
+		Snippet: snippet,
+	}
+}
+
+// extractSnippet extracts a few lines of context around the current token.
+func (p *Parser) extractSnippet() string {
+	if p.lexer == nil || p.lexer.input == "" {
+		return ""
+	}
+
+	lines := strings.Split(p.lexer.input, "\n")
+	if len(lines) == 0 || p.current.Line < 1 || p.current.Line > len(lines) {
+		return ""
+	}
+
+	// Get the current line (1-based indexing)
+	lineIdx := p.current.Line - 1
+	currentLine := lines[lineIdx]
+
+	// Create a pointer to the error location
+	pointer := strings.Repeat(" ", p.current.Col-1) + "^"
+
+	return fmt.Sprintf("%s\n%s", currentLine, pointer)
+}
+
+// ParseString parses a DOT graph from a string.
+// Returns the parsed Graph or a ParseError if parsing fails.
+//
+// Example:
+//
+//	g, err := goraffe.ParseString("digraph { A -> B; }")
+//	if err != nil {
+//	    log.Fatal(err)
+//	}
+func ParseString(dot string) (*Graph, error) {
+	parser := newParser(dot)
+	g, err := parser.parseGraph()
+	if err != nil {
+		return nil, parser.wrapParseError(err)
+	}
+	return g, nil
+}
+
+// Parse parses a DOT graph from an io.Reader.
+// Returns the parsed Graph or a ParseError if parsing fails.
+//
+// Example:
+//
+//	file, _ := os.Open("graph.dot")
+//	defer file.Close()
+//	g, err := goraffe.Parse(file)
+//	if err != nil {
+//	    log.Fatal(err)
+//	}
+func Parse(r io.Reader) (*Graph, error) {
+	data, err := io.ReadAll(r)
+	if err != nil {
+		return nil, &ParseError{
+			Message: fmt.Sprintf("failed to read input: %v", err),
+		}
+	}
+	return ParseString(string(data))
+}
+
+// ParseFile parses a DOT graph from a file.
+// Returns the parsed Graph or a ParseError if parsing fails.
+//
+// Example:
+//
+//	g, err := goraffe.ParseFile("graph.dot")
+//	if err != nil {
+//	    log.Fatal(err)
+//	}
+func ParseFile(path string) (*Graph, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, &ParseError{
+			Message: fmt.Sprintf("failed to open file: %v", err),
+		}
+	}
+	defer file.Close()
+
+	return Parse(file)
 }

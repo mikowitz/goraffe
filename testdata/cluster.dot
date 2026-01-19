@@ -1,0 +1,21 @@
+digraph ClusterGraph {
+	// Main cluster
+	subgraph cluster_0 {
+		A -> B;
+		B -> C;
+	}
+
+	// Second cluster
+	subgraph cluster_1 {
+		D;
+		E;
+		D -> E;
+	}
+
+	// Connections between clusters
+	C -> D;
+
+	// External node
+	F;
+	E -> F;
+}
