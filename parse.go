@@ -496,17 +496,20 @@ func (p *Parser) parseStmtList(g *Graph) error {
 	return nil
 }
 
-// parseStmt parses a single statement (skeleton implementation).
-// Currently just skips unknown statements to allow basic graph parsing.
+// parseStmt parses a single statement.
 func (p *Parser) parseStmt(g *Graph) error {
-	// For now, just recognize and skip different statement types
-
 	// Check for keywords: node, edge, graph, subgraph
 	if p.matchKeyword("node") || p.matchKeyword("edge") || p.matchKeyword("graph") {
-		// Skip keyword and following attribute list if present
+		// Default attribute statements
+		keyword := p.current.Value
 		p.advance()
 		if p.match(TokenLBracket) {
-			return p.skipAttrList()
+			attrs, err := p.parseAttrList()
+			if err != nil {
+				return err
+			}
+			// Apply default attributes based on keyword
+			return p.applyDefaultAttrs(g, keyword, attrs)
 		}
 		return nil
 	}
@@ -521,9 +524,257 @@ func (p *Parser) parseStmt(g *Graph) error {
 		return p.skipSubgraph()
 	}
 
-	// Otherwise, skip any node or edge statement
-	// This is a placeholder - we'll implement proper parsing later
-	return p.skipStatement()
+	// Try to parse as node or edge statement
+	return p.parseNodeOrEdgeStmt(g)
+}
+
+// parseID parses an identifier (ID in DOT grammar).
+// Can be: identifier, quoted string, number, or HTML string.
+func (p *Parser) parseID() (string, error) {
+	switch p.current.Type {
+	case TokenIdent, TokenString, TokenNumber, TokenHTML:
+		id := p.current.Value
+		p.advance()
+		return id, nil
+	default:
+		return "", fmt.Errorf("expected ID, got %s at %d:%d", p.current.Type, p.current.Line, p.current.Col)
+	}
+}
+
+// parseAttrList parses an attribute list [attr=value, attr=value, ...].
+// Returns a map of attribute key-value pairs.
+func (p *Parser) parseAttrList() (map[string]string, error) {
+	attrs := make(map[string]string)
+
+	if err := p.expect(TokenLBracket); err != nil {
+		return nil, err
+	}
+
+	for !p.match(TokenRBracket) && !p.match(TokenEOF) {
+		// Parse attribute name
+		if !p.match(TokenIdent) {
+			return nil, fmt.Errorf("expected attribute name, got %s at %d:%d", p.current.Type, p.current.Line, p.current.Col)
+		}
+		name := p.current.Value
+		p.advance()
+
+		// Expect '='
+		if err := p.expect(TokenEqual); err != nil {
+			return nil, err
+		}
+
+		// Parse attribute value
+		value, err := p.parseID()
+		if err != nil {
+			return nil, err
+		}
+
+		attrs[name] = value
+
+		// Skip optional comma or semicolon
+		if p.match(TokenComma) || p.match(TokenSemi) {
+			p.advance()
+		}
+	}
+
+	if err := p.expect(TokenRBracket); err != nil {
+		return nil, err
+	}
+
+	return attrs, nil
+}
+
+// parseNodeOrEdgeStmt parses either a node or edge statement.
+// This is tricky because we need lookahead to distinguish them.
+func (p *Parser) parseNodeOrEdgeStmt(g *Graph) error {
+	// Parse first ID
+	id, err := p.parseID()
+	if err != nil {
+		return err
+	}
+
+	// Check if this is an edge statement (next token is arrow)
+	if p.match(TokenArrow) {
+		return p.parseEdgeStmt(g, id)
+	}
+
+	// Otherwise, it's a node statement
+	return p.parseNodeStmt(g, id)
+}
+
+// parseNodeStmt parses a node statement: nodeID [attributes].
+func (p *Parser) parseNodeStmt(g *Graph, id string) error {
+	// Parse optional attributes
+	var attrs map[string]string
+	if p.match(TokenLBracket) {
+		var err error
+		attrs, err = p.parseAttrList()
+		if err != nil {
+			return err
+		}
+	}
+
+	// Create node with attributes
+	nodeOpts := p.mapNodeAttributes(attrs)
+	node := NewNode(id, nodeOpts...)
+	return g.AddNode(node)
+}
+
+// parseEdgeStmt parses an edge statement: nodeID arrow nodeID ... [attributes].
+// Handles edge chains: A -> B -> C creates edges A->B and B->C.
+func (p *Parser) parseEdgeStmt(g *Graph, firstID string) error {
+	nodes := []string{firstID}
+
+	// Parse edge chain
+	for p.match(TokenArrow) {
+		p.advance() // consume arrow
+
+		// Parse next node ID
+		id, err := p.parseID()
+		if err != nil {
+			return err
+		}
+		nodes = append(nodes, id)
+	}
+
+	// Parse optional edge attributes
+	var attrs map[string]string
+	if p.match(TokenLBracket) {
+		var err error
+		attrs, err = p.parseAttrList()
+		if err != nil {
+			return err
+		}
+	}
+
+	// Create edges for the chain
+	edgeOpts := p.mapEdgeAttributes(attrs)
+	for i := 0; i < len(nodes)-1; i++ {
+		from := NewNode(nodes[i])
+		to := NewNode(nodes[i+1])
+		if _, err := g.AddEdge(from, to, edgeOpts...); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// mapNodeAttributes maps parsed attributes to NodeOption functions.
+func (p *Parser) mapNodeAttributes(attrs map[string]string) []NodeOption {
+	if attrs == nil {
+		return nil
+	}
+
+	opts := []NodeOption{}
+
+	// Map known attributes
+	if label, ok := attrs["label"]; ok {
+		opts = append(opts, WithLabel(label))
+	}
+	if shape, ok := attrs["shape"]; ok {
+		opts = append(opts, withShape(Shape(shape)))
+	}
+	if color, ok := attrs["color"]; ok {
+		opts = append(opts, WithColor(color))
+	}
+	if fillcolor, ok := attrs["fillcolor"]; ok {
+		opts = append(opts, WithFillColor(fillcolor))
+	}
+	if fontname, ok := attrs["fontname"]; ok {
+		opts = append(opts, WithFontName(fontname))
+	}
+	if fontsize, ok := attrs["fontsize"]; ok {
+		// Parse fontsize as float - ignore errors for now
+		var size float64
+		fmt.Sscanf(fontsize, "%f", &size)
+		if size > 0 {
+			opts = append(opts, WithFontSize(size))
+		}
+	}
+
+	// Add custom attributes for unknown ones
+	knownAttrs := map[string]bool{
+		"label": true, "shape": true, "color": true,
+		"fillcolor": true, "fontname": true, "fontsize": true,
+	}
+	for key, value := range attrs {
+		if !knownAttrs[key] {
+			opts = append(opts, WithNodeAttribute(key, value))
+		}
+	}
+
+	return opts
+}
+
+// mapEdgeAttributes maps parsed attributes to EdgeOption functions.
+func (p *Parser) mapEdgeAttributes(attrs map[string]string) []EdgeOption {
+	if attrs == nil {
+		return nil
+	}
+
+	opts := []EdgeOption{}
+
+	// Map known attributes
+	if label, ok := attrs["label"]; ok {
+		opts = append(opts, WithEdgeLabel(label))
+	}
+	if color, ok := attrs["color"]; ok {
+		opts = append(opts, WithEdgeColor(color))
+	}
+	if style, ok := attrs["style"]; ok {
+		opts = append(opts, WithEdgeStyle(EdgeStyle(style)))
+	}
+	if arrowhead, ok := attrs["arrowhead"]; ok {
+		opts = append(opts, WithArrowHead(ArrowType(arrowhead)))
+	}
+	if arrowtail, ok := attrs["arrowtail"]; ok {
+		opts = append(opts, WithArrowTail(ArrowType(arrowtail)))
+	}
+	if weight, ok := attrs["weight"]; ok {
+		var w float64
+		fmt.Sscanf(weight, "%f", &w)
+		if w > 0 {
+			opts = append(opts, WithWeight(w))
+		}
+	}
+
+	// Add custom attributes for unknown ones
+	knownAttrs := map[string]bool{
+		"label": true, "color": true, "style": true,
+		"arrowhead": true, "arrowtail": true, "weight": true,
+	}
+	for key, value := range attrs {
+		if !knownAttrs[key] {
+			opts = append(opts, WithEdgeAttribute(key, value))
+		}
+	}
+
+	return opts
+}
+
+// applyDefaultAttrs applies default attributes to the graph.
+func (p *Parser) applyDefaultAttrs(g *Graph, keyword string, attrs map[string]string) error {
+	switch keyword {
+	case "node":
+		opts := p.mapNodeAttributes(attrs)
+		// Apply to graph's default node attributes
+		for _, opt := range opts {
+			opt.applyNode(g.DefaultNodeAttrs())
+		}
+	case "edge":
+		opts := p.mapEdgeAttributes(attrs)
+		// Apply to graph's default edge attributes
+		for _, opt := range opts {
+			opt.applyEdge(g.DefaultEdgeAttrs())
+		}
+	case "graph":
+		// Apply graph attributes
+		for key, value := range attrs {
+			g.Attrs().setCustom(key, value)
+		}
+	}
+	return nil
 }
 
 // skipAttrList skips over an attribute list [...].

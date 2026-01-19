@@ -232,3 +232,216 @@ func TestParse_SemicolonHandling(t *testing.T) {
 		})
 	}
 }
+
+func TestParse_SingleNode(t *testing.T) {
+	asrt := assert.New(t)
+
+	input := "digraph { A; }"
+	parser := newParser(input)
+	g, err := parser.parseGraph()
+
+	asrt.NoError(err, "Should parse single node without error")
+	asrt.NotNil(g, "Graph should not be nil")
+	asrt.NotNil(g.GetNode("A"), "Node A should exist")
+	asrt.Equal(1, len(g.Nodes()), "Graph should have 1 node")
+}
+
+func TestParse_NodeWithAttributes(t *testing.T) {
+	asrt := assert.New(t)
+
+	input := `digraph { A [shape=box, label="Node A", color=red]; }`
+	parser := newParser(input)
+	g, err := parser.parseGraph()
+
+	asrt.NoError(err, "Should parse node with attributes without error")
+	asrt.NotNil(g, "Graph should not be nil")
+
+	node := g.GetNode("A")
+	asrt.NotNil(node, "Node A should exist")
+	asrt.Equal("box", string(node.Attrs().Shape()), "Node should have shape=box")
+	asrt.Equal("Node A", node.Attrs().Label(), "Node should have label")
+	asrt.Equal("red", node.Attrs().Color(), "Node should have color")
+}
+
+func TestParse_SingleEdge(t *testing.T) {
+	asrt := assert.New(t)
+
+	input := "digraph { A -> B; }"
+	parser := newParser(input)
+	g, err := parser.parseGraph()
+
+	asrt.NoError(err, "Should parse single edge without error")
+	asrt.NotNil(g, "Graph should not be nil")
+	asrt.Equal(2, len(g.Nodes()), "Graph should have 2 nodes")
+	asrt.Equal(1, len(g.Edges()), "Graph should have 1 edge")
+
+	edge := g.Edges()[0]
+	asrt.Equal("A", edge.From().ID(), "Edge should be from A")
+	asrt.Equal("B", edge.To().ID(), "Edge should be to B")
+}
+
+func TestParse_EdgeWithAttributes(t *testing.T) {
+	asrt := assert.New(t)
+
+	input := `digraph { A -> B [label="edge label", color=blue]; }`
+	parser := newParser(input)
+	g, err := parser.parseGraph()
+
+	asrt.NoError(err, "Should parse edge with attributes without error")
+	asrt.NotNil(g, "Graph should not be nil")
+	asrt.Equal(1, len(g.Edges()), "Graph should have 1 edge")
+
+	edge := g.Edges()[0]
+	asrt.Equal("edge label", edge.Attrs().Label(), "Edge should have label")
+	asrt.Equal("blue", edge.Attrs().Color(), "Edge should have color")
+}
+
+func TestParse_EdgeChain(t *testing.T) {
+	asrt := assert.New(t)
+
+	input := "digraph { A -> B -> C; }"
+	parser := newParser(input)
+	g, err := parser.parseGraph()
+
+	asrt.NoError(err, "Should parse edge chain without error")
+	asrt.NotNil(g, "Graph should not be nil")
+	asrt.Equal(3, len(g.Nodes()), "Graph should have 3 nodes")
+	asrt.Equal(2, len(g.Edges()), "Graph should have 2 edges (A->B and B->C)")
+
+	edges := g.Edges()
+	asrt.Equal("A", edges[0].From().ID(), "First edge should be from A")
+	asrt.Equal("B", edges[0].To().ID(), "First edge should be to B")
+	asrt.Equal("B", edges[1].From().ID(), "Second edge should be from B")
+	asrt.Equal("C", edges[1].To().ID(), "Second edge should be to C")
+}
+
+func TestParse_MixedNodesAndEdges(t *testing.T) {
+	asrt := assert.New(t)
+
+	input := `digraph {
+		A [shape=box];
+		B [label="Node B"];
+		A -> B [label="edge"];
+		C;
+		B -> C;
+	}`
+
+	parser := newParser(input)
+	g, err := parser.parseGraph()
+
+	asrt.NoError(err, "Should parse mixed nodes and edges without error")
+	asrt.NotNil(g, "Graph should not be nil")
+	asrt.Equal(3, len(g.Nodes()), "Graph should have 3 nodes")
+	asrt.Equal(2, len(g.Edges()), "Graph should have 2 edges")
+
+	nodeA := g.GetNode("A")
+	asrt.NotNil(nodeA, "Node A should exist")
+	asrt.Equal("box", string(nodeA.Attrs().Shape()), "Node A should have shape=box")
+
+	nodeB := g.GetNode("B")
+	asrt.NotNil(nodeB, "Node B should exist")
+	asrt.Equal("Node B", nodeB.Attrs().Label(), "Node B should have label")
+}
+
+func TestParse_DefaultNodeAttrs(t *testing.T) {
+	asrt := assert.New(t)
+
+	input := `digraph {
+		node [shape=circle, color=red];
+		A;
+		B;
+	}`
+
+	parser := newParser(input)
+	g, err := parser.parseGraph()
+
+	asrt.NoError(err, "Should parse default node attributes without error")
+	asrt.NotNil(g, "Graph should not be nil")
+
+	defaultAttrs := g.DefaultNodeAttrs()
+	asrt.Equal("circle", string(defaultAttrs.Shape()), "Default shape should be circle")
+	asrt.Equal("red", defaultAttrs.Color(), "Default color should be red")
+}
+
+func TestParse_DefaultEdgeAttrs(t *testing.T) {
+	asrt := assert.New(t)
+
+	input := `digraph {
+		edge [color=blue, style=dashed];
+		A -> B;
+	}`
+
+	parser := newParser(input)
+	g, err := parser.parseGraph()
+
+	asrt.NoError(err, "Should parse default edge attributes without error")
+	asrt.NotNil(g, "Graph should not be nil")
+
+	defaultAttrs := g.DefaultEdgeAttrs()
+	asrt.Equal("blue", defaultAttrs.Color(), "Default edge color should be blue")
+	asrt.Equal("dashed", string(defaultAttrs.Style()), "Default edge style should be dashed")
+}
+
+func TestParse_QuotedStrings(t *testing.T) {
+	asrt := assert.New(t)
+
+	input := `digraph {
+		"Node 1" -> "Node 2" [label="my edge"];
+	}`
+
+	parser := newParser(input)
+	g, err := parser.parseGraph()
+
+	asrt.NoError(err, "Should parse quoted node IDs without error")
+	asrt.NotNil(g, "Graph should not be nil")
+	asrt.NotNil(g.GetNode("Node 1"), "Node 'Node 1' should exist")
+	asrt.NotNil(g.GetNode("Node 2"), "Node 'Node 2' should exist")
+}
+
+func TestParse_Numbers(t *testing.T) {
+	asrt := assert.New(t)
+
+	input := "digraph { 1 -> 2 -> 3; }"
+	parser := newParser(input)
+	g, err := parser.parseGraph()
+
+	asrt.NoError(err, "Should parse numeric node IDs without error")
+	asrt.NotNil(g, "Graph should not be nil")
+	asrt.Equal(3, len(g.Nodes()), "Graph should have 3 nodes")
+	asrt.NotNil(g.GetNode("1"), "Node 1 should exist")
+	asrt.NotNil(g.GetNode("2"), "Node 2 should exist")
+	asrt.NotNil(g.GetNode("3"), "Node 3 should exist")
+}
+
+func TestParse_CompleteExample(t *testing.T) {
+	asrt := assert.New(t)
+
+	input := `digraph G {
+		// Set default attributes
+		node [shape=box];
+		edge [color=red];
+
+		// Define nodes
+		A [label="Start"];
+		B [label="Middle", color=blue];
+		C [label="End"];
+
+		// Define edges
+		A -> B [label="first"];
+		B -> C [label="second"];
+		A -> C [style=dashed];
+	}`
+
+	parser := newParser(input)
+	g, err := parser.parseGraph()
+
+	asrt.NoError(err, "Should parse complete example without error")
+	asrt.NotNil(g, "Graph should not be nil")
+	asrt.Equal("G", g.Name(), "Graph name should be G")
+	asrt.Equal(3, len(g.Nodes()), "Graph should have 3 nodes")
+	asrt.Equal(3, len(g.Edges()), "Graph should have 3 edges")
+
+	// Check default attributes were applied
+	asrt.Equal("box", string(g.DefaultNodeAttrs().Shape()), "Default node shape should be box")
+	asrt.Equal("red", g.DefaultEdgeAttrs().Color(), "Default edge color should be red")
+}
