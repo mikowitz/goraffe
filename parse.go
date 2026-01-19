@@ -1,5 +1,5 @@
-// ABOUTME: Implements DOT language lexer for tokenizing DOT graph descriptions.
-// ABOUTME: Provides token types and lexer for parsing Graphviz DOT files.
+// ABOUTME: Implements DOT language lexer and parser for Graphviz DOT files.
+// ABOUTME: Provides tokenization and parsing of DOT graph descriptions into Graph objects.
 package goraffe
 
 import (
@@ -382,4 +382,217 @@ func isIdentStart(ch byte) bool {
 // isIdentChar returns true if the character can be part of an identifier.
 func isIdentChar(ch byte) bool {
 	return isIdentStart(ch) || (ch >= '0' && ch <= '9')
+}
+
+// Parser parses DOT language input into a Graph.
+type Parser struct {
+	lexer   *Lexer
+	current Token
+}
+
+// newParser creates a new parser for the given input string.
+func newParser(input string) *Parser {
+	p := &Parser{
+		lexer: NewLexer(input),
+	}
+	p.advance() // Load first token
+	return p
+}
+
+// advance moves to the next token.
+func (p *Parser) advance() {
+	p.current = p.lexer.Next()
+}
+
+// expect consumes a token of the expected type or returns an error.
+func (p *Parser) expect(expected TokenType) error {
+	if p.current.Type != expected {
+		return fmt.Errorf("expected %s, got %s at %d:%d",
+			expected, p.current.Type, p.current.Line, p.current.Col)
+	}
+	p.advance()
+	return nil
+}
+
+// match returns true if the current token matches the given type.
+func (p *Parser) match(tokenType TokenType) bool {
+	return p.current.Type == tokenType
+}
+
+// matchKeyword returns true if the current token is an identifier with the given value.
+func (p *Parser) matchKeyword(keyword string) bool {
+	return p.current.Type == TokenIdent && p.current.Value == keyword
+}
+
+// parseGraph parses a complete DOT graph.
+// Syntax: [strict] (graph|digraph) [ID] { stmt_list }
+func (p *Parser) parseGraph() (*Graph, error) {
+	// Check for 'strict' keyword
+	strict := false
+	if p.matchKeyword("strict") {
+		strict = true
+		p.advance()
+	}
+
+	// Expect 'graph' or 'digraph'
+	if !p.matchKeyword("graph") && !p.matchKeyword("digraph") {
+		return nil, fmt.Errorf("expected 'graph' or 'digraph' at %d:%d", p.current.Line, p.current.Col)
+	}
+
+	directed := p.current.Value == "digraph"
+	p.advance()
+
+	// Optional graph name
+	var name string
+	if p.current.Type == TokenIdent || p.current.Type == TokenString {
+		name = p.current.Value
+		p.advance()
+	}
+
+	// Expect opening brace
+	if err := p.expect(TokenLBrace); err != nil {
+		return nil, err
+	}
+
+	// Create graph with options
+	opts := []GraphOption{}
+	if directed {
+		opts = append(opts, Directed)
+	} else {
+		opts = append(opts, Undirected)
+	}
+	if strict {
+		opts = append(opts, Strict)
+	}
+
+	g := NewGraph(opts...)
+	g.name = name
+
+	// Parse statements
+	if err := p.parseStmtList(g); err != nil {
+		return nil, err
+	}
+
+	// Expect closing brace
+	if err := p.expect(TokenRBrace); err != nil {
+		return nil, err
+	}
+
+	return g, nil
+}
+
+// parseStmtList parses a list of statements until a closing brace.
+func (p *Parser) parseStmtList(g *Graph) error {
+	for !p.match(TokenRBrace) && !p.match(TokenEOF) {
+		if err := p.parseStmt(g); err != nil {
+			return err
+		}
+
+		// Skip optional semicolon
+		if p.match(TokenSemi) {
+			p.advance()
+		}
+	}
+	return nil
+}
+
+// parseStmt parses a single statement (skeleton implementation).
+// Currently just skips unknown statements to allow basic graph parsing.
+func (p *Parser) parseStmt(g *Graph) error {
+	// For now, just recognize and skip different statement types
+
+	// Check for keywords: node, edge, graph, subgraph
+	if p.matchKeyword("node") || p.matchKeyword("edge") || p.matchKeyword("graph") {
+		// Skip keyword and following attribute list if present
+		p.advance()
+		if p.match(TokenLBracket) {
+			return p.skipAttrList()
+		}
+		return nil
+	}
+
+	if p.matchKeyword("subgraph") {
+		// Skip subgraph (will implement later)
+		return p.skipSubgraph()
+	}
+
+	// Check for bare '{' (anonymous subgraph)
+	if p.match(TokenLBrace) {
+		return p.skipSubgraph()
+	}
+
+	// Otherwise, skip any node or edge statement
+	// This is a placeholder - we'll implement proper parsing later
+	return p.skipStatement()
+}
+
+// skipAttrList skips over an attribute list [...].
+func (p *Parser) skipAttrList() error {
+	if err := p.expect(TokenLBracket); err != nil {
+		return err
+	}
+
+	depth := 1
+	for depth > 0 && !p.match(TokenEOF) {
+		if p.match(TokenLBracket) {
+			depth++
+		} else if p.match(TokenRBracket) {
+			depth--
+		}
+		p.advance()
+	}
+
+	return nil
+}
+
+// skipSubgraph skips over a subgraph statement.
+func (p *Parser) skipSubgraph() error {
+	// Skip 'subgraph' keyword if present
+	if p.matchKeyword("subgraph") {
+		p.advance()
+		// Skip optional name
+		if p.current.Type == TokenIdent || p.current.Type == TokenString {
+			p.advance()
+		}
+	}
+
+	// Expect opening brace
+	if err := p.expect(TokenLBrace); err != nil {
+		return err
+	}
+
+	// Skip until closing brace
+	depth := 1
+	for depth > 0 && !p.match(TokenEOF) {
+		if p.match(TokenLBrace) {
+			depth++
+		} else if p.match(TokenRBrace) {
+			depth--
+		}
+		p.advance()
+	}
+
+	return nil
+}
+
+// skipStatement skips tokens until we hit a semicolon or statement boundary.
+func (p *Parser) skipStatement() error {
+	// Skip tokens until semicolon, closing brace, or EOF
+	for !p.match(TokenSemi) && !p.match(TokenRBrace) && !p.match(TokenEOF) {
+		// Handle nested braces and brackets
+		if p.match(TokenLBrace) {
+			if err := p.skipSubgraph(); err != nil {
+				return err
+			}
+			continue
+		}
+		if p.match(TokenLBracket) {
+			if err := p.skipAttrList(); err != nil {
+				return err
+			}
+			continue
+		}
+		p.advance()
+	}
+	return nil
 }
