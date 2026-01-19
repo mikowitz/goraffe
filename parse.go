@@ -180,10 +180,11 @@ func (l *Lexer) Next() Token {
 		l.advance()
 		if l.pos < len(l.input) {
 			next := l.input[l.pos]
-			if next == '>' {
+			switch next {
+			case '>':
 				l.advance()
 				return Token{Type: TokenArrow, Value: "->", Line: startLine, Col: startCol}
-			} else if next == '-' {
+			case '-':
 				l.advance()
 				return Token{Type: TokenArrow, Value: "--", Line: startLine, Col: startCol}
 			}
@@ -328,9 +329,10 @@ func (l *Lexer) scanHTML(startLine, startCol int) Token {
 
 	for l.pos < len(l.input) && depth > 0 {
 		ch := l.input[l.pos]
-		if ch == '<' {
+		switch ch {
+		case '<':
 			depth++
-		} else if ch == '>' {
+		case '>':
 			depth--
 			if depth == 0 {
 				l.advance() // skip closing >
