@@ -57,13 +57,29 @@ func (sg *Subgraph) Nodes() []*Node {
 
 // AddEdge creates and adds an edge between two nodes, delegating to the parent graph.
 // This ensures edges are managed at the graph level while allowing subgraph-scoped edge creation.
+// The nodes are also added to the subgraph's node collection if they aren't already present.
 func (sg *Subgraph) AddEdge(from, to *Node, opts ...EdgeOption) (*Edge, error) {
 	edge, err := sg.parent.AddEdge(from, to, opts...)
 	if err != nil {
 		return nil, err
 	}
 	sg.edges = append(sg.edges, edge)
+
+	// Add nodes to subgraph if not already present
+	if _, exists := sg.nodes[from.ID()]; !exists {
+		sg.nodes[from.ID()] = from
+	}
+	if _, exists := sg.nodes[to.ID()]; !exists {
+		sg.nodes[to.ID()] = to
+	}
+
 	return edge, nil
+}
+
+// Edges returns all edges in the subgraph.
+// The returned slice contains edges in the order they were added.
+func (sg *Subgraph) Edges() []*Edge {
+	return sg.edges
 }
 
 // Attrs returns the subgraph's attribute configuration.

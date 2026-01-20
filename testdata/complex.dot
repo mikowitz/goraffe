@@ -1,0 +1,21 @@
+digraph ComplexGraph {
+	// Default attributes
+	node [shape=box, color=blue];
+	edge [color=red, style=dashed];
+
+	// Define nodes with various attributes
+	A [label="Start Node", shape=circle, fillcolor=lightblue, style=filled];
+	B [label="Middle Node", shape=rectangle];
+	C [label="End Node", shape=diamond];
+
+	// Define edges with attributes
+	A -> B [label="first step", weight=2.5];
+	B -> C [label="second step", weight=1.0];
+	A -> C [label="shortcut", style=dotted];
+
+	// Additional nodes
+	D;
+	E [label="Special"];
+
+	D -> E;
+}
