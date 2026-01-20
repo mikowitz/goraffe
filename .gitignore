@@ -1,4 +1,5 @@
 *.dot
+*.png
 !testdata/*.dot
 progress.txt
 PRD.md
