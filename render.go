@@ -96,6 +96,21 @@ type renderConfig struct {
 	layout Layout
 }
 
+// layoutOption implements RenderOption to set the layout engine.
+type layoutOption struct {
+	layout Layout
+}
+
+func (o layoutOption) applyRender(cfg *renderConfig) {
+	cfg.layout = o.layout
+}
+
+// WithLayout sets the Graphviz layout engine to use for rendering.
+// Default is LayoutDot if not specified.
+func WithLayout(l Layout) RenderOption {
+	return layoutOption{layout: l}
+}
+
 // Render renders the graph to the given writer in the specified format.
 // Uses the Graphviz layout engine specified by options (default: dot).
 func (g *Graph) Render(format Format, w io.Writer, opts ...RenderOption) error {

@@ -1,6 +1,7 @@
 package goraffe
 
 import (
+	"errors"
 	"os"
 	"testing"
 
@@ -301,4 +302,122 @@ func TestRender_CompleteWorkflow(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEmpty(t, pngData)
 	assert.Equal(t, []byte{0x89, 0x50, 0x4E, 0x47}, pngData[0:4])
+}
+
+func TestGraph_Render_DefaultLayout_IsDot(t *testing.T) {
+	requireGraphviz(t)
+
+	g := NewGraph(Directed)
+	n1 := NewNode("A")
+	n2 := NewNode("B")
+	g.AddNode(n1)
+	g.AddNode(n2)
+	g.AddEdge(n1, n2)
+
+	// Render without specifying layout (should default to dot)
+	var buf []byte
+	w := &testWriter{buf: &buf}
+	err := g.Render(PNG, w)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, buf)
+}
+
+func TestGraph_Render_WithLayout_Neato(t *testing.T) {
+	requireGraphviz(t)
+
+	g := NewGraph(Undirected)
+	n1 := NewNode("A")
+	n2 := NewNode("B")
+	n3 := NewNode("C")
+	g.AddNode(n1)
+	g.AddNode(n2)
+	g.AddNode(n3)
+	g.AddEdge(n1, n2)
+	g.AddEdge(n2, n3)
+	g.AddEdge(n3, n1)
+
+	var buf []byte
+	w := &testWriter{buf: &buf}
+	err := g.Render(PNG, w, WithLayout(LayoutNeato))
+	assert.NoError(t, err)
+	assert.NotEmpty(t, buf)
+	assert.True(t, len(buf) >= 4)
+	assert.Equal(t, []byte{0x89, 0x50, 0x4E, 0x47}, buf[0:4])
+}
+
+func TestGraph_Render_WithLayout_Fdp(t *testing.T) {
+	requireGraphviz(t)
+
+	g := NewGraph(Undirected)
+	n1 := NewNode("A")
+	n2 := NewNode("B")
+	g.AddNode(n1)
+	g.AddNode(n2)
+	g.AddEdge(n1, n2)
+
+	var buf []byte
+	w := &testWriter{buf: &buf}
+	err := g.Render(PNG, w, WithLayout(LayoutFdp))
+	assert.NoError(t, err)
+	assert.NotEmpty(t, buf)
+}
+
+func TestGraph_Render_WithLayout_Circo(t *testing.T) {
+	requireGraphviz(t)
+
+	g := NewGraph(Undirected)
+	n1 := NewNode("A")
+	n2 := NewNode("B")
+	n3 := NewNode("C")
+	g.AddNode(n1)
+	g.AddNode(n2)
+	g.AddNode(n3)
+	g.AddEdge(n1, n2)
+	g.AddEdge(n2, n3)
+
+	var buf []byte
+	w := &testWriter{buf: &buf}
+	err := g.Render(PNG, w, WithLayout(LayoutCirco))
+	assert.NoError(t, err)
+	assert.NotEmpty(t, buf)
+}
+
+func TestGraph_Render_AllLayouts(t *testing.T) {
+	requireGraphviz(t)
+
+	// Create a simple graph
+	g := NewGraph(Directed)
+	n1 := NewNode("A")
+	n2 := NewNode("B")
+	n3 := NewNode("C")
+	g.AddNode(n1)
+	g.AddNode(n2)
+	g.AddNode(n3)
+	g.AddEdge(n1, n2)
+	g.AddEdge(n2, n3)
+
+	layouts := []Layout{
+		LayoutDot, LayoutNeato, LayoutFdp, LayoutSfdp,
+		LayoutTwopi, LayoutCirco, LayoutOsage, LayoutPatchwork,
+	}
+
+	for _, layout := range layouts {
+		t.Run(string(layout), func(t *testing.T) {
+			var buf []byte
+			w := &testWriter{buf: &buf}
+			err := g.Render(PNG, w, WithLayout(layout))
+			// Note: Not all layouts may be installed
+			if err != nil {
+				if errors.Is(err, ErrGraphvizNotFound) {
+					t.Skipf("Layout %s not installed", layout)
+				} else {
+					t.Fatalf("Unexpected error: %v", err)
+				}
+			}
+			assert.NotEmpty(t, buf)
+			// Verify PNG magic bytes
+			assert.True(t, len(buf) >= 4)
+			assert.Equal(t, []byte{0x89, 0x50, 0x4E, 0x47}, buf[0:4])
+		})
+	}
 }
