@@ -103,3 +103,88 @@ func TestGraphvizVersion_ReturnsVersion(t *testing.T) {
 		assert.Contains(t, version, "dot")
 	assert.True(t, containsGraphviz, "version string should contain 'graphviz' or 'dot'")
 }
+
+func TestGraph_Render_PNG_ProducesOutput(t *testing.T) {
+	requireGraphviz(t)
+
+	g := NewGraph(Directed)
+	n1 := NewNode("A")
+	n2 := NewNode("B")
+	g.AddNode(n1)
+	g.AddNode(n2)
+	g.AddEdge(n1, n2)
+
+	var buf []byte
+	w := &testWriter{buf: &buf}
+	err := g.Render(PNG, w)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, buf)
+	// Check PNG magic bytes
+	assert.True(t, len(buf) >= 8, "PNG output should be at least 8 bytes")
+	assert.Equal(t, []byte{0x89, 0x50, 0x4E, 0x47}, buf[0:4], "PNG should start with PNG magic bytes")
+}
+
+func TestGraph_Render_SVG_ProducesOutput(t *testing.T) {
+	requireGraphviz(t)
+
+	g := NewGraph(Directed)
+	n1 := NewNode("A")
+	n2 := NewNode("B")
+	g.AddNode(n1)
+	g.AddNode(n2)
+	g.AddEdge(n1, n2)
+
+	var buf []byte
+	w := &testWriter{buf: &buf}
+	err := g.Render(SVG, w)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, buf)
+	// Check for SVG XML structure
+	output := string(buf)
+	assert.Contains(t, output, "<svg")
+	assert.Contains(t, output, "</svg>")
+}
+
+func TestGraph_Render_DOT_ProducesOutput(t *testing.T) {
+	requireGraphviz(t)
+
+	g := NewGraph(Directed)
+	n1 := NewNode("A")
+	n2 := NewNode("B")
+	g.AddNode(n1)
+	g.AddNode(n2)
+	g.AddEdge(n1, n2)
+
+	var buf []byte
+	w := &testWriter{buf: &buf}
+	err := g.Render(DOT, w)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, buf)
+	// DOT format should contain the graph structure
+	output := string(buf)
+	assert.Contains(t, output, "digraph")
+}
+
+func TestGraph_Render_ToBuffer(t *testing.T) {
+	requireGraphviz(t)
+
+	g := NewGraph(Directed)
+	n1 := NewNode("A")
+	g.AddNode(n1)
+
+	var buf []byte
+	w := &testWriter{buf: &buf}
+	err := g.Render(PNG, w)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, buf)
+}
+
+// testWriter is a simple writer for testing that appends to a byte slice.
+type testWriter struct {
+	buf *[]byte
+}
+
+func (w *testWriter) Write(p []byte) (n int, err error) {
+	*w.buf = append(*w.buf, p...)
+	return len(p), nil
+}

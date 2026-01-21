@@ -3,7 +3,9 @@
 package goraffe
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os/exec"
 	"strings"
 )
@@ -79,5 +81,58 @@ func GraphvizVersion() (string, error) {
 // Returns nil if available, or ErrGraphvizNotFound if not.
 func checkGraphvizInstalled() error {
 	_, err := findGraphviz(LayoutDot)
+	return err
+}
+
+// RenderOption configures rendering behavior.
+type RenderOption interface {
+	applyRender(*renderConfig)
+}
+
+// renderConfig holds rendering configuration.
+type renderConfig struct {
+	layout Layout
+}
+
+// Render renders the graph to the given writer in the specified format.
+// Uses the Graphviz layout engine specified by options (default: dot).
+func (g *Graph) Render(format Format, w io.Writer, opts ...RenderOption) error {
+	// Build config with defaults
+	config := &renderConfig{
+		layout: LayoutDot,
+	}
+	for _, opt := range opts {
+		opt.applyRender(config)
+	}
+
+	// Find the Graphviz binary
+	binary, err := findGraphviz(config.layout)
+	if err != nil {
+		return err
+	}
+
+	// Generate DOT string
+	dotString := g.String()
+
+	// Execute Graphviz command: binary -Tformat
+	cmd := exec.Command(binary, "-T"+string(format))
+	cmd.Stdin = strings.NewReader(dotString)
+
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	// Run the command
+	if err := cmd.Run(); err != nil {
+		// Wrap error with stderr output
+		return &RenderError{
+			Err:      ErrRenderFailed,
+			Stderr:   stderr.String(),
+			ExitCode: cmd.ProcessState.ExitCode(),
+		}
+	}
+
+	// Write output to writer
+	_, err = io.Copy(w, &stdout)
 	return err
 }
