@@ -1,12 +1,55 @@
-All PRD tasks completed:
-1. ✅ Subgraph DOT generation outputs rank attribute when set (subgraph.go, subgraph_attributes.go)
-2. ✅ Convenience methods (SameRank, MinRank, MaxRank, SourceRank, SinkRank) create anonymous rank subgraphs (graph.go)
-3. ✅ All 6 required tests implemented and passing (dot_test.go):
-   - TestDOT_Subgraph_WithRank
-   - TestDOT_SameRank_CreatesSubgraph
-   - TestDOT_MinRank_Output
-   - TestDOT_MaxRank_Output
-   - TestDOT_MultipleRankConstraints
-   - TestDOT_ComplexGraph_WithRanks
+Step 38: Format and Layout Enums - COMPLETE
+- Created render.go with Format type (PNG, SVG, PDF, DOT)
+- Created render.go with Layout type (8 layout algorithms)
+- Created render_test.go with comprehensive tests
+- All tests passing
 
-Implementation verified - all tests pass, DOT output format is correct.
+Step 39: RenderError and Sentinel Errors - COMPLETE
+- Created errors.go with RenderError struct
+- Implemented Error() method with stderr snippet truncation
+- Implemented Unwrap() method for error unwrapping
+- Added sentinel errors: ErrGraphvizNotFound, ErrInvalidDOT, ErrRenderFailed
+- Created errors_test.go with comprehensive tests
+- All tests passing
+
+Step 40: Graphviz CLI Detection - COMPLETE
+- Updated render.go with findGraphviz() function using exec.LookPath
+- Added GraphvizVersion() to query installed Graphviz version
+- Added checkGraphvizInstalled() for early error detection
+- Updated render_test.go with requireGraphviz() test helper
+- Added tests: TestFindGraphviz_Dot, TestFindGraphviz_AllLayouts, TestFindGraphviz_InvalidLayout, TestGraphvizVersion_ReturnsVersion
+- Tests skip gracefully if Graphviz not installed
+- All tests passing
+
+Step 41: Graph.Render to io.Writer - COMPLETE
+- Updated render.go with RenderOption interface and renderConfig struct
+- Implemented Graph.Render(format, writer, opts) method
+- Render finds Graphviz binary, generates DOT, executes command with stdin/stdout/stderr
+- Returns RenderError with stderr on failure
+- Added comprehensive tests: TestGraph_Render_PNG_ProducesOutput, TestGraph_Render_SVG_ProducesOutput, TestGraph_Render_DOT_ProducesOutput, TestGraph_Render_ToBuffer
+- PNG test validates magic bytes, SVG test validates XML structure
+- Added testWriter helper for testing
+- All tests passing
+
+Step 42: RenderToFile and RenderBytes Conveniences - COMPLETE
+- Updated render.go with RenderToFile(format, path, opts) method
+- RenderToFile creates file, renders to it, closes file, cleans up on error
+- Added RenderBytes(format, opts) method that renders to bytes.Buffer
+- Added comprehensive tests: TestGraph_RenderToFile_CreatesFile, TestGraph_RenderToFile_ValidContent, TestGraph_RenderBytes_ReturnsPNG, TestGraph_RenderBytes_ReturnsSVG
+- Added integration test TestRender_CompleteWorkflow with complex graph
+- All tests passing
+
+Step 43: WithLayout Render Option - COMPLETE
+- Implemented WithLayout(l Layout) RenderOption in render.go
+- Created layoutOption struct implementing RenderOption interface
+- Added comprehensive tests: TestGraph_Render_DefaultLayout_IsDot, TestGraph_Render_WithLayout_Neato, TestGraph_Render_WithLayout_Fdp, TestGraph_Render_WithLayout_Circo
+- Added table-driven test TestGraph_Render_AllLayouts covering all 8 layout engines
+- Verified all layouts work: dot, neato, fdp, sfdp, twopi, circo, osage, patchwork
+- Added TestGoraffe_EndToEnd integration test covering complete workflow
+- End-to-end test validates: multiple formats, multiple layouts, file rendering, graph modification
+- Updated doc.go with rendering and parsing documentation
+- Added rendering examples to example_test.go (RenderToFile, RenderBytes, WithLayout)
+- All tests passing
+
+RENDERING IMPLEMENTATION COMPLETE
+All tasks from PRD.md (Steps 38-43) have been implemented and tested.
