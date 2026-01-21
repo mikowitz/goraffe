@@ -80,10 +80,36 @@
 //	f, _ := os.Create("graph.dot")
 //	g.WriteDOT(f)
 //
-// # Current Status
+// # Rendering
 //
-// Note: This library is in active development. The graph building API is functional,
-// but DOT parsing and rendering features are not yet implemented.
+// Render graphs to various output formats using Graphviz:
+//
+//	// Render to PNG file
+//	g.RenderToFile(goraffe.PNG, "graph.png")
+//
+//	// Render to bytes
+//	svgData, _ := g.RenderBytes(goraffe.SVG)
+//
+//	// Render to io.Writer with custom layout
+//	var buf bytes.Buffer
+//	g.Render(goraffe.PNG, &buf, goraffe.WithLayout(goraffe.LayoutNeato))
+//
+// Supported formats: PNG, SVG, PDF, DOT
+// Supported layouts: dot, neato, fdp, sfdp, twopi, circo, osage, patchwork
+//
+// # Parsing
+//
+// Parse existing DOT format files:
+//
+//	// Parse from string
+//	g, _ := goraffe.ParseString("digraph G { A -> B }")
+//
+//	// Parse from io.Reader
+//	f, _ := os.Open("graph.dot")
+//	g, _ := goraffe.Parse(f)
+//
+//	// Parse from file path
+//	g, _ := goraffe.ParseFile("graph.dot")
 //
 // # Requirements
 //
