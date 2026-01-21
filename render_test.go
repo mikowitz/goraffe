@@ -421,3 +421,87 @@ func TestGraph_Render_AllLayouts(t *testing.T) {
 		})
 	}
 }
+
+func TestGoraffe_EndToEnd(t *testing.T) {
+	requireGraphviz(t)
+
+	// Create a complex graph with nodes, edges, and attributes
+	g := NewGraph(Directed,
+		WithGraphLabel("End-to-End Test"),
+		WithRankDir(RankDirLR),
+		WithBgColor("lightgray"),
+	)
+
+	// Add nodes with various attributes
+	n1 := NewNode("start", WithLabel("Start"), WithColor("green"), WithBoxShape())
+	n2 := NewNode("process", WithLabel("Process"), WithColor("blue"), WithEllipseShape())
+	n3 := NewNode("end", WithLabel("End"), WithColor("red"), WithBoxShape())
+	n4 := NewNode("branch", WithLabel("Branch"), WithDiamondShape())
+	g.AddNode(n1)
+	g.AddNode(n2)
+	g.AddNode(n3)
+	g.AddNode(n4)
+
+	// Add edges with attributes
+	g.AddEdge(n1, n2, WithEdgeLabel("begin"), WithWeight(2.0))
+	g.AddEdge(n2, n4, WithEdgeLabel("decide"))
+	g.AddEdge(n4, n3, WithEdgeLabel("finish"), WithEdgeColor("red"))
+	g.AddEdge(n4, n2, WithEdgeLabel("loop"), WithEdgeStyle(EdgeStyleDashed))
+
+	// Test 1: Render to multiple formats
+	formats := []Format{PNG, SVG, DOT}
+	for _, format := range formats {
+		t.Run("format_"+string(format), func(t *testing.T) {
+			data, err := g.RenderBytes(format)
+			assert.NoError(t, err)
+			assert.NotEmpty(t, data)
+
+			switch format {
+			case PNG:
+				assert.Equal(t, []byte{0x89, 0x50, 0x4E, 0x47}, data[0:4])
+			case SVG:
+				assert.Contains(t, string(data), "<svg")
+			case DOT:
+				assert.Contains(t, string(data), "digraph")
+				assert.Contains(t, string(data), "End-to-End Test")
+			}
+		})
+	}
+
+	// Test 2: Render with different layouts
+	t.Run("multiple_layouts", func(t *testing.T) {
+		for _, layout := range []Layout{LayoutDot, LayoutNeato, LayoutFdp} {
+			data, err := g.RenderBytes(PNG, WithLayout(layout))
+			if err != nil && errors.Is(err, ErrGraphvizNotFound) {
+				t.Skipf("Layout %s not available", layout)
+				continue
+			}
+			assert.NoError(t, err)
+			assert.NotEmpty(t, data)
+		}
+	})
+
+	// Test 3: Render to file
+	t.Run("render_to_file", func(t *testing.T) {
+		tmpfile := t.TempDir() + "/endtoend.png"
+		err := g.RenderToFile(PNG, tmpfile, WithLayout(LayoutDot))
+		assert.NoError(t, err)
+
+		data, err := os.ReadFile(tmpfile)
+		assert.NoError(t, err)
+		assert.NotEmpty(t, data)
+		assert.Equal(t, []byte{0x89, 0x50, 0x4E, 0x47}, data[0:4])
+	})
+
+	// Test 4: Modify graph and re-render
+	t.Run("modify_and_rerender", func(t *testing.T) {
+		// Add another node
+		n5 := NewNode("extra", WithLabel("Extra Node"))
+		g.AddNode(n5)
+		g.AddEdge(n3, n5, WithEdgeLabel("extend"))
+
+		data, err := g.RenderBytes(SVG)
+		assert.NoError(t, err)
+		assert.Contains(t, string(data), "Extra Node")
+	})
+}
