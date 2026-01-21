@@ -159,6 +159,7 @@ func (g *Graph) Render(format Format, w io.Writer, opts ...RenderOption) error {
 // Creates the file, renders to it, and closes it. On error, attempts to clean up the partial file.
 func (g *Graph) RenderToFile(format Format, path string, opts ...RenderOption) error {
 	// Create the file
+	//nolint:gosec // G304: RenderToFile intentionally creates user-specified files
 	file, err := os.Create(path)
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)

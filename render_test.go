@@ -196,7 +196,7 @@ func TestGraph_RenderToFile_CreatesFile(t *testing.T) {
 
 	g := NewGraph(Directed)
 	n1 := NewNode("A")
-	g.AddNode(n1)
+	_ = g.AddNode(n1)
 
 	// Use temp file
 	tmpfile := t.TempDir() + "/graph.png"
@@ -214,9 +214,9 @@ func TestGraph_RenderToFile_ValidContent(t *testing.T) {
 	g := NewGraph(Directed)
 	n1 := NewNode("A")
 	n2 := NewNode("B")
-	g.AddNode(n1)
-	g.AddNode(n2)
-	g.AddEdge(n1, n2)
+	_ = g.AddNode(n1)
+	_ = g.AddNode(n2)
+	_, _ = g.AddEdge(n1, n2)
 
 	// Render to PNG
 	tmpfile := t.TempDir() + "/graph.png"
@@ -224,6 +224,7 @@ func TestGraph_RenderToFile_ValidContent(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Read and validate content
+	//nolint:gosec // G304: Test reads from temp directory
 	data, err := os.ReadFile(tmpfile)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, data)
@@ -238,9 +239,9 @@ func TestGraph_RenderBytes_ReturnsPNG(t *testing.T) {
 	g := NewGraph(Directed)
 	n1 := NewNode("A")
 	n2 := NewNode("B")
-	g.AddNode(n1)
-	g.AddNode(n2)
-	g.AddEdge(n1, n2)
+	_ = g.AddNode(n1)
+	_ = g.AddNode(n2)
+	_, _ = g.AddEdge(n1, n2)
 
 	data, err := g.RenderBytes(PNG)
 	assert.NoError(t, err)
@@ -256,9 +257,9 @@ func TestGraph_RenderBytes_ReturnsSVG(t *testing.T) {
 	g := NewGraph(Directed)
 	n1 := NewNode("A")
 	n2 := NewNode("B")
-	g.AddNode(n1)
-	g.AddNode(n2)
-	g.AddEdge(n1, n2)
+	_ = g.AddNode(n1)
+	_ = g.AddNode(n2)
+	_, _ = g.AddEdge(n1, n2)
 
 	data, err := g.RenderBytes(SVG)
 	assert.NoError(t, err)
@@ -277,11 +278,11 @@ func TestRender_CompleteWorkflow(t *testing.T) {
 	n1 := NewNode("A", WithLabel("Node A"), WithColor("red"))
 	n2 := NewNode("B", WithLabel("Node B"), WithColor("blue"))
 	n3 := NewNode("C", WithLabel("Node C"))
-	g.AddNode(n1)
-	g.AddNode(n2)
-	g.AddNode(n3)
-	g.AddEdge(n1, n2, WithEdgeLabel("edge 1"))
-	g.AddEdge(n2, n3, WithEdgeLabel("edge 2"))
+	_ = g.AddNode(n1)
+	_ = g.AddNode(n2)
+	_ = g.AddNode(n3)
+	_, _ = g.AddEdge(n1, n2, WithEdgeLabel("edge 1"))
+	_, _ = g.AddEdge(n2, n3, WithEdgeLabel("edge 2"))
 
 	// Render to file
 	tmpfile := t.TempDir() + "/complete.svg"
@@ -289,6 +290,7 @@ func TestRender_CompleteWorkflow(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Verify file exists and is valid
+	//nolint:gosec // G304: Test reads from temp directory
 	data, err := os.ReadFile(tmpfile)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, data)
@@ -310,9 +312,9 @@ func TestGraph_Render_DefaultLayout_IsDot(t *testing.T) {
 	g := NewGraph(Directed)
 	n1 := NewNode("A")
 	n2 := NewNode("B")
-	g.AddNode(n1)
-	g.AddNode(n2)
-	g.AddEdge(n1, n2)
+	_ = g.AddNode(n1)
+	_ = g.AddNode(n2)
+	_, _ = g.AddEdge(n1, n2)
 
 	// Render without specifying layout (should default to dot)
 	var buf []byte
@@ -329,12 +331,12 @@ func TestGraph_Render_WithLayout_Neato(t *testing.T) {
 	n1 := NewNode("A")
 	n2 := NewNode("B")
 	n3 := NewNode("C")
-	g.AddNode(n1)
-	g.AddNode(n2)
-	g.AddNode(n3)
-	g.AddEdge(n1, n2)
-	g.AddEdge(n2, n3)
-	g.AddEdge(n3, n1)
+	_ = g.AddNode(n1)
+	_ = g.AddNode(n2)
+	_ = g.AddNode(n3)
+	_, _ = g.AddEdge(n1, n2)
+	_, _ = g.AddEdge(n2, n3)
+	_, _ = g.AddEdge(n3, n1)
 
 	var buf []byte
 	w := &testWriter{buf: &buf}
@@ -351,9 +353,9 @@ func TestGraph_Render_WithLayout_Fdp(t *testing.T) {
 	g := NewGraph(Undirected)
 	n1 := NewNode("A")
 	n2 := NewNode("B")
-	g.AddNode(n1)
-	g.AddNode(n2)
-	g.AddEdge(n1, n2)
+	_ = g.AddNode(n1)
+	_ = g.AddNode(n2)
+	_, _ = g.AddEdge(n1, n2)
 
 	var buf []byte
 	w := &testWriter{buf: &buf}
@@ -369,11 +371,11 @@ func TestGraph_Render_WithLayout_Circo(t *testing.T) {
 	n1 := NewNode("A")
 	n2 := NewNode("B")
 	n3 := NewNode("C")
-	g.AddNode(n1)
-	g.AddNode(n2)
-	g.AddNode(n3)
-	g.AddEdge(n1, n2)
-	g.AddEdge(n2, n3)
+	_ = g.AddNode(n1)
+	_ = g.AddNode(n2)
+	_ = g.AddNode(n3)
+	_, _ = g.AddEdge(n1, n2)
+	_, _ = g.AddEdge(n2, n3)
 
 	var buf []byte
 	w := &testWriter{buf: &buf}
@@ -390,11 +392,11 @@ func TestGraph_Render_AllLayouts(t *testing.T) {
 	n1 := NewNode("A")
 	n2 := NewNode("B")
 	n3 := NewNode("C")
-	g.AddNode(n1)
-	g.AddNode(n2)
-	g.AddNode(n3)
-	g.AddEdge(n1, n2)
-	g.AddEdge(n2, n3)
+	_ = g.AddNode(n1)
+	_ = g.AddNode(n2)
+	_ = g.AddNode(n3)
+	_, _ = g.AddEdge(n1, n2)
+	_, _ = g.AddEdge(n2, n3)
 
 	layouts := []Layout{
 		LayoutDot, LayoutNeato, LayoutFdp, LayoutSfdp,
@@ -437,16 +439,16 @@ func TestGoraffe_EndToEnd(t *testing.T) {
 	n2 := NewNode("process", WithLabel("Process"), WithColor("blue"), WithEllipseShape())
 	n3 := NewNode("end", WithLabel("End"), WithColor("red"), WithBoxShape())
 	n4 := NewNode("branch", WithLabel("Branch"), WithDiamondShape())
-	g.AddNode(n1)
-	g.AddNode(n2)
-	g.AddNode(n3)
-	g.AddNode(n4)
+	_ = g.AddNode(n1)
+	_ = g.AddNode(n2)
+	_ = g.AddNode(n3)
+	_ = g.AddNode(n4)
 
 	// Add edges with attributes
-	g.AddEdge(n1, n2, WithEdgeLabel("begin"), WithWeight(2.0))
-	g.AddEdge(n2, n4, WithEdgeLabel("decide"))
-	g.AddEdge(n4, n3, WithEdgeLabel("finish"), WithEdgeColor("red"))
-	g.AddEdge(n4, n2, WithEdgeLabel("loop"), WithEdgeStyle(EdgeStyleDashed))
+	_, _ = g.AddEdge(n1, n2, WithEdgeLabel("begin"), WithWeight(2.0))
+	_, _ = g.AddEdge(n2, n4, WithEdgeLabel("decide"))
+	_, _ = g.AddEdge(n4, n3, WithEdgeLabel("finish"), WithEdgeColor("red"))
+	_, _ = g.AddEdge(n4, n2, WithEdgeLabel("loop"), WithEdgeStyle(EdgeStyleDashed))
 
 	// Test 1: Render to multiple formats
 	formats := []Format{PNG, SVG, DOT}
@@ -487,6 +489,7 @@ func TestGoraffe_EndToEnd(t *testing.T) {
 		err := g.RenderToFile(PNG, tmpfile, WithLayout(LayoutDot))
 		assert.NoError(t, err)
 
+		//nolint:gosec // G304: Test reads from temp directory
 		data, err := os.ReadFile(tmpfile)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, data)
@@ -497,8 +500,8 @@ func TestGoraffe_EndToEnd(t *testing.T) {
 	t.Run("modify_and_rerender", func(t *testing.T) {
 		// Add another node
 		n5 := NewNode("extra", WithLabel("Extra Node"))
-		g.AddNode(n5)
-		g.AddEdge(n3, n5, WithEdgeLabel("extend"))
+		_ = g.AddNode(n5)
+		_, _ = g.AddEdge(n3, n5, WithEdgeLabel("extend"))
 
 		data, err := g.RenderBytes(SVG)
 		assert.NoError(t, err)
