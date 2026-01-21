@@ -4,6 +4,7 @@ package goraffe
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"os/exec"
@@ -66,7 +67,7 @@ func GraphvizVersion() (string, error) {
 	}
 
 	// Run "dot -V" to get version
-	cmd := exec.Command("dot", "-V")
+	cmd := exec.CommandContext(context.TODO(), "dot", "-V")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("failed to get Graphviz version: %w", err)
@@ -115,7 +116,8 @@ func (g *Graph) Render(format Format, w io.Writer, opts ...RenderOption) error {
 	dotString := g.String()
 
 	// Execute Graphviz command: binary -Tformat
-	cmd := exec.Command(binary, "-T"+string(format))
+	//nolint:gosec // G204: binary path is validated via exec.LookPath in findGraphviz
+	cmd := exec.CommandContext(context.TODO(), binary, "-T"+string(format))
 	cmd.Stdin = strings.NewReader(dotString)
 
 	var stdout, stderr bytes.Buffer
