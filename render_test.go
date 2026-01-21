@@ -1,6 +1,7 @@
 package goraffe
 
 import (
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -110,9 +111,9 @@ func TestGraph_Render_PNG_ProducesOutput(t *testing.T) {
 	g := NewGraph(Directed)
 	n1 := NewNode("A")
 	n2 := NewNode("B")
-	g.AddNode(n1)
-	g.AddNode(n2)
-	g.AddEdge(n1, n2)
+	_ = g.AddNode(n1)
+	_ = g.AddNode(n2)
+	_, _ = g.AddEdge(n1, n2)
 
 	var buf []byte
 	w := &testWriter{buf: &buf}
@@ -130,9 +131,9 @@ func TestGraph_Render_SVG_ProducesOutput(t *testing.T) {
 	g := NewGraph(Directed)
 	n1 := NewNode("A")
 	n2 := NewNode("B")
-	g.AddNode(n1)
-	g.AddNode(n2)
-	g.AddEdge(n1, n2)
+	_ = g.AddNode(n1)
+	_ = g.AddNode(n2)
+	_, _ = g.AddEdge(n1, n2)
 
 	var buf []byte
 	w := &testWriter{buf: &buf}
@@ -151,9 +152,9 @@ func TestGraph_Render_DOT_ProducesOutput(t *testing.T) {
 	g := NewGraph(Directed)
 	n1 := NewNode("A")
 	n2 := NewNode("B")
-	g.AddNode(n1)
-	g.AddNode(n2)
-	g.AddEdge(n1, n2)
+	_ = g.AddNode(n1)
+	_ = g.AddNode(n2)
+	_, _ = g.AddEdge(n1, n2)
 
 	var buf []byte
 	w := &testWriter{buf: &buf}
@@ -170,7 +171,7 @@ func TestGraph_Render_ToBuffer(t *testing.T) {
 
 	g := NewGraph(Directed)
 	n1 := NewNode("A")
-	g.AddNode(n1)
+	_ = g.AddNode(n1)
 
 	var buf []byte
 	w := &testWriter{buf: &buf}
@@ -187,4 +188,117 @@ type testWriter struct {
 func (w *testWriter) Write(p []byte) (n int, err error) {
 	*w.buf = append(*w.buf, p...)
 	return len(p), nil
+}
+
+func TestGraph_RenderToFile_CreatesFile(t *testing.T) {
+	requireGraphviz(t)
+
+	g := NewGraph(Directed)
+	n1 := NewNode("A")
+	g.AddNode(n1)
+
+	// Use temp file
+	tmpfile := t.TempDir() + "/graph.png"
+	err := g.RenderToFile(PNG, tmpfile)
+	assert.NoError(t, err)
+
+	// Check file exists
+	_, err = os.Stat(tmpfile)
+	assert.NoError(t, err, "file should exist")
+}
+
+func TestGraph_RenderToFile_ValidContent(t *testing.T) {
+	requireGraphviz(t)
+
+	g := NewGraph(Directed)
+	n1 := NewNode("A")
+	n2 := NewNode("B")
+	g.AddNode(n1)
+	g.AddNode(n2)
+	g.AddEdge(n1, n2)
+
+	// Render to PNG
+	tmpfile := t.TempDir() + "/graph.png"
+	err := g.RenderToFile(PNG, tmpfile)
+	assert.NoError(t, err)
+
+	// Read and validate content
+	data, err := os.ReadFile(tmpfile)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, data)
+	// Check PNG magic bytes
+	assert.True(t, len(data) >= 4)
+	assert.Equal(t, []byte{0x89, 0x50, 0x4E, 0x47}, data[0:4])
+}
+
+func TestGraph_RenderBytes_ReturnsPNG(t *testing.T) {
+	requireGraphviz(t)
+
+	g := NewGraph(Directed)
+	n1 := NewNode("A")
+	n2 := NewNode("B")
+	g.AddNode(n1)
+	g.AddNode(n2)
+	g.AddEdge(n1, n2)
+
+	data, err := g.RenderBytes(PNG)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, data)
+	// Check PNG magic bytes
+	assert.True(t, len(data) >= 4)
+	assert.Equal(t, []byte{0x89, 0x50, 0x4E, 0x47}, data[0:4])
+}
+
+func TestGraph_RenderBytes_ReturnsSVG(t *testing.T) {
+	requireGraphviz(t)
+
+	g := NewGraph(Directed)
+	n1 := NewNode("A")
+	n2 := NewNode("B")
+	g.AddNode(n1)
+	g.AddNode(n2)
+	g.AddEdge(n1, n2)
+
+	data, err := g.RenderBytes(SVG)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, data)
+	// Check for SVG structure
+	output := string(data)
+	assert.Contains(t, output, "<svg")
+	assert.Contains(t, output, "</svg>")
+}
+
+func TestRender_CompleteWorkflow(t *testing.T) {
+	requireGraphviz(t)
+
+	// Create complex graph
+	g := NewGraph(Directed, WithGraphLabel("Test Graph"))
+	n1 := NewNode("A", WithLabel("Node A"), WithColor("red"))
+	n2 := NewNode("B", WithLabel("Node B"), WithColor("blue"))
+	n3 := NewNode("C", WithLabel("Node C"))
+	g.AddNode(n1)
+	g.AddNode(n2)
+	g.AddNode(n3)
+	g.AddEdge(n1, n2, WithEdgeLabel("edge 1"))
+	g.AddEdge(n2, n3, WithEdgeLabel("edge 2"))
+
+	// Render to file
+	tmpfile := t.TempDir() + "/complete.svg"
+	err := g.RenderToFile(SVG, tmpfile)
+	assert.NoError(t, err)
+
+	// Verify file exists and is valid
+	data, err := os.ReadFile(tmpfile)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, data)
+
+	output := string(data)
+	assert.Contains(t, output, "<svg")
+	assert.Contains(t, output, "</svg>")
+
+	// Also test RenderBytes
+	pngData, err := g.RenderBytes(PNG)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, pngData)
+	assert.Equal(t, []byte{0x89, 0x50, 0x4E, 0x47}, pngData[0:4])
 }

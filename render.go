@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 	"strings"
 )
@@ -137,4 +138,39 @@ func (g *Graph) Render(format Format, w io.Writer, opts ...RenderOption) error {
 	// Write output to writer
 	_, err = io.Copy(w, &stdout)
 	return err
+}
+
+// RenderToFile renders the graph to a file in the specified format.
+// Creates the file, renders to it, and closes it. On error, attempts to clean up the partial file.
+func (g *Graph) RenderToFile(format Format, path string, opts ...RenderOption) error {
+	// Create the file
+	file, err := os.Create(path)
+	if err != nil {
+		return fmt.Errorf("failed to create file: %w", err)
+	}
+
+	// Render to file
+	renderErr := g.Render(format, file, opts...)
+
+	// Close the file
+	closeErr := file.Close()
+
+	// If rendering failed, clean up the partial file
+	if renderErr != nil {
+		_ = os.Remove(path)
+		return renderErr
+	}
+
+	// Return close error if any
+	return closeErr
+}
+
+// RenderBytes renders the graph and returns the output as a byte slice.
+func (g *Graph) RenderBytes(format Format, opts ...RenderOption) ([]byte, error) {
+	var buf bytes.Buffer
+	err := g.Render(format, &buf, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }
