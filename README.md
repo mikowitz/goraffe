@@ -26,11 +26,6 @@ Goraffe provides an ergonomic, type-safe API for creating Graphviz graphs in Go.
 - ✅ Rendering via Graphviz CLI (PNG, SVG, PDF, DOT)
 - ✅ Multiple layout engines (dot, neato, fdp, sfdp, twopi, circo, osage, patchwork)
 
-**What's coming:**
-
-- 🚧 DOT parsing (in progress on parser branch)
-- 🚧 Additional rendering options and error handling improvements
-
 ## Installation
 
 ```bash
