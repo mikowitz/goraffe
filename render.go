@@ -2,6 +2,12 @@
 // ABOUTME: Defines Format and Layout enums for controlling output format and layout algorithm.
 package goraffe
 
+import (
+	"fmt"
+	"os/exec"
+	"strings"
+)
+
 // Format represents the output format for rendered graphs.
 type Format string
 
@@ -37,3 +43,41 @@ const (
 	// LayoutPatchwork uses the "patchwork" treemap layout.
 	LayoutPatchwork Layout = "patchwork"
 )
+
+// findGraphviz finds the Graphviz binary for the given layout.
+// Returns the full path to the binary or ErrGraphvizNotFound.
+func findGraphviz(layout Layout) (string, error) {
+	binaryName := string(layout)
+	path, err := exec.LookPath(binaryName)
+	if err != nil {
+		return "", ErrGraphvizNotFound
+	}
+	return path, nil
+}
+
+// GraphvizVersion returns the version of Graphviz installed.
+// Returns the version string or an error if Graphviz is not found.
+func GraphvizVersion() (string, error) {
+	// Try to find dot first
+	if _, err := findGraphviz(LayoutDot); err != nil {
+		return "", err
+	}
+
+	// Run "dot -V" to get version
+	cmd := exec.Command("dot", "-V")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("failed to get Graphviz version: %w", err)
+	}
+
+	// Parse version from output (format: "dot - graphviz version X.Y.Z ...")
+	version := strings.TrimSpace(string(output))
+	return version, nil
+}
+
+// checkGraphvizInstalled checks if Graphviz is installed and available.
+// Returns nil if available, or ErrGraphvizNotFound if not.
+func checkGraphvizInstalled() error {
+	_, err := findGraphviz(LayoutDot)
+	return err
+}
