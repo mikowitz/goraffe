@@ -11,7 +11,7 @@ Goraffe provides an ergonomic, type-safe API for creating Graphviz graphs in Go.
 
 ## Status
 
-⚠️ **Early Development** - Currently at ~30% implementation
+✨ **Active Development** - Core features complete, parsing in progress
 
 **What works:**
 
@@ -20,16 +20,16 @@ Goraffe provides an ergonomic, type-safe API for creating Graphviz graphs in Go.
 - ✅ Functional options pattern for configuration
 - ✅ Graph-level default attributes
 - ✅ Custom attribute escape hatches
-- ✅ Basic DOT format output (nodes only)
+- ✅ Complete DOT format output
+- ✅ HTML and record labels
+- ✅ Subgraphs and clusters
+- ✅ Rendering via Graphviz CLI (PNG, SVG, PDF, DOT)
+- ✅ Multiple layout engines (dot, neato, fdp, sfdp, twopi, circo, osage, patchwork)
 
 **What's coming:**
 
-- 🚧 Complete DOT generation (edges, subgraphs, labels)
-- 🚧 HTML and record labels
-- 🚧 Subgraphs and clusters
-- 🚧 Rank constraints
-- 🚧 DOT parsing
-- 🚧 Rendering via Graphviz CLI
+- 🚧 DOT parsing (in progress on parser branch)
+- 🚧 Additional rendering options and error handling improvements
 
 ## Installation
 
@@ -40,21 +40,27 @@ go get github.com/mikowitz/goraffe
 **Requirements:**
 
 - Go 1.23 or later
-- Graphviz (for rendering, not yet implemented)
+- Graphviz (for rendering - install via `brew install graphviz`, `apt-get install graphviz`, or [graphviz.org](https://graphviz.org/download/))
 
 ## Quick Start
+
+### Creating and Rendering a Graph
 
 ```go
 package main
 
 import (
     "fmt"
+    "log"
     "github.com/mikowitz/goraffe"
 )
 
 func main() {
     // Create a directed graph
-    g := goraffe.NewGraph(goraffe.Directed)
+    g := goraffe.NewGraph(goraffe.Directed,
+        goraffe.WithGraphLabel("My Workflow"),
+        goraffe.WithRankDir(goraffe.RankDirLR),
+    )
 
     // Create nodes with attributes
     start := goraffe.NewNode("start",
@@ -71,13 +77,32 @@ func main() {
 
     // Add nodes and edges
     g.AddNode(start)
-    edge := g.AddEdge(start, end,
+    g.AddNode(end)
+    g.AddEdge(start, end,
         goraffe.WithEdgeLabel("proceed"),
         goraffe.WithEdgeColor("blue"),
     )
 
     // Output DOT format
     fmt.Println(g.String())
+
+    // Render to PNG file
+    if err := g.RenderToFile(goraffe.PNG, "workflow.png"); err != nil {
+        log.Fatal(err)
+    }
+
+    // Render to SVG with custom layout
+    if err := g.RenderToFile(goraffe.SVG, "workflow.svg",
+        goraffe.WithLayout(goraffe.LayoutNeato)); err != nil {
+        log.Fatal(err)
+    }
+
+    // Render to bytes (useful for web servers)
+    pngBytes, err := g.RenderBytes(goraffe.PNG)
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("Generated PNG: %d bytes\n", len(pngBytes))
 }
 ```
 
@@ -168,6 +193,56 @@ n := goraffe.NewNode("id",
 )
 ```
 
+### Rendering Graphs
+
+```go
+// Render to file in various formats
+g.RenderToFile(goraffe.PNG, "graph.png")
+g.RenderToFile(goraffe.SVG, "graph.svg")
+g.RenderToFile(goraffe.PDF, "graph.pdf")
+
+// Render to bytes (useful for web servers, APIs, etc.)
+pngData, err := g.RenderBytes(goraffe.PNG)
+svgData, err := g.RenderBytes(goraffe.SVG)
+
+// Render with custom layout engine
+g.RenderToFile(goraffe.PNG, "graph.png",
+    goraffe.WithLayout(goraffe.LayoutNeato))  // Spring model layout
+g.RenderToFile(goraffe.PNG, "graph.png",
+    goraffe.WithLayout(goraffe.LayoutCirco))  // Circular layout
+
+// Available formats: PNG, SVG, PDF, DOT
+// Available layouts: LayoutDot, LayoutNeato, LayoutFdp, LayoutSfdp,
+//                    LayoutTwopi, LayoutCirco, LayoutOsage, LayoutPatchwork
+
+// Render to io.Writer
+var buf bytes.Buffer
+g.Render(goraffe.PNG, &buf, goraffe.WithLayout(goraffe.LayoutDot))
+```
+
+### Error Handling
+
+```go
+err := g.RenderToFile(goraffe.PNG, "output.png")
+if err != nil {
+    if errors.Is(err, goraffe.ErrGraphvizNotFound) {
+        log.Fatal("Graphviz is not installed")
+    }
+
+    // Get detailed error information
+    if renderErr, ok := err.(*goraffe.RenderError); ok {
+        log.Printf("Rendering failed (exit code %d): %s",
+            renderErr.ExitCode, renderErr.Stderr)
+    }
+}
+
+// Check Graphviz version
+version, err := goraffe.GraphvizVersion()
+if err == nil {
+    fmt.Printf("Using Graphviz: %s\n", version)
+}
+```
+
 ## Documentation
 
 - [Package Documentation](https://pkg.go.dev/github.com/mikowitz/goraffe)
@@ -187,11 +262,11 @@ The project is being built in phases:
 
 - **Phase 1: Foundation** ✅ Complete (Graph, Node, Edge structs)
 - **Phase 2: Attributes** ✅ Complete (Type-safe attributes and options)
-- **Phase 3: DOT Generation** 🚧 In Progress (30% complete)
-- **Phase 4: Labels** 📋 Planned (HTML and record labels)
-- **Phase 5: Subgraphs** 📋 Planned (Clusters and rank constraints)
-- **Phase 6: Parsing** 📋 Planned (DOT format parser)
-- **Phase 7: Rendering** 📋 Planned (Graphviz CLI integration)
+- **Phase 3: DOT Generation** ✅ Complete (Full DOT output with all features)
+- **Phase 4: Labels** ✅ Complete (HTML and record labels)
+- **Phase 5: Subgraphs** ✅ Complete (Clusters and subgraphs)
+- **Phase 6: Parsing** 🚧 In Progress (DOT format parser on parser branch)
+- **Phase 7: Rendering** ✅ Complete (Graphviz CLI integration with multiple formats and layouts)
 
 ## Contributing
 
